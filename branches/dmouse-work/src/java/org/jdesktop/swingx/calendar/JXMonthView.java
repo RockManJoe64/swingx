@@ -611,13 +611,7 @@ public class JXMonthView extends JComponent {
      */
     public void setTraversable(boolean traversable) {
         _traversable = traversable;
-
-        // Showing/removing icons may change the calendar size.
-        // We need to update internal size information and then
-        // recalculate displayed calendars and start positions.
-        update();
-        calculateNumDisplayedCals();
-        calculateStartPosition();
+        _dirty = true;
         repaint();
     }
 
@@ -998,6 +992,19 @@ public class JXMonthView extends JComponent {
 
         // Restore calendar.
         _cal.setTimeInMillis(_firstDisplayedDate);
+
+        calculateNumDisplayedCals();
+        calculateStartPosition();
+
+        if (_startSelectedDate != -1 || _endSelectedDate != -1) {
+            if (_startSelectedDate > _lastDisplayedDate ||
+                    _startSelectedDate < _firstDisplayedDate) {
+                // Already does the recalculation for the dirty rect.
+                ensureDateVisible(_startSelectedDate);
+            } else {
+                calculateDirtyRectForSelection();
+            }
+        }
     }
 
     private void updateToday() {
@@ -1055,8 +1062,6 @@ public class JXMonthView extends JComponent {
      */
     public void setBorder(Border border) {
         super.setBorder(border);
-        calculateNumDisplayedCals();
-        calculateStartPosition();
         _dirty = true;
     }
 
@@ -1073,18 +1078,7 @@ public class JXMonthView extends JComponent {
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
 
-        calculateNumDisplayedCals();
-        calculateStartPosition();
-
-        if (_startSelectedDate != -1 || _endSelectedDate != -1) {
-            if (_startSelectedDate > _lastDisplayedDate ||
-                    _startSelectedDate < _firstDisplayedDate) {
-                // Already does the recalculation for the dirty rect.
-                ensureDateVisible(_startSelectedDate);
-            } else {
-                calculateDirtyRectForSelection();
-            }
-        }
+        _dirty = true;
     }
 
     /**
@@ -1115,6 +1109,7 @@ public class JXMonthView extends JComponent {
         super.setComponentOrientation(o);
         _ltr = o.isLeftToRight();
         calculateStartPosition();
+        calculateDirtyRectForSelection();
     }
 
     /**
