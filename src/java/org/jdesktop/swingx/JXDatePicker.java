@@ -507,7 +507,7 @@ public class JXDatePicker extends JComponent {
             });
             _todayLabel.setForeground(Color.RED);
             panel.add(_todayLabel);
-            add(panel, BorderLayout.SOUTH);
+            add(panel, BorderLayout.NORTH);
         }
 
         public void actionPerformed(ActionEvent ev) {
