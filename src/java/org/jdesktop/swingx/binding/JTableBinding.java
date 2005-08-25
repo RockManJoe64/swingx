@@ -26,19 +26,28 @@ import org.jdesktop.swingx.table.TableColumnExt;
 public class JTableBinding extends SwingBinding {
     private TableModel oldModel;
     private AbstractTableModel model;
+    private String[] columnNames;
     
     /** Creates a new instance of JTableBinding */
     public JTableBinding(JTable table) {
         super(table);
     }
 
+    public void setColumnNames(String[] names) {
+        this.columnNames = names;
+    }
+    
+    public String[] getColumnNames() {
+        return columnNames;
+    }
+    
     protected void initialize() {
         JTable table = (JTable)super.getComponent();
         oldModel = table.getModel();
         model = new DataModelToTableModelAdapter(getDataModel());
         table.setModel(model);
         //finally, create the column model adapter
-        table.setColumnModel(new TableColumnModelAdapter(getDataModel(), null));
+        table.setColumnModel(new TableColumnModelAdapter(getDataModel(), columnNames));
     }
     
     public void release() {
@@ -75,12 +84,17 @@ public class JTableBinding extends SwingBinding {
                     }
                 }
                 MetaData md = dm.getMetaData(fieldName);
-                TableColumnExt tc = new TableColumnExt(index, md.getDisplayWidth());
-                tc.setHeaderValue(md.getLabel());
-                tc.setIdentifier(md.getName());
-                tc.setTitle(md.getLabel());
-                tc.setEditable(!md.isReadOnly());
-                super.addColumn(tc);
+                if (md != null) {
+                    TableColumnExt tc = new TableColumnExt(index, md.getDisplayWidth());
+                    tc.setHeaderValue(md.getLabel());
+                    tc.setIdentifier(md.getName());
+                    tc.setTitle(md.getLabel());
+                    tc.setEditable(!md.isReadOnly());
+                    super.addColumn(tc);
+                } else {
+                    //TODO need a debug log statement
+                    System.err.println("Couldn't get meta data for field named " + fieldName);
+                }
             }
         }
     }
