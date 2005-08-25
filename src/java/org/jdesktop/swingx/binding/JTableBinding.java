@@ -10,7 +10,10 @@
 
 package org.jdesktop.swingx.binding;
 
+import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import org.jdesktop.binding.DataModel;
@@ -25,6 +28,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
  */
 public class JTableBinding extends SwingBinding {
     private TableModel oldModel;
+    private ListSelectionListener selectionListener;
     private AbstractTableModel model;
     private String[] columnNames;
     
@@ -46,8 +50,18 @@ public class JTableBinding extends SwingBinding {
         oldModel = table.getModel();
         model = new DataModelToTableModelAdapter(getDataModel());
         table.setModel(model);
-        //finally, create the column model adapter
+        //create the column model adapter
         table.setColumnModel(new TableColumnModelAdapter(getDataModel(), columnNames));
+        //create a selection binding
+        selectionListener = new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int index = ((JTable)getComponent()).getSelectionModel().getMinSelectionIndex(); //TODO doesn't do multi selection!!
+                    getDataModel().getSelectionModel().setSelectionIndices(new int[]{index});
+                }
+            }
+        };
+        table.getSelectionModel().addListSelectionListener(selectionListener);
     }
     
     public void release() {
@@ -58,6 +72,7 @@ public class JTableBinding extends SwingBinding {
 //        if (oldColumnModel != null) {
 //            table.setColumnModel(oldColumnModel);
 //        }
+        table.getSelectionModel().removeListSelectionListener(selectionListener);
     }
 
     public boolean loadDataModelFromComponent() {
