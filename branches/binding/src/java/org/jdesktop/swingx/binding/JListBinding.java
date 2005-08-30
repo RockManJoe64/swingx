@@ -15,13 +15,14 @@ import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
 
 /**
  *
  * @author rbair
  */
-public class JListBinding extends SwingBinding {
+public class JListBinding extends Binding {
     private ListModel oldModel;
     private ListSelectionListener selectionListener;
     private DataModelToListModelAdapter model;
