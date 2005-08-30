@@ -11,20 +11,17 @@
 package org.jdesktop.swingx.binding;
 
 import javax.swing.JLabel;
-import org.jdesktop.binding.DataModel;
-import org.jdesktop.binding.SelectionModel;
+import org.jdesktop.binding.ScalarBinding;
+
 
 /**
  *
  * @author Richard
  */
-public class JLabelBinding extends SwingBinding {
-    private String fieldName;
-    
+public class JLabelBinding extends ScalarBinding {
     /** Creates a new instance of JLabelBinding */
     public JLabelBinding(JLabel label, String fieldName) {
-        super(label);
-        this.fieldName = fieldName;
+        super(label, fieldName, String.class);
     }
 
     protected void initialize() {
@@ -35,21 +32,15 @@ public class JLabelBinding extends SwingBinding {
         //nothing to release
     }
 
-    public boolean loadComponentFromDataModel() {
-        //for now, load the label with the first selection's
-        //data
-        DataModel dm = getDataModel();
-        SelectionModel sm = dm.getSelectionModel();
-        int indices[] = sm.getSelectionIndices();
-        if (indices != null && indices.length > 0) {
-            JLabel label = (JLabel)getComponent();
-            Object value = dm.getValue(indices[0], fieldName);
-            label.setText(value == null ? "" : value.toString());
-        }
-        return true;
+    protected void setComponentValue(Object value) {
+        JLabel label = (JLabel)getComponent();
+        label.setText(value == null ? "" : (String)value);
     }
-
-    public boolean loadDataModelFromComponent() {
-        return false; //should never happen from a label!
+    
+    protected String getComponentValue() {
+        //in reality, this should never be called since
+        //label components are always read only!!!
+        //TODO
+        return ((JLabel)getComponent()).getText();
     }
 }

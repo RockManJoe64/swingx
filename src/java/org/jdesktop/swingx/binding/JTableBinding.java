@@ -9,13 +9,12 @@
  */
 
 package org.jdesktop.swingx.binding;
-
-import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
 import org.jdesktop.binding.metadata.MetaData;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
@@ -26,7 +25,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
  *
  * @author rbair
  */
-public class JTableBinding extends SwingBinding {
+public class JTableBinding extends Binding {
     private TableModel oldModel;
     private ListSelectionListener selectionListener;
     private AbstractTableModel model;
