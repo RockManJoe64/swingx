@@ -22,6 +22,8 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
+import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.binding.BindingContextSupport;
 
 /**
  * A simple JPanel extension that adds translucency support.
@@ -30,7 +32,8 @@ import javax.swing.Scrollable;
  *
  * @author rbair
  */
-public class JXPanel extends JPanel implements Scrollable {
+public class JXPanel extends JPanel implements Scrollable, BindingContext {
+    private BindingContextSupport ctx = new BindingContextSupport(this);
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
     
@@ -389,5 +392,45 @@ public class JXPanel extends JPanel implements Scrollable {
             Graphics2D g2 = (Graphics2D)g;
             g2.drawImage(cachedGradient, null, insets.left, insets.top);
         }
+    }
+    
+    public Object removeDataSource(String name) {
+        return ctx.removeDataSource(name);
+    }
+
+    public void bind(Object target, String path) {
+        ctx.bind(target, path);
+    }
+
+    public void addDataSource(String name, Object dataSource) {
+        ctx.addDataSource(name, dataSource);
+    }
+
+    public void unbind(Object target) {
+        ctx.unbind(target);
+    }
+
+    public BindingContext[] getChildrenContexts() {
+        return ctx.getChildrenContexts();
+    }
+    
+    public BindingContext getParentContext() {
+        return ctx.getParentContext();
+    }
+
+    public void loadAll() {
+        ctx.loadAll();
+    }
+
+    public void loadAll(boolean recurse) {
+        ctx.loadAll(recurse);
+    }
+
+    public void saveAll() {
+        ctx.saveAll();
+    }
+
+    public void saveAll(boolean recurse) {
+        ctx.saveAll(recurse);
     }
 }
