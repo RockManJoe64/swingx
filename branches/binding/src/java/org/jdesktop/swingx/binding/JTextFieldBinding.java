@@ -9,8 +9,7 @@
  */
 
 package org.jdesktop.swingx.binding;
-
-import javax.swing.JLabel;
+import javax.swing.JTextField;
 import org.jdesktop.binding.ScalarBinding;
 
 
@@ -18,15 +17,14 @@ import org.jdesktop.binding.ScalarBinding;
  *
  * @author Richard
  */
-public class JLabelBinding extends ScalarBinding {
-    
-    public JLabelBinding(JLabel label) {
-        super(label, String.class);
+public class JTextFieldBinding extends ScalarBinding {
+    public JTextFieldBinding(JTextField tf) {
+        super(tf, String.class);
     }
     
-    /** Creates a new instance of JLabelBinding */
-    public JLabelBinding(JLabel label, String fieldName) {
-        super(label, fieldName, String.class);
+    /** Creates a new instance of JTextFieldBinding */
+    public JTextFieldBinding(JTextField tf, String fieldName) {
+        super(tf, fieldName, String.class);
     }
 
     protected void initialize() {
@@ -38,14 +36,11 @@ public class JLabelBinding extends ScalarBinding {
     }
 
     protected void setComponentValue(Object value) {
-        JLabel label = (JLabel)getComponent();
-        label.setText(value == null ? "" : (String)value);
+        JTextField tf = (JTextField)getComponent();
+        tf.setText(value == null ? "" : (String)value);
     }
     
     protected String getComponentValue() {
-        //in reality, this should never be called since
-        //label components are always read only!!!
-        //TODO
-        return ((JLabel)getComponent()).getText();
+        return ((JTextField)getComponent()).getText();
     }
 }
