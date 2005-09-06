@@ -80,11 +80,11 @@ public class BindingContextSupport extends AbstractBindingContext {
         }
     }
 
-    public AbstractBindingContext getParent() {
+    public AbstractBindingContext getParentContext() {
         return parentContext;
     }
 
-    public AbstractBindingContext[] getChildren() {
+    public AbstractBindingContext[] getChildrenContexts() {
         return childrenContexts;
     }
 }
