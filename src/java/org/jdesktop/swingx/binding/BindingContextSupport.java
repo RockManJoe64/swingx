@@ -21,6 +21,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import org.jdesktop.binding.impl.BindingFactory;
 import org.jdesktop.binding.impl.BindingFactoryImpl;
+import org.jdesktop.swingx.JXDatePicker;
 
 /**
  *
@@ -36,6 +37,7 @@ public class BindingContextSupport extends AbstractBindingContext {
         factory.addMapping(JList.class, JListBinding.class);
         factory.addMapping(JTable.class, JTableBinding.class);
         factory.addMapping(JTextField.class, JTextFieldBinding.class);
+        factory.addMapping(JXDatePicker.class, JXDatePickerBinding.class);
     }
     
     private Container container;
