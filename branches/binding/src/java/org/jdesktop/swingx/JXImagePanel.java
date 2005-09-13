@@ -102,7 +102,7 @@ public class JXImagePanel extends JXPanel {
         if (image != img) {
             BufferedImage oldImage = img;
             img = image;
-            firePropertyChange("icon", oldImage, img);
+            firePropertyChange("image", oldImage, img);
             invalidate();
             repaint();
         }
