@@ -46,7 +46,7 @@ import javax.swing.Timer;
  * @author rbair (from the JDNC project)
  * @author <a href="mailto:fred@L2FProd.com">fred</a>
  */
-public class JXCollapsiblePane extends JPanel {
+public class JXCollapsiblePane extends JXPanel {
 
   /**
    * Indicates whether the component is collapsed or expanded
