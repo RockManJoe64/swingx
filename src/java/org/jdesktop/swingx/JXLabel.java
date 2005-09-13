@@ -1,7 +1,7 @@
 /*
- * JXTextField.java
+ * JXLabel.java
  *
- * Created on May 9, 2005, 1:03 PM
+ * Created on May 9, 2005, 3:16 PM
  *
  * To change this template, choose Tools | Options and locate the template under
  * the Source Creation and Management node. Right-click the template and choose
@@ -9,51 +9,55 @@
  */
 
 package org.jdesktop.swingx;
-import java.awt.Graphics;
-import java.beans.DesignMode;
-import javax.swing.ImageIcon;
-import javax.swing.JTextField;
-import javax.swing.text.Document;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import org.jdesktop.binding.BindingContext;
 
 /**
  *
  * @author rbair
  */
-public class JXTextField extends JTextField /*, DesignMode*/ {
+public class JXLabel extends JLabel /*implements DesignMode*/ {
     /**
      * @inheritDoc
-     */ 
-    public JXTextField() {
-        super(10);
+     */
+    public JXLabel(String text, Icon icon, int horizontalAlignment) {
+        super(text, icon, horizontalAlignment);
+    }
+            
+    /**
+     * @inheritDoc
+     */
+    public JXLabel(String text, int horizontalAlignment) {
+        super(text, horizontalAlignment);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text) {
+     */
+    public JXLabel(String text) {
         super(text);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(int columns) {
-        super(columns);
+     */
+    public JXLabel(Icon image, int horizontalAlignment) {
+        super(image, horizontalAlignment);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text, int columns) {
-        super(text, columns);
+     */
+    public JXLabel(Icon image) {
+        super(image);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(Document doc, String text, int columns) {
-        super(doc, text, columns);
+     */
+    public JXLabel() {
+        super();
     }
     
     /*************      Data Binding    ****************/
@@ -87,7 +91,7 @@ public class JXTextField extends JTextField /*, DesignMode*/ {
 //        super.addNotify();
 //        //if ctx does not exist, try to create one
 //        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
+//            ctx = DataBoundUtils.bind(this, dataPath);
 //        }
 //    }
 //
@@ -98,7 +102,37 @@ public class JXTextField extends JTextField /*, DesignMode*/ {
 //        }
 //        super.removeNotify();
 //    }
+
+    public String getText() {
+        //PENDING former implementation that used functors via expressions to
+        //decide what should be rendered in the label
+//        if (rendererExpression != null) {
+//            parser.bindThis(row.getTable().getDataSet());
+//            parser.setUndecoratedDecimal(true);
 //
+//            RendererExpression exp = xlist.getRendererExpression();
+//            if (exp != null) {
+//                //execute each expression
+//                List<String> expressions = exp.getExpressions();
+//                Object[] values = new Object[expressions.size()];
+//                for (int i=0; i<values.length; i++) {
+//                    String e = expressions.get(i);
+//                    UnaryFunctor<DataRow,?> expImpl =  null;
+//                    try {
+//                        expImpl = parser.parseComputedColumn(row.getTable(), e);
+//                    } catch (ParseException pe) {
+//                        pe.printStackTrace();
+//                    }
+//                    values[i] = expImpl == null ? e : expImpl.fn(row);
+//                }
+//                value = String.format(exp.getFormat(), values);
+//            }
+            return super.getText();
+//        } else {
+//            return super.getText();
+//        }
+    }
+
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;
 //    public void setDesignTime(boolean designTime) {

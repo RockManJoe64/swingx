@@ -1,7 +1,7 @@
 /*
- * JXTextField.java
+ * JXComboBox.java
  *
- * Created on May 9, 2005, 1:03 PM
+ * Created on May 9, 2005, 3:18 PM
  *
  * To change this template, choose Tools | Options and locate the template under
  * the Source Creation and Management node. Right-click the template and choose
@@ -9,53 +9,48 @@
  */
 
 package org.jdesktop.swingx;
+
 import java.awt.Graphics;
 import java.beans.DesignMode;
+import java.util.Vector;
+import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
-import javax.swing.JTextField;
-import javax.swing.text.Document;
+import javax.swing.JComboBox;
 import org.jdesktop.binding.BindingContext;
 
 /**
  *
  * @author rbair
  */
-public class JXTextField extends JTextField /*, DesignMode*/ {
+public class JXComboBox extends JComboBox /*implements DesignMode*/ {
     /**
      * @inheritDoc
-     */ 
-    public JXTextField() {
-        super(10);
+     */
+    public JXComboBox(ComboBoxModel aModel) {
+        super(aModel);
+    }
+
+    /** 
+     * @inheritDoc
+     */
+    public JXComboBox(final Object items[]) {
+        super(items);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text) {
-        super(text);
+     */
+    public JXComboBox(Vector<?> items) {
+        super(items);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(int columns) {
-        super(columns);
+     */
+    public JXComboBox() {
+        super();
     }
 
-    /**
-     * @inheritDoc
-     */ 
-    public JXTextField(String text, int columns) {
-        super(text, columns);
-    }
-
-    /**
-     * @inheritDoc
-     */ 
-    public JXTextField(Document doc, String text, int columns) {
-        super(doc, text, columns);
-    }
-    
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
@@ -87,7 +82,7 @@ public class JXTextField extends JTextField /*, DesignMode*/ {
 //        super.addNotify();
 //        //if ctx does not exist, try to create one
 //        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
+//            ctx = DataBoundUtils.bind(this, dataPath);
 //        }
 //    }
 //

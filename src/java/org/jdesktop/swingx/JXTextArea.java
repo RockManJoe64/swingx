@@ -1,7 +1,7 @@
 /*
- * JXTextField.java
+ * JXTextArea.java
  *
- * Created on May 9, 2005, 1:03 PM
+ * Created on May 9, 2005, 3:24 PM
  *
  * To change this template, choose Tools | Options and locate the template under
  * the Source Creation and Management node. Right-click the template and choose
@@ -9,10 +9,7 @@
  */
 
 package org.jdesktop.swingx;
-import java.awt.Graphics;
-import java.beans.DesignMode;
-import javax.swing.ImageIcon;
-import javax.swing.JTextField;
+import javax.swing.JTextArea;
 import javax.swing.text.Document;
 import org.jdesktop.binding.BindingContext;
 
@@ -20,42 +17,49 @@ import org.jdesktop.binding.BindingContext;
  *
  * @author rbair
  */
-public class JXTextField extends JTextField /*, DesignMode*/ {
+public class JXTextArea extends JTextArea /*implements DesignMode*/ {
     /**
      * @inheritDoc
-     */ 
-    public JXTextField() {
-        super(10);
+     */
+    public JXTextArea() {
+        super();
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text) {
+     */
+    public JXTextArea(String text) {
         super(text);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(int columns) {
-        super(columns);
+     */
+    public JXTextArea(int rows, int columns) {
+        super(rows, columns);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text, int columns) {
-        super(text, columns);
+     */
+    public JXTextArea(String text, int rows, int columns) {
+        super(text, rows, columns);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(Document doc, String text, int columns) {
-        super(doc, text, columns);
+     */
+    public JXTextArea(Document doc) {
+        super(doc);
     }
-    
+
+    /**
+     * @inheritDoc
+     */
+    public JXTextArea(Document doc, String text, int rows, int columns) {
+        super(doc, text, rows, columns);
+    }
+
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;

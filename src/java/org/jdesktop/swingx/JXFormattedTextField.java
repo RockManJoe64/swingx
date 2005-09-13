@@ -1,7 +1,7 @@
 /*
- * JXTextField.java
+ * JXFormattedTextField.java
  *
- * Created on May 9, 2005, 1:03 PM
+ * Created on May 9, 2005, 3:18 PM
  *
  * To change this template, choose Tools | Options and locate the template under
  * the Source Creation and Management node. Right-click the template and choose
@@ -9,51 +9,55 @@
  */
 
 package org.jdesktop.swingx;
-import java.awt.Graphics;
-import java.beans.DesignMode;
-import javax.swing.ImageIcon;
-import javax.swing.JTextField;
-import javax.swing.text.Document;
+import javax.swing.JFormattedTextField;
 import org.jdesktop.binding.BindingContext;
 
 /**
  *
  * @author rbair
  */
-public class JXTextField extends JTextField /*, DesignMode*/ {
+public class JXFormattedTextField extends JFormattedTextField /*implements DesignMode*/ {
     /**
      * @inheritDoc
-     */ 
-    public JXTextField() {
-        super(10);
+     */
+    public JXFormattedTextField() {
+        super();
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text) {
-        super(text);
+     */
+    public JXFormattedTextField(Object value) {
+        super(value);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(int columns) {
-        super(columns);
+     */
+    public JXFormattedTextField(java.text.Format format) {
+        super(format);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text, int columns) {
-        super(text, columns);
+     */
+    public JXFormattedTextField(AbstractFormatter formatter) {
+        super(formatter);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(Document doc, String text, int columns) {
-        super(doc, text, columns);
+     */
+    public JXFormattedTextField(AbstractFormatterFactory factory) {
+        super(factory);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXFormattedTextField(AbstractFormatterFactory factory,
+                               Object currentValue) {
+        super(factory, currentValue);
     }
     
     /*************      Data Binding    ****************/
@@ -87,7 +91,7 @@ public class JXTextField extends JTextField /*, DesignMode*/ {
 //        super.addNotify();
 //        //if ctx does not exist, try to create one
 //        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
+//            ctx = DataBoundUtils.bind(this, dataPath);
 //        }
 //    }
 //
