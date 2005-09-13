@@ -96,47 +96,72 @@ public class JXFrame extends JFrame implements BindingContext {
 //        super.setVisible(visible);
 //    }
 
-    /*************      Data Binding    ****************/
-    private BindingContextSupport ctx = new BindingContextSupport(this);
+    /*************      Data Binding  - Data-Aware  ****************/
+    private String dataPath = "";
+    private BindingContext ctx = null;
+    
+    /**
+     * @param path
+     */
+    public void setDataPath(String path) {
+        path = path == null ? "" : path;
+        if (!this.dataPath.equals(path)) {
+            DataBoundUtils.unbind(this, ctx);
+            String oldPath = this.dataPath;
+            this.dataPath = path;
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx = DataBoundUtils.bind(this, this.dataPath);
+            }
+            firePropertyChange("dataPath", oldPath, this.dataPath);
+        }
+    }
+    
+    public String getDataPath() {
+        return dataPath;
+    }
+
+
+    /*************      Data Binding - BindingContext    ****************/
+    private BindingContextSupport ctxSupport = new BindingContextSupport(this);
 
     public Object removeDataSource(String name) {
-        return ctx.removeDataSource(name);
+        return ctxSupport.removeDataSource(name);
     }
 
     public void bind(Object target, String path) {
-        ctx.bind(target, path);
+        ctxSupport.bind(target, path);
     }
 
     public void addDataSource(String name, Object dataSource) {
-        ctx.addDataSource(name, dataSource);
+        ctxSupport.addDataSource(name, dataSource);
     }
 
     public void unbind(Object target) {
-        ctx.unbind(target);
+        ctxSupport.unbind(target);
     }
 
     public BindingContext[] getChildrenContexts() {
-        return ctx.getChildrenContexts();
+        return ctxSupport.getChildrenContexts();
     }
     
     public BindingContext getParentContext() {
-        return ctx.getParentContext();
+        return ctxSupport.getParentContext();
     }
 
     public void loadAll() {
-        ctx.loadAll();
+        ctxSupport.loadAll();
     }
 
     public void loadAll(boolean recurse) {
-        ctx.loadAll(recurse);
+        ctxSupport.loadAll(recurse);
     }
 
     public void saveAll() {
-        ctx.saveAll();
+        ctxSupport.saveAll();
     }
 
     public void saveAll(boolean recurse) {
-        ctx.saveAll(recurse);
+        ctxSupport.saveAll(recurse);
     }
 }
 
