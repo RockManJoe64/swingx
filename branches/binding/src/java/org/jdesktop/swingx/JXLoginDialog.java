@@ -41,7 +41,7 @@ import org.jdesktop.swingx.util.WindowUtils;
  *
  * @author rbair
  */
-public class JXLoginDialog extends JDialog {
+public class JXLoginDialog extends JXDialog {
     /**
      * An optional banner at the top of the dialog
      */
