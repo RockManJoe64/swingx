@@ -27,7 +27,9 @@ public class JSpinnerBinding extends ScalarBinding {
     }
 
     public void release() {
-        getComponent().setValue(oldValue);
+        if (oldValue != null) {
+            getComponent().setValue(oldValue);
+        }
     }
     
     protected Object getComponentValue() {
