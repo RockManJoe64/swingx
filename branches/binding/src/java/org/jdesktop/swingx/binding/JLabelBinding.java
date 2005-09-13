@@ -19,6 +19,7 @@ import org.jdesktop.binding.ScalarBinding;
  * @author Richard
  */
 public class JLabelBinding extends ScalarBinding {
+    private String oldValue;
     
     public JLabelBinding(JLabel label) {
         super(label, String.class);
@@ -30,22 +31,25 @@ public class JLabelBinding extends ScalarBinding {
     }
 
     protected void initialize() {
-        //nothing to init
+        oldValue = getComponent().getText();
     }
 
     public void release() {
-        //nothing to release
+        getComponent().setText(oldValue);
     }
 
     protected void setComponentValue(Object value) {
-        JLabel label = (JLabel)getComponent();
-        label.setText(value == null ? "" : (String)value);
+        getComponent().setText(value == null ? "" : (String)value);
     }
     
     protected String getComponentValue() {
         //in reality, this should never be called since
         //label components are always read only!!!
-        //TODO
-        return ((JLabel)getComponent()).getText();
+        assert false : "getComponentValue was called although the JLabelBinding is read only";
+        return null;
+    }
+    
+    public JLabel getComponent() {
+        return (JLabel)getComponent();
     }
 }
