@@ -9,24 +9,24 @@
  */
 
 package org.jdesktop.swingx.binding;
-import javax.swing.JTextField;
+import javax.swing.JFormattedTextField;
+import javax.swing.text.JTextComponent;
 import org.jdesktop.binding.ScalarBinding;
 
 
 /**
- *
+ * Base class for all Swing Binding implementations that extends JTextComponent
  * @author Richard
  */
-public class JTextFieldBinding extends ScalarBinding {
+public class JTextComponentBinding extends ScalarBinding {
     private String oldValue;
     
-    public JTextFieldBinding(JTextField tf) {
-        super(tf, String.class);
+    public JTextComponentBinding(JTextComponent comp) {
+        super(comp, String.class);
     }
     
-    /** Creates a new instance of JTextFieldBinding */
-    public JTextFieldBinding(JTextField tf, String fieldName) {
-        super(tf, fieldName, String.class);
+    public JTextComponentBinding(JTextComponent comp, String fieldName) {
+        super(comp, fieldName, String.class);
     }
 
     protected void initialize() {
@@ -45,7 +45,7 @@ public class JTextFieldBinding extends ScalarBinding {
         return getComponent().getText();
     }
     
-    public JTextField getComponent() {
-        return (JTextField)super.getComponent();
+    public JTextComponent getComponent() {
+        return (JTextComponent)super.getComponent();
     }
 }

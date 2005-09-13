@@ -9,46 +9,46 @@
  */
 
 package org.jdesktop.swingx.binding;
-
-import javax.swing.JLabel;
+import javax.swing.JFrame;
 import org.jdesktop.binding.ScalarBinding;
+
 
 
 /**
  *
  * @author Richard
  */
-public class JLabelBinding extends ScalarBinding {
+public class JFrameBinding extends ScalarBinding {
     private String oldValue;
     
-    public JLabelBinding(JLabel label) {
-        super(label, String.class);
+    public JFrameBinding(JFrame frm) {
+        super(frm, String.class);
     }
     
-    public JLabelBinding(JLabel label, String fieldName) {
-        super(label, fieldName, String.class);
+    public JFrameBinding(JFrame frm, String fieldName) {
+        super(frm, fieldName, String.class);
     }
 
     protected void initialize() {
-        oldValue = getComponent().getText();
+        oldValue = getComponent().getTitle();
     }
 
     public void release() {
-        getComponent().setText(oldValue);
+        getComponent().setTitle(oldValue);
     }
 
     protected void setComponentValue(Object value) {
-        getComponent().setText(value == null ? "" : (String)value);
+        getComponent().setTitle(value == null ? "" : (String)value);
     }
     
     protected String getComponentValue() {
         //in reality, this should never be called since
         //label components are always read only!!!
-        assert false : "getComponentValue was called although the JLabelBinding is read only";
+        assert false : "getComponentValue was called although the JFrameBinding is read only";
         return null;
     }
     
-    public JLabel getComponent() {
-        return (JLabel)super.getComponent();
+    public JFrame getComponent() {
+        return (JFrame)super.getComponent();
     }
 }
