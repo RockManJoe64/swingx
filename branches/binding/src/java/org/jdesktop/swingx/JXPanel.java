@@ -33,7 +33,6 @@ import org.jdesktop.swingx.binding.BindingContextSupport;
  * @author rbair
  */
 public class JXPanel extends JPanel implements Scrollable, BindingContext {
-    private BindingContextSupport ctx = new BindingContextSupport(this);
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
     
@@ -394,6 +393,9 @@ public class JXPanel extends JPanel implements Scrollable, BindingContext {
         }
     }
     
+    /*************      Data Binding    ****************/
+    private BindingContextSupport ctx = new BindingContextSupport(this);
+
     public Object removeDataSource(String name) {
         return ctx.removeDataSource(name);
     }

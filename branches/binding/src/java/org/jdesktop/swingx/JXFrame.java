@@ -11,13 +11,15 @@ import java.awt.Component;
 
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
+import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.binding.BindingContextSupport;
 
 
 /**
  * A smarter JFrame specifically used for top level frames for Applications.
  * This frame uses a JXRootPane.
  */
-public class JXFrame extends JFrame {
+public class JXFrame extends JFrame implements BindingContext {
 
     public JXFrame() {
         this(null, true);
@@ -93,5 +95,48 @@ public class JXFrame extends JFrame {
 //        }
 //        super.setVisible(visible);
 //    }
+
+    /*************      Data Binding    ****************/
+    private BindingContextSupport ctx = new BindingContextSupport(this);
+
+    public Object removeDataSource(String name) {
+        return ctx.removeDataSource(name);
+    }
+
+    public void bind(Object target, String path) {
+        ctx.bind(target, path);
+    }
+
+    public void addDataSource(String name, Object dataSource) {
+        ctx.addDataSource(name, dataSource);
+    }
+
+    public void unbind(Object target) {
+        ctx.unbind(target);
+    }
+
+    public BindingContext[] getChildrenContexts() {
+        return ctx.getChildrenContexts();
+    }
+    
+    public BindingContext getParentContext() {
+        return ctx.getParentContext();
+    }
+
+    public void loadAll() {
+        ctx.loadAll();
+    }
+
+    public void loadAll(boolean recurse) {
+        ctx.loadAll(recurse);
+    }
+
+    public void saveAll() {
+        ctx.saveAll();
+    }
+
+    public void saveAll(boolean recurse) {
+        ctx.saveAll(recurse);
+    }
 }
 

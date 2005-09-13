@@ -1,7 +1,7 @@
 /*
- * JXTextField.java
+ * JXSlider.java
  *
- * Created on May 9, 2005, 1:03 PM
+ * Created on May 9, 2005, 3:23 PM
  *
  * To change this template, choose Tools | Options and locate the template under
  * the Source Creation and Management node. Right-click the template and choose
@@ -9,51 +9,60 @@
  */
 
 package org.jdesktop.swingx;
-import java.awt.Graphics;
-import java.beans.DesignMode;
-import javax.swing.ImageIcon;
-import javax.swing.JTextField;
-import javax.swing.text.Document;
+import javax.swing.BoundedRangeModel;
+import javax.swing.JSlider;
 import org.jdesktop.binding.BindingContext;
 
 /**
  *
  * @author rbair
  */
-public class JXTextField extends JTextField /*, DesignMode*/ {
+public class JXSlider extends JSlider /*implements DesignMode*/ {
     /**
      * @inheritDoc
-     */ 
-    public JXTextField() {
-        super(10);
+     */
+    public JXSlider() {
+        super();
     }
+
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text) {
-        super(text);
+     */
+    public JXSlider(int orientation) {
+        super(orientation);
     }
+
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(int columns) {
-        super(columns);
+     */
+    public JXSlider(int min, int max) {
+        super(min, max);
     }
+
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text, int columns) {
-        super(text, columns);
+     */
+    public JXSlider(int min, int max, int value) {
+        super(min, max, value);
     }
+
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(Document doc, String text, int columns) {
-        super(doc, text, columns);
+     */
+    public JXSlider(int orientation, int min, int max, int value) {
+        super(orientation, min, max, value);
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public JXSlider(BoundedRangeModel brm) {
+        super(brm);
     }
     
     /*************      Data Binding    ****************/

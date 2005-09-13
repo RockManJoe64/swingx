@@ -16,8 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collections;
@@ -59,6 +57,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.binding.BindingContext;
+import org.jdesktop.binding.impl.BindingDescriptor;
 
 import org.jdesktop.swingx.action.BoundAction;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -175,6 +175,13 @@ public class JXTable extends JTable implements Searchable {
         // Hack: make sure the resource bundle is loaded
         LookAndFeelAddons.contribute(new JXTableAddon());
     }
+
+    /**
+     * For data binding
+     */
+    private String dataPath = "";
+    private BindingContext ctx = null;
+    private String[] fieldNames;
 
 //    public static boolean TRACE = false;
 
@@ -2099,6 +2106,41 @@ public class JXTable extends JTable implements Searchable {
     // return new DefaultTableModelExt();
     // }
 
+    /**
+     * @param path
+     */
+    public void setDataPath(String path) {
+        path = path == null ? "" : path;
+        if (!this.dataPath.equals(path)) {
+            DataBoundUtils.unbind(this, ctx);
+            String oldPath = this.dataPath;
+            this.dataPath = path;
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx = DataBoundUtils.bind(this, this.dataPath);
+            }
+            firePropertyChange("dataPath", oldPath, this.dataPath);
+        }
+    }
     
+    public String getDataPath() {
+        return dataPath;
+    }
     
+    public void setFieldNames(String[] fieldNames) {
+        this.fieldNames = fieldNames;
+//        if (ctx != null) {
+//            for (BindingDescriptor bd : ctx.getBindingDescriptors()) {
+//                if (bd.target == this) {
+//                    if (((DirectTableBinding)bd.binding) != null) {
+//                        ((DirectTableBinding)bd.binding).release();
+//                        ((DirectTableBinding)bd.binding).initialize();
+//                    }
+//                }
+//            }
+//        }
+    }
+    
+    public String[] getFieldNames() {
+        return fieldNames;
+    }
 }

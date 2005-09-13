@@ -18,6 +18,7 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.border.*;
 import javax.swing.text.DefaultFormatterFactory;
+import org.jdesktop.binding.BindingContext;
 import org.jdesktop.swingx.border.DropShadowBorder;
 import org.jdesktop.swingx.calendar.*;
 
@@ -32,6 +33,12 @@ import org.jdesktop.swingx.calendar.*;
  * @author Joshua Outwater
  */
 public class JXDatePicker extends JComponent {
+    /**
+     * For data binding
+     */
+    private String dataPath = "";
+    private BindingContext ctx = null;
+
     /** The editable date field that displays the date */
     private JFormattedTextField _dateField;
 
@@ -682,5 +689,25 @@ public class JXDatePicker extends JComponent {
             }
             return null;
         }
+    }
+    
+    /**
+     * @param path
+     */
+    public void setDataPath(String path) {
+        path = path == null ? "" : path;
+        if (!this.dataPath.equals(path)) {
+            DataBoundUtils.unbind(this, ctx);
+            String oldPath = this.dataPath;
+            this.dataPath = path;
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx = DataBoundUtils.bind(this, this.dataPath);
+            }
+            firePropertyChange("dataPath", oldPath, this.dataPath);
+        }
+    }
+    
+    public String getDataPath() {
+        return dataPath;
     }
 }

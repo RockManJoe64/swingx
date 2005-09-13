@@ -1,216 +1,151 @@
 /*
- * $Id$
+ * JXDialog.java
  *
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * Created on May 9, 2005, 2:05 PM
+ *
+ * To change this template, choose Tools | Options and locate the template under
+ * the Source Creation and Management node. Right-click the template and choose
+ * Open. You can then make changes to the template in the Source Editor.
  */
+
 package org.jdesktop.swingx;
 
-import java.awt.Dimension;
+import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
+import java.awt.HeadlessException;
 import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
-import javax.swing.plaf.basic.BasicOptionPaneUI;
-
-import org.jdesktop.swingx.action.BoundAction;
-import org.jdesktop.swingx.plaf.LookAndFeelAddons;
+import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.binding.BindingContextSupport;
 
 /**
- * First cut for enhanced Dialog.
- * 
- * <ul>
- * <li> registers stand-in actions for close/execute with the dialog's RootPane
- * <li> registers keyStrokes for esc/enter to trigger the close/execute actions
- * <li> takes care of building the button panel using the close/execute actions.
- * <li> accepts a content and configures itself from content's properties - 
- *  replaces the execute action from the appropriate action in content's action map (if any)
- *  and set's its title from the content's name. 
- * </ul> 
- * 
- * 
- * PENDING: add support for vetoing the close.
- * 
- * @author Jeanette Winzenburg
+ *
+ * @author rbair
  */
-public class JXDialog extends JDialog {
-
-    static {
-        // Hack to enforce loading of SwingX framework ResourceBundle
-        LookAndFeelAddons.getAddon();
-    }
-    
-    public static final String EXECUTE_ACTION_COMMAND = "execute";
-    public static final String CLOSE_ACTION_COMMAND = "close";
-    public static final String UIPREFIX = "XDialog.";
-
-    JComponent content;
-    
-    public JXDialog(Frame frame, JComponent content, boolean packAndShow) {
-        super(frame);
-        setContent(content);
-        if (packAndShow) {
-            pack();
-            locate();
-            setVisible(true);
-        }
-    }
-    
-    private void setContent(JComponent content) {
-        if (this.content != null) {
-            throw new IllegalStateException("content must not be set more than once");
-        }
-        initActions();
-        Action contentCloseAction = content.getActionMap().get(CLOSE_ACTION_COMMAND);
-        if (contentCloseAction != null) {
-            putAction(CLOSE_ACTION_COMMAND, contentCloseAction);
-        }
-        Action contentExecuteAction = content.getActionMap().get(EXECUTE_ACTION_COMMAND);
-        if (contentExecuteAction != null) {
-            putAction(EXECUTE_ACTION_COMMAND, contentExecuteAction);
-        }
-        this.content = content;
-        build();
-        setTitle(content.getName());
-    }
-
-    /**
-     * pre: content != null.
-     *
-     */
-    private void build() {
-        JComponent contentBox = new Box(BoxLayout.PAGE_AXIS); 
-        contentBox.add(content);
-        JComponent buttonPanel = createButtonPanel();
-        contentBox.add(buttonPanel);
-        contentBox.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
-//        content.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        
-//        fieldPanel.setAlignmentX();
-//      buttonPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        add(contentBox);
-        
-    }
-
-    /**
-     * 
-     */
-    private void locate() {
-        GraphicsConfiguration gc =
-            GraphicsEnvironment.getLocalGraphicsEnvironment().
-            getDefaultScreenDevice().getDefaultConfiguration();
-        Rectangle bounds = gc.getBounds();
-        int x = bounds.x+bounds.width/3;
-        int y = bounds.y+bounds.height/3;
-
-        setLocation(x, y);
-    }
-
-    public void setVisible(boolean visible) {
-        if (content == null) throw 
-            new IllegalStateException("content must be built before showing the dialog");
-        super.setVisible(visible);
-    }
-
-    public void doClose() {
-        dispose();
-    }
-    
-    private void initActions() {
-        // PENDING: factor a common dialog containing the following
-        Action defaultAction = createCloseAction();
-        putAction(CLOSE_ACTION_COMMAND, defaultAction);
-        putAction(EXECUTE_ACTION_COMMAND, defaultAction);
-    }
-
-    private Action createCloseAction() {
-        String actionName = getUIString(CLOSE_ACTION_COMMAND);
-        BoundAction action = new BoundAction(actionName,
-                CLOSE_ACTION_COMMAND);
-        action.registerCallback(this, "doClose");
-        return action;
-    }
-
-    /**
-     * create the dialog button controls.
-     * 
-     * 
-     * @return
-     */
-    protected JComponent createButtonPanel() {
-        // PENDING: this is a hack until we have a dedicated ButtonPanel!
-        JPanel panel = new JPanel(new BasicOptionPaneUI.ButtonAreaLayout(true, 6))
-        {
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
-            }
-        };
-
-        panel.setBorder(BorderFactory.createEmptyBorder(9, 0, 0, 0));
-        Action findAction = getAction(EXECUTE_ACTION_COMMAND);
-        Action closeAction = getAction(CLOSE_ACTION_COMMAND);
-
-        JButton findButton;
-        panel.add(findButton = new JButton(findAction));
-        panel.add(new JButton(closeAction));
-
-
-        KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
-        KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
-
-        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(enterKey, EXECUTE_ACTION_COMMAND);
-        inputMap.put(escapeKey, CLOSE_ACTION_COMMAND);
-
-        getRootPane().setDefaultButton(findButton);
-        return panel;
-    }
-
-    /**
-     * convenience wrapper to access rootPane's actionMap.
-     * @param key
-     * @param action
-     */
-    private void putAction(Object key, Action action) {
-        getRootPane().getActionMap().put(key, action);
-    }
+public class JXDialog extends JDialog implements BindingContext {
     
     /**
-     * convenience wrapper to access rootPane's actionMap.
-     * 
-     * @param key
-     * @return
+     * @inheritDoc
      */
-    private Action getAction(Object key) {
-        return getRootPane().getActionMap().get(key);
+    public JXDialog() throws HeadlessException {
+        super();
     }
+
     /**
-     * tries to find a String value from the UIManager, prefixing the
-     * given key with the UIPREFIX. 
-     * 
-     * TODO: move to utilities?
-     * 
-     * @param key 
-     * @return the String as returned by the UIManager or key if the returned
-     *   value was null.
+     * @inheritDoc
      */
-    private String getUIString(String key) {
-        String text = UIManager.getString(UIPREFIX + key);
-        return text != null ? text : key;
+    public JXDialog(Frame owner) throws HeadlessException {
+        super(owner);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Frame owner, boolean modal) throws HeadlessException {
+        super(owner, modal);
+    }
 
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Frame owner, String title) throws HeadlessException {
+        super(owner, title);     
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Frame owner, String title, boolean modal)
+        throws HeadlessException {
+        super(owner, title, modal);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Frame owner, String title, boolean modal,
+                   GraphicsConfiguration gc) {
+        super(owner, title, modal, gc);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Dialog owner) throws HeadlessException {
+        super(owner);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Dialog owner, boolean modal) throws HeadlessException {
+        super(owner, modal);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Dialog owner, String title) throws HeadlessException {
+        super(owner, title);     
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Dialog owner, String title, boolean modal)
+        throws HeadlessException {
+        super(owner, title, modal);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public JXDialog(Dialog owner, String title, boolean modal,
+                   GraphicsConfiguration gc) throws HeadlessException {
+
+        super(owner, title, modal, gc);
+    }
+
+    /*************      Data Binding    ****************/
+    private BindingContextSupport ctx = new BindingContextSupport(this);
+
+    public Object removeDataSource(String name) {
+        return ctx.removeDataSource(name);
+    }
+
+    public void bind(Object target, String path) {
+        ctx.bind(target, path);
+    }
+
+    public void addDataSource(String name, Object dataSource) {
+        ctx.addDataSource(name, dataSource);
+    }
+
+    public void unbind(Object target) {
+        ctx.unbind(target);
+    }
+
+    public BindingContext[] getChildrenContexts() {
+        return ctx.getChildrenContexts();
+    }
+    
+    public BindingContext getParentContext() {
+        return ctx.getParentContext();
+    }
+
+    public void loadAll() {
+        ctx.loadAll();
+    }
+
+    public void loadAll(boolean recurse) {
+        ctx.loadAll(recurse);
+    }
+
+    public void saveAll() {
+        ctx.saveAll();
+    }
+
+    public void saveAll(boolean recurse) {
+        ctx.saveAll(recurse);
+    }
 }

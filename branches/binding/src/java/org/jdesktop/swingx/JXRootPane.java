@@ -16,6 +16,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
+import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.binding.BindingContextSupport;
 
 import org.jdesktop.swingx.event.MessageSource;
 import org.jdesktop.swingx.event.ProgressSource;
@@ -36,7 +38,7 @@ import org.jdesktop.swingx.event.ProgressSource;
  * @see org.jdesktop.swingx.event.ProgressSource
  * @author Mark Davidson
  */
-public class JXRootPane extends JRootPane {
+public class JXRootPane extends JRootPane implements BindingContext {
 
     private JXStatusBar statusBar;
 
@@ -219,4 +221,46 @@ public class JXRootPane extends JRootPane {
         }
     }
 
+    /*************      Data Binding    ****************/
+    private BindingContextSupport ctx = new BindingContextSupport(this);
+
+    public Object removeDataSource(String name) {
+        return ctx.removeDataSource(name);
+    }
+
+    public void bind(Object target, String path) {
+        ctx.bind(target, path);
+    }
+
+    public void addDataSource(String name, Object dataSource) {
+        ctx.addDataSource(name, dataSource);
+    }
+
+    public void unbind(Object target) {
+        ctx.unbind(target);
+    }
+
+    public BindingContext[] getChildrenContexts() {
+        return ctx.getChildrenContexts();
+    }
+    
+    public BindingContext getParentContext() {
+        return ctx.getParentContext();
+    }
+
+    public void loadAll() {
+        ctx.loadAll();
+    }
+
+    public void loadAll(boolean recurse) {
+        ctx.loadAll(recurse);
+    }
+
+    public void saveAll() {
+        ctx.saveAll();
+    }
+
+    public void saveAll(boolean recurse) {
+        ctx.saveAll(recurse);
+    }
 }

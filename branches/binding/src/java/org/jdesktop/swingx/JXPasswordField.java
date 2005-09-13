@@ -1,7 +1,7 @@
 /*
- * JXTextField.java
+ * JXPasswordField.java
  *
- * Created on May 9, 2005, 1:03 PM
+ * Created on May 9, 2005, 3:19 PM
  *
  * To change this template, choose Tools | Options and locate the template under
  * the Source Creation and Management node. Right-click the template and choose
@@ -9,10 +9,7 @@
  */
 
 package org.jdesktop.swingx;
-import java.awt.Graphics;
-import java.beans.DesignMode;
-import javax.swing.ImageIcon;
-import javax.swing.JTextField;
+import javax.swing.JPasswordField;
 import javax.swing.text.Document;
 import org.jdesktop.binding.BindingContext;
 
@@ -20,40 +17,41 @@ import org.jdesktop.binding.BindingContext;
  *
  * @author rbair
  */
-public class JXTextField extends JTextField /*, DesignMode*/ {
+public class JXPasswordField extends JPasswordField /*implements DesignMode*/ {
+
     /**
      * @inheritDoc
-     */ 
-    public JXTextField() {
-        super(10);
+     */
+    public JXPasswordField() {
+        super();
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text) {
+     */
+    public JXPasswordField(String text) {
         super(text);
     }
 
     /**
      * @inheritDoc
      */ 
-    public JXTextField(int columns) {
+    public JXPasswordField(int columns) {
         super(columns);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(String text, int columns) {
+     */
+    public JXPasswordField(String text, int columns) {
         super(text, columns);
     }
 
     /**
      * @inheritDoc
-     */ 
-    public JXTextField(Document doc, String text, int columns) {
-        super(doc, text, columns);
+     */
+    public JXPasswordField(Document doc, String txt, int columns) {
+        super(doc, txt, columns);
     }
     
     /*************      Data Binding    ****************/
@@ -87,7 +85,7 @@ public class JXTextField extends JTextField /*, DesignMode*/ {
 //        super.addNotify();
 //        //if ctx does not exist, try to create one
 //        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
+//            ctx = DataBoundUtils.bind(this, dataPath);
 //        }
 //    }
 //
