@@ -7,13 +7,27 @@
 
 package org.jdesktop.swingx;
 
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
 
 /**
  * Common Error Dialog.  Composed of a title, message, and details.
@@ -21,7 +35,7 @@ import javax.swing.*;
  * @author Richard Bair
  * @author Alexander Zuev
  */
-public class JXErrorDialog extends JDialog {
+public class JXErrorDialog extends JXDialog {
     /**
      * Text representing expanding the details section of the dialog
      */

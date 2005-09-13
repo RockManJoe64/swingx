@@ -35,7 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-public class JXFindDialog extends JDialog {
+public class JXFindDialog extends JXDialog {
 
     private Searchable searchable;
 
