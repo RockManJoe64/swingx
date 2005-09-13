@@ -26,10 +26,19 @@ public class JListBinding extends Binding {
     private ListModel oldModel;
     private ListSelectionListener selectionListener;
     private DataModelToListModelAdapter model;
+    private String displayName;
     
     /** Creates a new instance of JListBinding */
     public JListBinding(JList list) {
         super(list);
+    }
+    
+    public void setDisplayName(String name) {
+        this.displayName = name;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
     }
     
     protected void initialize() {
@@ -65,7 +74,7 @@ public class JListBinding extends Binding {
         return true;
     }
     
-    public static final class DataModelToListModelAdapter extends AbstractListModel {
+    public final class DataModelToListModelAdapter extends AbstractListModel {
         private DataModel tabModel = null;
 
         public DataModelToListModelAdapter(DataModel model /*, String fieldName*/) {
@@ -132,7 +141,7 @@ public class JListBinding extends Binding {
 	 * @see javax.swing.ListModel#getElementAt(int)
 	 */
 	public Object getElementAt(int index) {
-            return tabModel.getValue(index, "OrderID");
+            return tabModel.getValue(index, displayName);
 	}
     }
 }
