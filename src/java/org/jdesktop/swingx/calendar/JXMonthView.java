@@ -6,8 +6,21 @@
  */
 package org.jdesktop.swingx.calendar;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AWTEvent;
+import java.awt.Color;
+import java.awt.ComponentOrientation;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
@@ -16,6 +29,8 @@ import java.util.Hashtable;
 import java.util.TimeZone;
 import javax.swing.*;
 import javax.swing.border.Border;
+import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.DataBoundUtils;
 
 
 /**
@@ -2067,4 +2082,64 @@ public class JXMonthView extends JComponent {
         }
         super.processMouseMotionEvent(e);
     }
+
+    /*************      Data Binding    ****************/
+    private String dataPath = "";
+    private BindingContext ctx = null;
+    
+    /**
+     * @param path
+     */
+    public void setDataPath(String path) {
+        path = path == null ? "" : path;
+        if (!this.dataPath.equals(path)) {
+            DataBoundUtils.unbind(this, ctx);
+            String oldPath = this.dataPath;
+            this.dataPath = path;
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx = DataBoundUtils.bind(this, this.dataPath);
+            }
+            firePropertyChange("dataPath", oldPath, this.dataPath);
+        }
+    }
+    
+    public String getDataPath() {
+        return dataPath;
+    }
+
+    //PENDING
+    //addNotify and removeNotify were necessary for java one, not sure if I still
+    //need them or not
+//    public void addNotify() {
+//        super.addNotify();
+//        //if ctx does not exist, try to create one
+//        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
+//        }
+//    }
+//
+//    public void removeNotify() {
+//        //if I had a ctx, blow it away
+//        if (ctx != null) {
+//            DataBoundUtils.unbind(this, ctx);
+//        }
+//        super.removeNotify();
+//    }
+//
+//    //BEANS SPECIFIC CODE:
+//    private boolean designTime = false;
+//    public void setDesignTime(boolean designTime) {
+//        this.designTime = designTime;
+//    }
+//    public boolean isDesignTime() {
+//        return designTime;
+//    }
+//    public void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        if (designTime && dataPath != null && !dataPath.equals("")) {
+//            //draw the binding icon
+//            ImageIcon ii = new ImageIcon(getClass().getResource("icon/chain.png"));
+//            g.drawImage(ii.getImage(), getWidth() - ii.getIconWidth(), 0, ii.getIconWidth(), ii.getIconHeight(), ii.getImageObserver());
+//        }
+//    }
 }
