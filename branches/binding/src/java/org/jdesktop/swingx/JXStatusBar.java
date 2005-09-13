@@ -40,7 +40,7 @@ import org.jdesktop.swingx.event.ProgressListener;
  *
  * @author Mark Davidson
  */
-public class JXStatusBar extends JPanel implements MessageListener,
+public class JXStatusBar extends JXPanel implements MessageListener,
 						  ProgressListener {
     private JLabel leadingLabel;
     private JLabel trailingLabel;

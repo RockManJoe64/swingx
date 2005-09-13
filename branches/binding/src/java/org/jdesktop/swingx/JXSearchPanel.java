@@ -33,7 +33,7 @@ import org.jdesktop.swingx.decorator.PatternMatcher;
  *
  * @author Ramesh Gupta
  */
-public class JXSearchPanel extends JPanel implements DocumentListener, ActionListener {
+public class JXSearchPanel extends JXPanel implements DocumentListener, ActionListener {
     //public final static String	MEDIATOR_KEY = "jfc:searchPanel";
 
     // colleagues mediated by this JXSearchPanel

@@ -61,7 +61,7 @@ import org.jdesktop.swingx.plaf.TaskPaneUI;
  *          mono32="JXTaskPane32-mono.gif"
  *          color32="JXTaskPane32.gif"
  */
-public class JXTaskPane extends JPanel implements
+public class JXTaskPane extends JXPanel implements
   JXCollapsiblePane.JCollapsiblePaneContainer {
 
   public final static String uiClassID = "swingx/TaskPaneUI";
