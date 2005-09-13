@@ -20,6 +20,7 @@ import org.jdesktop.swingx.JXDatePicker;
  * @author Richard
  */
 public class JXDatePickerBinding extends ScalarBinding {
+    private Date oldValue;
     
     public JXDatePickerBinding(JXDatePicker datePicker) {
         super(datePicker, Date.class);
@@ -30,22 +31,22 @@ public class JXDatePickerBinding extends ScalarBinding {
     }
 
     protected void initialize() {
-        //nothing to init
+        oldValue = getComponent().getDate();
     }
 
     public void release() {
-        //nothing to release
+        getComponent().setDate(oldValue);
     }
 
     protected void setComponentValue(Object value) {
-        JXDatePicker dp = (JXDatePicker)getComponent();
-        dp.setDate(value == null ? new Date() : (Date)value);
+        getComponent().setDate(value == null ? new Date() : (Date)value);
     }
     
     protected Date getComponentValue() {
-        //in reality, this should never be called since
-        //label components are always read only!!!
-        //TODO
-        return ((JXDatePicker)getComponent()).getDate();
+        return getComponent().getDate();
+    }
+    
+    public JXDatePicker getComponent() {
+        return (JXDatePicker)super.getComponent();
     }
 }
