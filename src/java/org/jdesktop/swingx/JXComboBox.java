@@ -9,12 +9,8 @@
  */
 
 package org.jdesktop.swingx;
-
-import java.awt.Graphics;
-import java.beans.DesignMode;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import org.jdesktop.binding.BindingContext;
 
@@ -53,6 +49,7 @@ public class JXComboBox extends JComboBox /*implements DesignMode*/ {
 
     /*************      Data Binding    ****************/
     private String dataPath = "";
+    private String listDataPath = "";
     private BindingContext ctx = null;
     
     /**
@@ -73,6 +70,26 @@ public class JXComboBox extends JComboBox /*implements DesignMode*/ {
     
     public String getDataPath() {
         return dataPath;
+    }
+
+    /**
+     * @param path
+     */
+    public void setListDataPath(String path) {
+        path = path == null ? "" : path;
+        if (!this.listDataPath.equals(path)) {
+            DataBoundUtils.unbind(this, ctx);
+            String oldPath = this.listDataPath;
+            this.listDataPath = path;
+            if (DataBoundUtils.isValidPath(this.listDataPath)) {
+                ctx = DataBoundUtils.bind(this, this.getModel(), this.listDataPath);
+            }
+            firePropertyChange("listDataPath", oldPath, this.listDataPath);
+        }
+    }
+    
+    public String getListDataPath() {
+        return listDataPath;
     }
 
     //PENDING

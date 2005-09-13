@@ -13,7 +13,6 @@ import java.awt.Component;
 import org.jdesktop.binding.BindingContext;
 
 /**
- *
  * @author rbair
  */
 public class DataBoundUtils {
@@ -46,7 +45,21 @@ public class DataBoundUtils {
         return ctx;
     }
     
+    public static BindingContext bind(Component comp, Object target, String path) {
+        BindingContext ctx = findBindingContext(comp);
+        if (ctx != null) {
+            ctx.bind(target, path);
+        }
+        return ctx;
+    }
+    
     public static void unbind(Component target, BindingContext ctx) {
+        if (ctx != null) {
+            ctx.unbind(target);
+        }
+    }
+    
+    public static void unbind(Object target, BindingContext ctx) {
         if (ctx != null) {
             ctx.unbind(target);
         }

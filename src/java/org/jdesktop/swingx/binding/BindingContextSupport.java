@@ -16,6 +16,7 @@ import org.jdesktop.binding.impl.AbstractBindingContext;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.AbstractButton;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -49,6 +50,7 @@ public class BindingContextSupport extends AbstractBindingContext {
         factory.addMapping(AbstractButton.class, AbstractButtonBinding.class);
         factory.addMapping(JCheckBox.class, JCheckBoxBinding.class);
         factory.addMapping(JComboBox.class, JComboBoxBinding.class);
+        factory.addMapping(DefaultComboBoxModel.class, JComboBoxListBinding.class);
         factory.addMapping(JDialog.class, JDialogBinding.class);
         factory.addMapping(JFrame.class, JFrameBinding.class);
         factory.addMapping(JLabel.class, JLabelBinding.class);
