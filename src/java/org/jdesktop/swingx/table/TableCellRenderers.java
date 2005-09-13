@@ -26,15 +26,29 @@ public class TableCellRenderers {
         typeMap = new HashMap();
         typeMap.put(Number.class,
             "org.jdesktop.swingx.JXTable$NumberRenderer");
+        typeMap.put(short.class,
+            "org.jdesktop.swingx.JXTable$NumberRenderer");
+        typeMap.put(byte.class,
+            "org.jdesktop.swingx.JXTable$NumberRenderer");
+        typeMap.put(int.class,
+            "org.jdesktop.swingx.JXTable$NumberRenderer");
+        typeMap.put(long.class,
+            "org.jdesktop.swingx.JXTable$NumberRenderer");
         typeMap.put(Double.class,
             "org.jdesktop.swingx.JXTable$DoubleRenderer");
+        typeMap.put(double.class,
+            "org.jdesktop.swingx.JXTable$DoubleRenderer");
         typeMap.put(Float.class,
+            "org.jdesktop.swingx.JXTable$DoubleRenderer");
+        typeMap.put(float.class,
             "org.jdesktop.swingx.JXTable$DoubleRenderer");
         typeMap.put(Date.class,
                     "org.jdesktop.swingx.JXTable$DateRenderer");
         typeMap.put(Icon.class,
                     "org.jdesktop.swingx.JXTable$IconRenderer");
         typeMap.put(Boolean.class,
+            "org.jdesktop.swingx.JXTable$BooleanRenderer");
+        typeMap.put(boolean.class,
             "org.jdesktop.swingx.JXTable$BooleanRenderer");
         typeMap.put(LinkModel.class,
                     "org.jdesktop.swingx.LinkRenderer");

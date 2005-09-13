@@ -1754,11 +1754,23 @@ public class JXTable extends JTable implements Searchable {
         // Numbers
         setLazyRenderer(Number.class,
                 "org.jdesktop.swingx.JXTable$NumberRenderer");
+        setLazyRenderer(byte.class,
+                "org.jdesktop.swingx.JXTable$NumberRenderer");
+        setLazyRenderer(short.class,
+                "org.jdesktop.swingx.JXTable$NumberRenderer");
+        setLazyRenderer(int.class,
+                "org.jdesktop.swingx.JXTable$NumberRenderer");
+        setLazyRenderer(long.class,
+                "org.jdesktop.swingx.JXTable$NumberRenderer");
 
         // Doubles and Floats
         setLazyRenderer(Float.class,
                 "org.jdesktop.swingx.JXTable$DoubleRenderer");
+        setLazyRenderer(float.class,
+                "org.jdesktop.swingx.JXTable$DoubleRenderer");
         setLazyRenderer(Double.class,
+                "org.jdesktop.swingx.JXTable$DoubleRenderer");
+        setLazyRenderer(double.class,
                 "org.jdesktop.swingx.JXTable$DoubleRenderer");
 
         // Dates
@@ -1771,6 +1783,8 @@ public class JXTable extends JTable implements Searchable {
 
         // Booleans
         setLazyRenderer(Boolean.class,
+                "org.jdesktop.swingx.JXTable$BooleanRenderer");
+        setLazyRenderer(boolean.class,
                 "org.jdesktop.swingx.JXTable$BooleanRenderer");
 
         // Other
