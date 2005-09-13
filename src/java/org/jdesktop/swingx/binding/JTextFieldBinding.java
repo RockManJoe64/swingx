@@ -18,6 +18,8 @@ import org.jdesktop.binding.ScalarBinding;
  * @author Richard
  */
 public class JTextFieldBinding extends ScalarBinding {
+    private String oldValue;
+    
     public JTextFieldBinding(JTextField tf) {
         super(tf, String.class);
     }
@@ -28,19 +30,22 @@ public class JTextFieldBinding extends ScalarBinding {
     }
 
     protected void initialize() {
-        //nothing to init
+        oldValue = getComponent().getText();
     }
 
     public void release() {
-        //nothing to release
+        getComponent().setText(oldValue);
     }
 
     protected void setComponentValue(Object value) {
-        JTextField tf = (JTextField)getComponent();
-        tf.setText(value == null ? "" : (String)value);
+        getComponent().setText(value == null ? "" : (String)value);
     }
     
     protected String getComponentValue() {
-        return ((JTextField)getComponent()).getText();
+        return getComponent().getText();
+    }
+    
+    public JTextField getComponent() {
+        return (JTextField)super.getComponent();
     }
 }
