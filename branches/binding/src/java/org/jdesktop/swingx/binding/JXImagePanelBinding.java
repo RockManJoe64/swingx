@@ -9,6 +9,15 @@
 
 package org.jdesktop.swingx.binding;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import org.jdesktop.binding.ConversionException;
+import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.swingx.JXImagePanel;
+
 /**
  * Hmmmm....
  * The problem here is that the data in the image panel could be bits, image url,
@@ -19,11 +28,66 @@ package org.jdesktop.swingx.binding;
  *
  * @author Richard
  */
-public class JXImagePanelBinding {
+public class JXImagePanelBinding extends ScalarBinding {
+    private BufferedImage oldImage;
     
     /** Creates a new instance of JXImagePanelBinding */
-    public JXImagePanelBinding() {
-        assert false : "Not yet implemented";
+    public JXImagePanelBinding(JXImagePanel panel) {
+        super(panel, BufferedImage.class);
+    }
+
+    protected Object convert(Object src, Class dstType) throws ConversionException {
+        if (dstType == BufferedImage.class) {
+            try {
+                //converting to BufferedImage:
+                if (src instanceof byte[]) {
+                    return ImageIO.read(new ByteArrayInputStream((byte[])src));
+                } else if (src instanceof String) {
+                    return ImageIO.read(new URL((String)src));
+                } else if (src instanceof URL) {
+                    return ImageIO.read((URL)src);
+                } else if (src instanceof File) {
+                    return ImageIO.read((File)src);
+                } else if (src instanceof BufferedImage) {
+                    return (BufferedImage)src;
+    //            } else if (src instanceof ImageIcon) {
+    //                return ((ImageIcon)src).getImage().
+                } else {
+                    throw new ConversionException("Unable to convert " + src + " to BufferedImage");
+                }
+            } catch (ConversionException ce) {
+                throw ce;
+            } catch (Exception e) {
+                    throw new ConversionException("Unable to convert String " + src + " to BufferedImage", e);
+            }
+        } else {
+            //converting from BufferedImage
+            assert src instanceof BufferedImage;
+            if (dstType == BufferedImage.class) {
+                return (BufferedImage)src;
+            } else {
+                throw new ConversionException("Unable to convert from BufferedImage to " + dstType);
+            }
+        }
+    }
+
+    protected void initialize() {
+        oldImage = getComponent().getImage();
+    }
+
+    public void release() {
+        getComponent().setImage(oldImage);
     }
     
+    protected Object getComponentValue() {
+        return getComponent().getImage();
+    }
+
+    protected void setComponentValue(Object obj) {
+        getComponent().setImage((BufferedImage)obj);
+    }
+    
+    public JXImagePanel getComponent() {
+        return (JXImagePanel)super.getComponent();
+    }
 }
