@@ -29,7 +29,7 @@ import javax.swing.JRadioButton;
  * @version 1.0
  */
 
-public class JXRadioGroup extends JPanel {
+public class JXRadioGroup extends JXPanel {
 	private static final long serialVersionUID = 3257285842266567986L;
 	private ButtonGroup buttonGroup;
     private List<Object> values = new ArrayList<Object>();
