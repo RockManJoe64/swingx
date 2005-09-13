@@ -17,19 +17,19 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
+import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.tree.TreeNodeExt;
 
 /**
  *
  * @author Richard
  */
-public class JTreeBinding extends Binding {
+public class JXTreeTableBinding extends Binding {
     private TreeModel oldModel;
     private String childName; //name of the child datamodel to recurse on when constructing the tree (should be array??)
     private String displayName;
     
-    /** Creates a new instance of JTreeBinding */
-    public JTreeBinding(JTree tree) {
+    public JXTreeTableBinding(JXTreeTable tree) {
         super(tree);
     }
     
