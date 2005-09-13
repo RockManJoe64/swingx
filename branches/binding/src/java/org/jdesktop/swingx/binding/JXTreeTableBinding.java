@@ -11,22 +11,22 @@ package org.jdesktop.swingx.binding;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.tree.TreeNodeExt;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.TreeTableModel;
 
 /**
- *
+ * Essentially the same as the tree binding, only also supports columns
  * @author Richard
  */
 public class JXTreeTableBinding extends Binding {
-    private TreeModel oldModel;
+    private TreeTableModel oldModel;
     private String childName; //name of the child datamodel to recurse on when constructing the tree (should be array??)
+    private String[] fieldNames;
     private String displayName;
     
     public JXTreeTableBinding(JXTreeTable tree) {
@@ -44,21 +44,29 @@ public class JXTreeTableBinding extends Binding {
     public String getDisplayName() {
         return displayName;
     }
+    
+    public void setDisplayName(String name) {
+        this.displayName = name;
+    }
+    
+    public String[] getFieldNames() {
+        return fieldNames;
+    }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void setFieldNames(String[] fieldNames) {
+        this.fieldNames = fieldNames;
     }
 
     protected void initialize() {
-        JTree tree = (JTree)getComponent();
-        oldModel = tree.getModel();
-        TreeModel model = new RecursiveTreeModel(getDataModel());
-        tree.setModel(model);
+        JXTreeTable tree = getComponent();
+        oldModel = tree.getTreeTableModel();
+        TreeTableModel model = new RecursiveTreeTableModel(getDataModel());
+        tree.setTreeTableModel(model);
     }
 
     public void release() {
-        JTree tree = (JTree)getComponent();
-        tree.setModel(oldModel);
+        JXTreeTable tree = getComponent();
+        tree.setTreeTableModel(oldModel);
     }
 
     public boolean loadComponentFromDataModel() {
@@ -69,15 +77,29 @@ public class JXTreeTableBinding extends Binding {
         return false; //shouldn't be called!
     }
     
-    private final class RecursiveTreeModel extends DefaultTreeModel {
+    private final class RecursiveTreeTableModel extends DefaultTreeTableModel {
         private DataModel root;
         
-        public RecursiveTreeModel(DataModel dm) {
+        public RecursiveTreeTableModel(DataModel dm) {
             super(null);
             root = dm;
             setRoot(new DataModelTreeNode(root, 0));
             setAsksAllowsChildren(true);
         }
+
+        public Object getValueAt(Object node, int column) {
+            DataModelTreeNode n = (DataModelTreeNode)node;
+            return n.model.getValue(n.index, fieldNames[column]);
+        }
+
+        public String getColumnName(int column) {
+            return fieldNames[column];
+        }
+
+        public int getColumnCount() {
+            return fieldNames.length;
+        }
+        
     }
     
     private final class DataModelTreeNode implements TreeNodeExt {
@@ -149,5 +171,9 @@ public class JXTreeTableBinding extends Binding {
         public Object getData() {
             return model.getRowData(index);
         }
+    }
+    
+    public JXTreeTable getComponent() {
+        return (JXTreeTable)super.getComponent();
     }
 }
