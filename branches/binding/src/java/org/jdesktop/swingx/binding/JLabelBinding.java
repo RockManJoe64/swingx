@@ -50,6 +50,6 @@ public class JLabelBinding extends ScalarBinding {
     }
     
     public JLabel getComponent() {
-        return (JLabel)getComponent();
+        return (JLabel)super.getComponent();
     }
 }
