@@ -9,13 +9,13 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JSlider;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 /**
  *
  * @author Richard
  */
-public class JSliderBinding extends ScalarBinding {
+public class JSliderBinding extends FieldBinding {
     private int oldValue;
     
     public JSliderBinding(JSlider slider) {

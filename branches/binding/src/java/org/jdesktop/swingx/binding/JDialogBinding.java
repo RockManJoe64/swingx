@@ -10,7 +10,7 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JDialog;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 
 
@@ -18,7 +18,7 @@ import org.jdesktop.binding.ScalarBinding;
  *
  * @author Richard
  */
-public class JDialogBinding extends ScalarBinding {
+public class JDialogBinding extends FieldBinding {
     private String oldValue;
     
     public JDialogBinding(JDialog dlg) {

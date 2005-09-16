@@ -11,14 +11,14 @@
 package org.jdesktop.swingx.binding;
 import javax.swing.JFormattedTextField;
 import javax.swing.text.JTextComponent;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 
 /**
  * Base class for all Swing Binding implementations that extends JTextComponent
  * @author Richard
  */
-public class JTextComponentBinding extends ScalarBinding {
+public class JTextComponentBinding extends FieldBinding {
     private String oldValue;
     
     public JTextComponentBinding(JTextComponent comp) {

@@ -9,13 +9,13 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JSpinner;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 /**
  *
  * @author Richard
  */
-public class JSpinnerBinding extends ScalarBinding {
+public class JSpinnerBinding extends FieldBinding {
     private Object oldValue;
     
     public JSpinnerBinding(JSpinner cbox) {

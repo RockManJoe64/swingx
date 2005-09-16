@@ -9,14 +9,14 @@
  */
 
 package org.jdesktop.swingx.binding;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXTitledPanel;
 
 
 /**
  * @author Richard
  */
-public class JXTitledPanelBinding extends ScalarBinding {
+public class JXTitledPanelBinding extends FieldBinding {
     private String oldValue;
     
     public JXTitledPanelBinding(JXTitledPanel comp) {

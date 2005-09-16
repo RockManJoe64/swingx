@@ -11,14 +11,14 @@
 package org.jdesktop.swingx.binding;
 
 import javax.swing.JLabel;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 
 /**
  *
  * @author Richard
  */
-public class JLabelBinding extends ScalarBinding {
+public class JLabelBinding extends FieldBinding {
     private String oldValue;
     
     public JLabelBinding(JLabel label) {

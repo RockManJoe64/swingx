@@ -10,7 +10,7 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.AbstractButton;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 
 /**
@@ -22,7 +22,7 @@ import org.jdesktop.binding.ScalarBinding;
  *
  * @author Richard
  */
-public class AbstractButtonBinding extends ScalarBinding {
+public class AbstractButtonBinding extends FieldBinding {
     private String oldValue;
     
     public AbstractButtonBinding(AbstractButton button) {

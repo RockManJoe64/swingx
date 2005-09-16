@@ -10,7 +10,7 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JFrame;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 
 
@@ -18,7 +18,7 @@ import org.jdesktop.binding.ScalarBinding;
  *
  * @author Richard
  */
-public class JFrameBinding extends ScalarBinding {
+public class JFrameBinding extends FieldBinding {
     private String oldValue;
     
     public JFrameBinding(JFrame frm) {

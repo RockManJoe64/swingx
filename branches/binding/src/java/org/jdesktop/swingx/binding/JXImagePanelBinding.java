@@ -14,8 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URL;
 import javax.imageio.ImageIO;
-import org.jdesktop.binding.ConversionException;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.conversion.ConversionException;
+import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXImagePanel;
 
 /**
@@ -28,7 +28,7 @@ import org.jdesktop.swingx.JXImagePanel;
  *
  * @author Richard
  */
-public class JXImagePanelBinding extends ScalarBinding {
+public class JXImagePanelBinding extends FieldBinding {
     private BufferedImage oldImage;
     
     /** Creates a new instance of JXImagePanelBinding */
