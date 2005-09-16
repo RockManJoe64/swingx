@@ -33,7 +33,12 @@ public class JListBinding extends Binding {
     
     /** Creates a new instance of JListBinding */
     public JListBinding(JList list) {
+        this(list, null);
+    }
+    
+    public JListBinding(JList list, String displayName) {
         super(list);
+        this.displayName = displayName;
         listSelectionModel = new DefaultSelectionModel();
     }
     
