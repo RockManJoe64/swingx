@@ -16,7 +16,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.binding.DataModel;
+import org.jdesktop.binding.SelectionModel;
 import org.jdesktop.swingx.binding.BindingContextSupport;
 
 import org.jdesktop.swingx.event.MessageSource;
@@ -228,8 +231,8 @@ public class JXRootPane extends JRootPane implements BindingContext {
         return ctx.removeDataSource(name);
     }
 
-    public void bind(Object target, String path) {
-        ctx.bind(target, path);
+    public Binding bind(Object target, String path, Object... params) {
+        return ctx.bind(target, path, params);
     }
 
     public void addDataSource(String name, Object dataSource) {
@@ -262,5 +265,21 @@ public class JXRootPane extends JRootPane implements BindingContext {
 
     public void saveAll(boolean recurse) {
         ctx.saveAll(recurse);
+    }
+
+    public DataModel getDataModel(String path) {
+        return ctx.getDataModel(path);
+    }
+
+    public void addSelectionModel(String name, SelectionModel model) {
+        ctx.addSelectionModel(name, model);
+    }
+
+    public SelectionModel removeSelectionModel(String name) {
+        return ctx.removeSelectionModel(name);
+    }
+
+    public Binding getBinding(Object component) {
+        return ctx.getBinding(component);
     }
 }
