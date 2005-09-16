@@ -15,7 +15,10 @@ import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.HeadlessException;
 import javax.swing.JDialog;
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.binding.DataModel;
+import org.jdesktop.binding.SelectionModel;
 import org.jdesktop.swingx.binding.BindingContextSupport;
 
 /**
@@ -138,8 +141,8 @@ public class JXDialog extends JDialog implements BindingContext {
         return ctxSupport.removeDataSource(name);
     }
 
-    public void bind(Object target, String path) {
-        ctxSupport.bind(target, path);
+    public Binding bind(Object target, String path, Object... params) {
+        return ctxSupport.bind(target, path, params);
     }
 
     public void addDataSource(String name, Object dataSource) {
@@ -172,5 +175,21 @@ public class JXDialog extends JDialog implements BindingContext {
 
     public void saveAll(boolean recurse) {
         ctxSupport.saveAll(recurse);
+    }
+  
+    public DataModel getDataModel(String path) {
+        return ctxSupport.getDataModel(path);
+    }
+
+    public void addSelectionModel(String name, SelectionModel model) {
+        ctxSupport.addSelectionModel(name, model);
+    }
+
+    public SelectionModel removeSelectionModel(String name) {
+        return ctxSupport.removeSelectionModel(name);
+    }
+
+    public Binding getBinding(Object component) {
+        return ctxSupport.getBinding(component);
     }
 }
