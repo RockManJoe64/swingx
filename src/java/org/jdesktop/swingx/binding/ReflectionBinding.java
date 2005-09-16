@@ -14,7 +14,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import org.jdesktop.binding.DataModel;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 
 /**
  * General binding that uses reflection to interface a DataModel field to a
@@ -22,7 +22,7 @@ import org.jdesktop.binding.ScalarBinding;
  *
  * @author rbair
  */
-public class ReflectionBinding extends ScalarBinding {
+public class ReflectionBinding extends FieldBinding {
     private String propertyName;
     private Method getterMethod;
     private Method setterMethod;

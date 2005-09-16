@@ -8,14 +8,14 @@
  */
 
 package org.jdesktop.swingx.binding;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXRadioGroup;
 
 /**
  *
  * @author Richard
  */
-public class JXRadioGroupBinding extends ScalarBinding {
+public class JXRadioGroupBinding extends FieldBinding {
     private Object oldValue;
     
     public JXRadioGroupBinding(JXRadioGroup group) {

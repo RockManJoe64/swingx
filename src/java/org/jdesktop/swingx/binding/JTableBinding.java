@@ -56,7 +56,7 @@ public class JTableBinding extends Binding {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int index = ((JTable)getComponent()).getSelectionModel().getMinSelectionIndex(); //TODO doesn't do multi selection!!
-                    getDataModel().getSelectionModel().setSelectionIndices(new int[]{index});
+//                    getDataModel().getSelectionModel().setSelectionIndices(new int[]{index});
                 }
             }
         };

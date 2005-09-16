@@ -17,6 +17,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
+import org.jdesktop.binding.SelectionModel;
+import org.jdesktop.binding.impl.DefaultSelectionModel;
 
 /**
  *
@@ -27,10 +29,12 @@ public class JListBinding extends Binding {
     private ListSelectionListener selectionListener;
     private DataModelToListModelAdapter model;
     private String displayName;
+    private SelectionModel listSelectionModel;
     
     /** Creates a new instance of JListBinding */
     public JListBinding(JList list) {
         super(list);
+        listSelectionModel = new DefaultSelectionModel();
     }
     
     public void setDisplayName(String name) {
@@ -39,6 +43,10 @@ public class JListBinding extends Binding {
     
     public String getDisplayName() {
         return displayName;
+    }
+    
+    public SelectionModel getListSelectionModel() {
+        return listSelectionModel;
     }
     
     protected void initialize() {
@@ -52,7 +60,7 @@ public class JListBinding extends Binding {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int[] indices = ((JList)getComponent()).getSelectedIndices();
-                    getDataModel().getSelectionModel().setSelectionIndices(indices);
+                    listSelectionModel.setSelectionIndices(indices);
                 }
             }
         };
@@ -141,7 +149,11 @@ public class JListBinding extends Binding {
 	 * @see javax.swing.ListModel#getElementAt(int)
 	 */
 	public Object getElementAt(int index) {
-            return tabModel.getValue(index, displayName);
+            if (displayName == null) {
+                return tabModel.getRowData(index);
+            } else {
+                return tabModel.getValue(index, displayName);
+            }
 	}
     }
 }

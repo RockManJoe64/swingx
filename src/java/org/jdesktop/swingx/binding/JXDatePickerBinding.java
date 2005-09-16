@@ -11,7 +11,7 @@
 package org.jdesktop.swingx.binding;
 
 import java.util.Date;
-import org.jdesktop.binding.ScalarBinding;
+import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXDatePicker;
 
 
@@ -19,7 +19,7 @@ import org.jdesktop.swingx.JXDatePicker;
  *
  * @author Richard
  */
-public class JXDatePickerBinding extends ScalarBinding {
+public class JXDatePickerBinding extends FieldBinding {
     private Date oldValue;
     
     public JXDatePickerBinding(JXDatePicker datePicker) {
