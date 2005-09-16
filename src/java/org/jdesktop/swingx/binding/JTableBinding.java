@@ -35,6 +35,11 @@ public class JTableBinding extends Binding {
     public JTableBinding(JTable table) {
         super(table);
     }
+    
+    public JTableBinding(JTable table, String[] colNames) {
+        super(table);
+        this.columnNames = colNames;
+    }
 
     public void setColumnNames(String[] names) {
         this.columnNames = names;

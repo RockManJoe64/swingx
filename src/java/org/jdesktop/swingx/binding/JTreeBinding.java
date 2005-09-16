@@ -33,6 +33,12 @@ public class JTreeBinding extends Binding {
         super(tree);
     }
     
+    public JTreeBinding(JTree tree, String childName, String displayName) {
+        super(tree);
+        this.childName = childName;
+        this.displayName = displayName;
+    }
+    
     public String getChildName() {
         return childName;
     }
