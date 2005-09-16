@@ -33,6 +33,13 @@ public class JXTreeTableBinding extends Binding {
         super(tree);
     }
     
+    public JXTreeTableBinding(JXTreeTable tree, String childName, String displayName, String[] fieldNames) {
+        super(tree);
+        this.childName = childName;
+        this.displayName = displayName;
+        this.fieldNames = fieldNames;
+    }
+    
     public String getChildName() {
         return childName;
     }
