@@ -3,50 +3,61 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
 
 import java.awt.Component;
-
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-
 import java.net.URL;
-
-import java.util.Vector;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.html.HTMLEditorKit;
-
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
-
+import javax.swing.ActionMap;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JList;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
@@ -56,10 +67,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
-
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import org.jdesktop.binding.BindingContext;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.jdesktop.swingx.action.ActionManager;
 import org.jdesktop.swingx.action.Targetable;
 
@@ -74,9 +88,10 @@ import org.jdesktop.swingx.action.Targetable;
  *
  * @author Mark Davidson
  */
-public class JXEditorPane extends JEditorPane implements Searchable, Targetable {
+public class JXEditorPane extends JEditorPane implements /*Searchable, */Targetable, DataAware {
 
-    private Matcher matcher;
+    private static final Logger LOG = Logger.getLogger(JXEditorPane.class
+            .getName());
 
     private UndoableEditListener undoHandler;
     private UndoManager undoManager;
@@ -107,6 +122,7 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
     private final static String ACTION_PASTE = "paste";
 
     private TargetableSupport targetSupport = new TargetableSupport(this);
+    private Searchable searchable;
     
     public JXEditorPane() {
         init();
@@ -191,6 +207,9 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
         map.put(ACTION_CUT, new Actions(ACTION_CUT));
         map.put(ACTION_COPY, new Actions(ACTION_COPY));
         map.put(ACTION_PASTE, new Actions(ACTION_PASTE));
+        // this should be handled by the LF!
+        KeyStroke findStroke = KeyStroke.getKeyStroke("control F");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(findStroke, "find");
     }
 
     // undo/redo implementation
@@ -235,7 +254,7 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
                 try {
                     undoManager.undo();
                 } catch (CannotUndoException ex) {
-                    ex.printStackTrace();
+                    LOG.info("Could not undo");
                 }
                 updateActionState();
             }
@@ -243,7 +262,7 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
                 try {
                     undoManager.redo();
                 } catch (CannotRedoException ex) {
-                    ex.printStackTrace();
+                    LOG.info("Could not redo");
                 }
                 updateActionState();
             } else if (ACTION_CUT.equals(name)) {
@@ -263,7 +282,7 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
                 map.put(ACTION_PASTE, this);
             }
             else {
-                System.out.println("ActionHandled: " + name);
+                LOG.fine("ActionHandled: " + name);
             }
 
         }
@@ -370,8 +389,6 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
         hdoc.setParagraphAttributes(start, end - start, newAttrs, true);
     }
 
-    private JXFindDialog dialog = null;
-
     /**
      * The paste method has been overloaded to strip off the <html><body> tags
      * This doesn't really work.
@@ -390,87 +407,226 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
                             // This works but we lose all the formatting.
                             replaceSelection(data.toString());
                             break;
-                        } /*
-                            else if (flavors[i].isMimeTypeEqual("text/html")) {
-                            // This doesn't really work since we would
-                            // have to strip off the <html><body> tags
-                            Reader reader = flavors[i].getReaderForText(content);
-                            int start = getSelectionStart();
-                            int end = getSelectionEnd();
-                            int length = end - start;
-                            EditorKit kit = getUI().getEditorKit(this);
-                            Document doc = getDocument();
-                            if (length > 0) {
-                            doc.remove(start, length);
-                            }
-                            kit.read(reader, doc, start);
-                            break;
-                            } */
+                        } 
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                // TODO change to something meaningful - when can this acutally happen?
+                LOG.log(Level.FINE, "What can produce a problem with data flavor?", ex);
             }
         }
     }
 
     private void find() {
-        if (dialog == null) {
-            dialog = new JXFindDialog(this);
-        }
-        dialog.setVisible(true);
-    }
-
-    public int search(String searchString) {
-        return search(searchString, -1);
-    }
-
-    public int search(String searchString, int columnIndex) {
-        Pattern pattern = null;
-        if (searchString !=  null) {
-            return search(Pattern.compile(searchString, 0), columnIndex);
-        }
-        return -1;
-    }
-
-    public int search(Pattern pattern) {
-        return search(pattern, -1);
-    }
-
-    public int search(Pattern pattern, int startIndex) {
-        return search(pattern, startIndex, false);
+        SearchFactory.getInstance().showFindInput(this, getSearchable());
     }
 
     /**
-     * @return end position of matching string or -1
+     * 
+     * @returns a not-null Searchable for this editor.  
      */
-    public int search(Pattern pattern, int startIndex, boolean backwards) {
-        if (pattern == null) {
-            return -1;
+    public Searchable getSearchable() {
+        if (searchable == null) {
+            searchable = new DocumentSearchable();
         }
-
-        int start = startIndex + 1;
-        int end = -1;
-
-        Segment segment = new Segment();
-        try {
-            Document doc = getDocument();
-            doc.getText(start, doc.getLength() - start, segment);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        matcher = pattern.matcher(segment.toString());
-        if (matcher.find()) {
-            start = matcher.start() + startIndex;
-            end = matcher.end() + startIndex;
-            select(start + 1, end + 1);
-        } else {
-            return -1;
-        }
-        return end;
+        return searchable;
     }
 
+    /**
+     * sets the Searchable for this editor. If null, a default 
+     * searchable will be used.
+     * 
+     * @param searchable
+     */
+    public void setSearchable(Searchable searchable) {
+        this.searchable = searchable;
+    }
+    
+    public class DocumentSearchable implements Searchable {
+        public int search(String searchString) {
+            return search(searchString, -1);
+        }
+
+        public int search(String searchString, int columnIndex) {
+            return search(searchString, columnIndex, false);
+        }
+        
+        public int search(String searchString, int columnIndex, boolean backward) {
+            Pattern pattern = null;
+            if (!isEmpty(searchString)) {
+                pattern = Pattern.compile(searchString, 0);
+            }
+            return search(pattern, columnIndex, backward);
+        }
+
+        /**
+         * checks if the searchString should be interpreted as empty.
+         * here: returns true if string is null or has zero length.
+         * 
+         * @param searchString
+         * @return
+         */
+        protected boolean isEmpty(String searchString) {
+            return (searchString == null) || searchString.length() == 0;
+        }
+
+        public int search(Pattern pattern) {
+            return search(pattern, -1);
+        }
+
+        public int search(Pattern pattern, int startIndex) {
+            return search(pattern, startIndex, false);
+        }
+
+        int lastFoundIndex = -1;
+
+        MatchResult lastMatchResult;
+        String lastRegEx;
+        /**
+         * @return start position of matching string or -1
+         */
+        public int search(Pattern pattern, final int startIndex,
+                boolean backwards) {
+            if ((pattern == null)
+                    || (getDocument().getLength() == 0)
+                    || ((startIndex > -1) && (getDocument().getLength() < startIndex))) {
+                updateStateAfterNotFound();
+                return -1;
+            }
+
+            int start = startIndex;
+            if (maybeExtendedMatch(startIndex)) {
+                if (foundExtendedMatch(pattern, start)) {
+                    return lastFoundIndex;
+                }
+                start++;
+            }
+
+            int length;
+            if (backwards) {
+                start = 0;
+                if (startIndex < 0) {
+                    length = getDocument().getLength() - 1;
+                } else {
+                    length = -1 + startIndex;
+                }
+            } else {
+                // start = startIndex + 1;
+                if (start < 0)
+                    start = 0;
+                length = getDocument().getLength() - start;
+            }
+            Segment segment = new Segment();
+
+            try {
+                getDocument().getText(start, length, segment);
+            } catch (BadLocationException ex) {
+                LOG.log(Level.FINE,
+                        "this should not happen (calculated the valid start/length) " , ex);
+            }
+
+            Matcher matcher = pattern.matcher(segment.toString());
+            MatchResult currentResult = getMatchResult(matcher, !backwards);
+            if (currentResult != null) {
+                updateStateAfterFound(currentResult, start);
+            } else {
+                updateStateAfterNotFound();
+            }
+            return lastFoundIndex;
+
+        }
+
+        /**
+         * Search from same startIndex as the previous search. 
+         * Checks if the match is different from the last (either 
+         * extended/reduced) at the same position. Returns true
+         * if the current match result represents a different match 
+         * than the last, false if no match or the same.
+         * 
+         * @param pattern
+         * @param start
+         * @return
+         */
+        private boolean foundExtendedMatch(Pattern pattern, int start) {
+            // JW: logic still needs cleanup...
+            if (pattern.pattern().equals(lastRegEx)) {
+                return false;
+            }
+            int length = getDocument().getLength() - start;
+            Segment segment = new Segment();
+
+            try {
+                getDocument().getText(start, length, segment);
+            } catch (BadLocationException ex) {
+                LOG.log(Level.FINE,
+                        "this should not happen (calculated the valid start/length) " , ex);
+            }
+            Matcher matcher = pattern.matcher(segment.toString());
+            MatchResult currentResult = getMatchResult(matcher, true);
+            if (currentResult != null) {
+                // JW: how to compare match results reliably?
+                // the group().equals probably isn't the best idea...
+                // better check pattern?
+                if ((currentResult.start() == 0) && 
+                   (!lastMatchResult.group().equals(currentResult.group()))) {
+                    updateStateAfterFound(currentResult, start);
+                    return true;
+                } 
+            }
+            return false;
+        }
+
+        /**
+         * Checks if the startIndex is a candidate for trying a re-match.
+         * 
+         * 
+         * @param startIndex
+         * @return true if the startIndex should be re-matched, false if not.
+         */
+        private boolean maybeExtendedMatch(final int startIndex) {
+            return (startIndex >= 0) && (startIndex == lastFoundIndex);
+        }
+
+        /**
+         * @param currentResult
+         * @param offset
+         * @return
+         */
+        private int updateStateAfterFound(MatchResult currentResult, final int offset) {
+            int end = currentResult.end() + offset;
+            int found = currentResult.start() + offset; 
+            select(found, end);
+            getCaret().setSelectionVisible(true);
+            lastFoundIndex = found;
+            lastMatchResult = currentResult;
+            lastRegEx = ((Matcher) lastMatchResult).pattern().pattern();
+            return found;
+        }
+
+        /**
+         * @param matcher
+         * @return
+         */
+        private MatchResult getMatchResult(Matcher matcher, boolean  useFirst) {
+            MatchResult currentResult = null;
+            while (matcher.find()) {
+                currentResult = matcher.toMatchResult();
+                if (useFirst) break;
+            }
+            return currentResult;
+        }
+
+        /**
+         */
+        private void updateStateAfterNotFound() {
+            lastFoundIndex = -1;
+            lastMatchResult = null;
+            lastRegEx = null;
+            setCaretPosition(getSelectionEnd());
+        }
+
+    }
+    
     public boolean hasCommand(Object command) {
         return targetSupport.hasCommand(command);
     }
@@ -578,25 +734,41 @@ public class JXEditorPane extends JEditorPane implements Searchable, Targetable 
         return dataPath;
     }
 
+    public void setBindingContext(BindingContext ctx) {
+        if (this.ctx != null) {
+            DataBoundUtils.unbind(this, this.ctx);
+        }
+        this.ctx = ctx;
+        if (this.ctx != null) {
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx.bind(this, this.dataPath);
+            }
+        }
+    }
+
+    public BindingContext getBindingContext() {
+        return ctx;
+    }
+    
     //PENDING
     //addNotify and removeNotify were necessary for java one, not sure if I still
     //need them or not
-//    public void addNotify() {
-//        super.addNotify();
-//        //if ctx does not exist, try to create one
-//        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
-//        }
-//    }
-//
-//    public void removeNotify() {
-//        //if I had a ctx, blow it away
-//        if (ctx != null) {
-//            DataBoundUtils.unbind(this, ctx);
-//        }
-//        super.removeNotify();
-//    }
-//
+    public void addNotify() {
+        super.addNotify();
+        //if ctx does not exist, try to create one
+        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
+        }
+    }
+
+    public void removeNotify() {
+        //if I had a ctx, blow it away
+        if (ctx != null) {
+            DataBoundUtils.unbind(this, ctx);
+        }
+        super.removeNotify();
+    }
+
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;
 //    public void setDesignTime(boolean designTime) {

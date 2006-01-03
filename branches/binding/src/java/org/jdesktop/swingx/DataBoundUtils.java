@@ -53,6 +53,12 @@ public class DataBoundUtils {
         return ctx;
     }
     
+    public static void bind(Component target, String path, BindingContext ctx) {
+        if (ctx != null) {
+            ctx.bind(target, path);
+        }
+    }
+    
     public static void unbind(Component target, BindingContext ctx) {
         if (ctx != null) {
             ctx.unbind(target);

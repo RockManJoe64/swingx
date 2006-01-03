@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
@@ -14,19 +28,17 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.binding.BindingContext;
-
-import static org.jdesktop.swingx.JXImagePanel.Style.CENTERED;
-import static org.jdesktop.swingx.JXImagePanel.Style.SCALED;
-import static org.jdesktop.swingx.JXImagePanel.Style.TILED;
 
 
 /**
@@ -47,9 +59,10 @@ import static org.jdesktop.swingx.JXImagePanel.Style.TILED;
  *
  * @author unattributed, rbair
  */
-public class JXImagePanel extends JXPanel {
+public class JXImagePanel extends JXPanel implements DataAware {
     public static enum Style {CENTERED, TILED, SCALED};
-    
+    private static final Logger LOG = Logger.getLogger(JXImagePanel.class
+            .getName());
     /**
      * Text informing the user that clicking on this component will allow them to set the image
      */
@@ -57,7 +70,7 @@ public class JXImagePanel extends JXPanel {
     /**
      * The image to draw
      */
-    private BufferedImage img;
+    private Image img;
     /**
      * If true, then the image can be changed. Perhaps a better name is
      * &quot;readOnly&quot;, but editable was chosen to be more consistent
@@ -84,10 +97,10 @@ public class JXImagePanel extends JXPanel {
     
     public JXImagePanel(URL imageUrl) {
         try {
-            setImage((BufferedImage)new ImageIcon(imageUrl).getImage());
+            setImage(ImageIO.read(imageUrl));
         } catch (Exception e) {
-            //TODO need to log
-            e.printStackTrace();
+            //TODO need convert to something meaningful
+           LOG.log(Level.WARNING, "", e);
         }
     }
     
@@ -98,9 +111,9 @@ public class JXImagePanel extends JXPanel {
      * image to be painted. If the preferred size has not been explicitly set,
      * then the image dimensions will alter the preferred size of the panel.
      */
-    public void setImage(BufferedImage image) {
+    public void setImage(Image image) {
         if (image != img) {
-            BufferedImage oldImage = img;
+            Image oldImage = img;
             img = image;
             firePropertyChange("image", oldImage, img);
             invalidate();
@@ -111,7 +124,7 @@ public class JXImagePanel extends JXPanel {
     /**
      * @return the image used for painting the background of this panel
      */
-    public BufferedImage getImage() {
+    public Image getImage() {
         return img;
     }
     
@@ -173,7 +186,12 @@ public class JXImagePanel extends JXPanel {
     public Dimension getPreferredSize() {
         if (preferredSize == null && img != null) {
             //it has not been explicitly set, so return the width/height of the image
-            return new Dimension(img.getWidth(), img.getHeight());
+            int width = img.getWidth(null);
+            int height = img.getHeight(null);
+            if (width == -1 || height == -1) {
+                return super.getPreferredSize();
+            }
+            return new Dimension(width, height);
         } else {
             return super.getPreferredSize();
         }
@@ -188,12 +206,19 @@ public class JXImagePanel extends JXPanel {
 //        g.fillRect(insets.left, insets.top, getWidth() - insets.right - insets.left, getHeight() - insets.bottom - insets.top);
         Graphics2D g2 = (Graphics2D)g;
         if (img != null) {
+            int imgWidth = img.getWidth(null);
+            int imgHeight = img.getHeight(null);
+            if (imgWidth == -1 || imgHeight == -1) {
+                //image hasn't completed loading, return
+                return;
+            }
+            
             switch (style) {
                 case CENTERED:
                     Rectangle clipRect = g2.getClipBounds();
-                    int imageX = (getWidth() - img.getWidth()) / 2;
-                    int imageY = (getHeight() - img.getHeight()) / 2;
-                    Rectangle r = SwingUtilities.computeIntersection(imageX, imageY, img.getWidth(), img.getHeight(), clipRect);
+                    int imageX = (getWidth() - imgWidth) / 2;
+                    int imageY = (getHeight() - imgHeight) / 2;
+                    Rectangle r = SwingUtilities.computeIntersection(imageX, imageY, imgWidth, imgHeight, clipRect);
                     if (r.x == 0 && r.y == 0 && (r.width == 0 || r.height == 0)) {
                         return;
                     }
@@ -212,13 +237,13 @@ public class JXImagePanel extends JXPanel {
                     break;
                 case TILED:
                 case SCALED:
-                    Image temp = img.getScaledInstance(getWidth(), getHeight(), BufferedImage.SCALE_SMOOTH);
+                    Image temp = img.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH);
                     g2.drawImage(temp, (getWidth() - temp.getWidth(null)) / 2,
                             (getHeight() - temp.getHeight(null)) / 2, null);
                     break;
                 default:
-                    System.err.println("unimplemented");
-                    g2.drawImage(img, null, 0, 0);
+                    LOG.fine("unimplemented");
+                    g2.drawImage(img, 0, 0, this);
                     break;
             }
         }
@@ -239,14 +264,14 @@ public class JXImagePanel extends JXPanel {
             if (retVal == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 try {
-                    setImage((BufferedImage)new ImageIcon(file.toURL()).getImage());
+                    setImage(new ImageIcon(file.toURL()).getImage());
                 } catch (Exception ex) {
                 }
             }
         }
         
         public void mouseEntered(MouseEvent evt) {
-            JLabel label = (JLabel)evt.getSource();
+            JXImagePanel label = (JXImagePanel)evt.getSource();
             if (oldCursor == null) {
                 oldCursor = label.getCursor();
                 label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -254,7 +279,7 @@ public class JXImagePanel extends JXPanel {
         }
         
         public void mouseExited(MouseEvent evt) {
-            JLabel label = (JLabel)evt.getSource();
+            JXImagePanel label = (JXImagePanel)evt.getSource();
             if (oldCursor != null) {
                 label.setCursor(oldCursor);
                 oldCursor = null;
@@ -286,25 +311,41 @@ public class JXImagePanel extends JXPanel {
         return dataPath;
     }
 
+    public void setBindingContext(BindingContext ctx) {
+        if (this.ctx != null) {
+            DataBoundUtils.unbind(this, this.ctx);
+        }
+        this.ctx = ctx;
+        if (this.ctx != null) {
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx.bind(this, this.dataPath);
+            }
+        }
+    }
+
+    public BindingContext getBindingContext() {
+        return ctx;
+    }
+    
     //PENDING
     //addNotify and removeNotify were necessary for java one, not sure if I still
     //need them or not
-//    public void addNotify() {
-//        super.addNotify();
-//        //if ctx does not exist, try to create one
-//        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
-//        }
-//    }
-//
-//    public void removeNotify() {
-//        //if I had a ctx, blow it away
-//        if (ctx != null) {
-//            DataBoundUtils.unbind(this, ctx);
-//        }
-//        super.removeNotify();
-//    }
-//
+    public void addNotify() {
+        super.addNotify();
+        //if ctx does not exist, try to create one
+        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+            ctx = DataBoundUtils.bind(this, dataPath);
+        }
+    }
+
+    public void removeNotify() {
+        //if I had a ctx, blow it away
+        if (ctx != null) {
+            DataBoundUtils.unbind(this, ctx);
+        }
+        super.removeNotify();
+    }
+
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;
 //    public void setDesignTime(boolean designTime) {

@@ -18,7 +18,7 @@ import org.jdesktop.binding.BindingContext;
  *
  * @author rbair
  */
-public class JXComboBox extends JComboBox /*implements DesignMode*/ {
+public class JXComboBox extends JComboBox implements DataAware/*implements DesignMode*/ {
     /**
      * @inheritDoc
      */
@@ -72,6 +72,22 @@ public class JXComboBox extends JComboBox /*implements DesignMode*/ {
         return dataPath;
     }
 
+    public void setBindingContext(BindingContext ctx) {
+        if (this.ctx != null) {
+            DataBoundUtils.unbind(this, this.ctx);
+        }
+        this.ctx = ctx;
+        if (this.ctx != null) {
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx.bind(this, this.dataPath);
+            }
+        }
+    }
+
+    public BindingContext getBindingContext() {
+        return ctx;
+    }
+    
     /**
      * @param path
      */
@@ -95,21 +111,21 @@ public class JXComboBox extends JComboBox /*implements DesignMode*/ {
     //PENDING
     //addNotify and removeNotify were necessary for java one, not sure if I still
     //need them or not
-//    public void addNotify() {
-//        super.addNotify();
-//        //if ctx does not exist, try to create one
-//        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(this, dataPath);
-//        }
-//    }
-//
-//    public void removeNotify() {
-//        //if I had a ctx, blow it away
-//        if (ctx != null) {
-//            DataBoundUtils.unbind(this, ctx);
-//        }
-//        super.removeNotify();
-//    }
+    public void addNotify() {
+        super.addNotify();
+        //if ctx does not exist, try to create one
+        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+            ctx = DataBoundUtils.bind(this, dataPath);
+        }
+    }
+
+    public void removeNotify() {
+        //if I had a ctx, blow it away
+        if (ctx != null) {
+            DataBoundUtils.unbind(this, ctx);
+        }
+        super.removeNotify();
+    }
 //
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;

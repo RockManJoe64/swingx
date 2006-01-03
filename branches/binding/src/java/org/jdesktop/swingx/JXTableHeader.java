@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx;
 
@@ -45,7 +59,9 @@ public class JXTableHeader extends JTableHeader {
 
     /**
      * Sets the associated JTable. Enables enhanced header
-     * features if table is of type JXTable.
+     * features if table is of type JXTable.<p>
+     * 
+     * PENDING: who is responsible for synching the columnModel?
      */
     public void setTable(JTable table) {
         super.setTable(table);
@@ -95,7 +111,6 @@ public class JXTableHeader extends JTableHeader {
     }
 
     protected TableCellRenderer createDefaultRenderer() {
-        // return super.createDefaultRenderer();
         return ColumnHeaderRenderer.createColumnHeaderRenderer();
     }
 
@@ -130,7 +145,6 @@ public class JXTableHeader extends JTableHeader {
             } else {
                 doSort(e);
             }
-            // uncacheResizingColumn();
         }
 
         private boolean shouldIgnore(MouseEvent e) {
@@ -142,7 +156,7 @@ public class JXTableHeader extends JTableHeader {
             JXTable table = getXTable();
             if (!table.isSortable() || (e.getClickCount() != 1))
                 return;
-            if ((e.getModifiersEx() & e.SHIFT_DOWN_MASK) == e.SHIFT_DOWN_MASK) {
+            if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK) {
                 table.resetSorter();
             } else {
                 int column = columnAtPoint(e.getPoint());
@@ -158,7 +172,6 @@ public class JXTableHeader extends JTableHeader {
         private void doResize(MouseEvent e) {
             if (e.getClickCount() != 2)
                 return;
-            // int column = header.columnAtPoint(e.getPoint());
             int column = getViewIndexForColumn(cachedResizingColumn);
             if (column >= 0) {
                 (getXTable()).packColumn(column, 5);
@@ -190,22 +203,7 @@ public class JXTableHeader extends JTableHeader {
         }
 
         private boolean isInResizeRegion(MouseEvent e) {
-            // JTableHeader header = (JTableHeader) e.getSource();
-            // // JW: kind of a hack - there's no indication in the
-            // // JTableHeader api to find if we are in the resizing
-            // // region before actually receiving a click
-            // // checked the header.resizingColumn should be set on
-            // // first click?
-            // // doesn't work probably because this listener is messaged before
-            // // ui-delegate listener
-            // // return header.getResizingColumn() != null;
-            // Cursor cursor = header.getCursor();
-            // boolean inResize = cursor != null ?
-            // (cursor.getType() == Cursor.E_RESIZE_CURSOR || cursor.getType()
-            // == Cursor.W_RESIZE_CURSOR ) :
-            // false;
             return cachedResizingColumn != null; // inResize;
-            // return inResize;
         }
 
         public void mouseEntered(MouseEvent e) {
@@ -220,8 +218,6 @@ public class JXTableHeader extends JTableHeader {
         }
 
         public void mouseMoved(MouseEvent e) {
-            // uncacheResizingColumn();
-
         }
     }
 
