@@ -1,16 +1,30 @@
 /*
-* $Id$
-*
-* Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
-* Santa Clara, California 95054, U.S.A. All rights reserved.
+ * $Id$
+ *
+ * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
+ * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /**
- * This is abstract class that incapsulates all the information needed
+ * This is a simple class that incapsulates all the information needed
  * to report a problem to the automated report/processing system.
  *
  * @author Alexander Zuev
- * @version 1.0
+ * @version 1.4
  */
 package org.jdesktop.swingx;
 
@@ -29,19 +43,22 @@ public class IncidentInfo {
      */
     private String detailedErrorMessage;
     /**
-     * Optional Throwable that will be used
+     * Optional Throwable that will be used as a possible source for 
+     * additional information
      */
     private Throwable errorException;
 
     /**
-     * Main constructor that adds all the information to IncidentInfo
-     * @param header
-     * @param basicErrorMessage
-     * @param detailedErrorMesage
-     * @param errorException
+     * Main constructor that adds all the information to <code>IncidentInfo</code>
+     * @param header Header that will be used as the quick reference for the 
+     *        incident (e.g. title for a dialog or subject for the incident message)
+     * @param basicErrorMessage Short description of the given problem
+     * @param detailedErrorMessage Full description of the problem
+     * @param errorException <code>Throwable</code> that can be used as a source for 
+     *        additional information such as call stack, thread name, etc.
      */
     public IncidentInfo(String header, String basicErrorMessage,
-                        String detailedErrorMesage, Throwable errorException) {
+                        String detailedErrorMessage, Throwable errorException) {
         this.header = header;
         if(basicErrorMessage != null) {
             this.basicErrorMessage = basicErrorMessage;
@@ -52,14 +69,29 @@ public class IncidentInfo {
                 this.basicErrorMessage = "";
             }
         }
-        this.detailedErrorMessage = detailedErrorMesage;
+        this.detailedErrorMessage = detailedErrorMessage;
         this.errorException = errorException;
     }
 
+    /**
+     * Constructor that creates <code>IncidentInfo</code> with all the provided descriptions
+     * @param header Header that will be used as the quick reference for the 
+     *        incident (e.g. title for a dialog or subject for the incident message)
+     * @param basicErrorMessage Short description of the given problem
+     * @param detailedErrorMessage Full description og the problem
+     */
     public IncidentInfo(String header, String basicErrorMessage, String detailedErrorMessage) {
         this(header, basicErrorMessage, detailedErrorMessage, null);
     }
 
+    /**
+     * Constructor that creates <code>IncidentInfo</code> retreiving all the 
+     * information from the provided <code>Throwable</code>
+     * @param header Header that will be used as the quick reference for the 
+     *        incident (e.g. title for a dialog or subject for the incident message)
+     * @param errorException <code>Throwable</code> that can be used as a main source of
+     *        information about the incident
+     */
     public IncidentInfo(String header, Throwable errorException) {
         this(header, null, null, errorException);
     }
@@ -94,7 +126,7 @@ public class IncidentInfo {
     /**
      * Set the current basic error description
      *
-     * @param basicErrorMessage
+     * @param basicErrorMessage new basic error description
      */
     public void setBasicErrorMessage(String basicErrorMessage) {
         this.basicErrorMessage = basicErrorMessage;
@@ -112,7 +144,7 @@ public class IncidentInfo {
     /**
      * Set the detailed description for this error
      *
-     * @param detailedErrorMessage
+     * @param detailedErrorMessage new detailed description
      */
     public void setDetailedErrorMessage(String detailedErrorMessage) {
         this.detailedErrorMessage = detailedErrorMessage;
@@ -132,7 +164,8 @@ public class IncidentInfo {
      * Set the exception that may contain additional information about the
      * error.
      *
-     * @param errorException
+     * @param errorException new <code>Throwable</code> ot <code>null</code>
+     *        if there is no <code>Throwable</code> related to this error
      */
     public void setErrorException(Throwable errorException) {
         this.errorException = errorException;

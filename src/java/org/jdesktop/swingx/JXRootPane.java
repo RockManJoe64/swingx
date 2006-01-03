@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
@@ -10,6 +24,7 @@ package org.jdesktop.swingx;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JMenuBar;
@@ -20,10 +35,12 @@ import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
 import org.jdesktop.binding.DataModel;
 import org.jdesktop.binding.SelectionModel;
+import org.jdesktop.binding.event.BindingContextListener;
 import org.jdesktop.swingx.binding.BindingContextSupport;
 
 import org.jdesktop.swingx.event.MessageSource;
 import org.jdesktop.swingx.event.ProgressSource;
+import org.jdesktop.validation.ValidationListener;
 
 /**
  * Extends the JRootPane by supporting specific placements for a toolbar and a
@@ -227,23 +244,27 @@ public class JXRootPane extends JRootPane implements BindingContext {
     /*************      Data Binding    ****************/
     private BindingContextSupport ctx = new BindingContextSupport(this);
 
-    public Object removeDataSource(String name) {
-        return ctx.removeDataSource(name);
+    public Object removeDomainData(String name) {
+        return ctx.removeDomainData(name);
     }
 
     public Binding bind(Object target, String path, Object... params) {
         return ctx.bind(target, path, params);
     }
 
-    public void addDataSource(String name, Object dataSource) {
-        ctx.addDataSource(name, dataSource);
+    public void addDomainData(String name, Object dataSource) {
+        ctx.addDomainData(name, dataSource);
+    }
+
+    public Object getDomainData(String name) {
+        return ctx.getDomainData(name);
     }
 
     public void unbind(Object target) {
         ctx.unbind(target);
     }
 
-    public BindingContext[] getChildrenContexts() {
+    public List<BindingContext> getChildrenContexts() {
         return ctx.getChildrenContexts();
     }
     
@@ -255,31 +276,51 @@ public class JXRootPane extends JRootPane implements BindingContext {
         ctx.loadAll();
     }
 
-    public void loadAll(boolean recurse) {
-        ctx.loadAll(recurse);
-    }
+//    public void loadAll(boolean recurse) {
+//        ctx.loadAll(recurse);
+//    }
 
     public void saveAll() {
         ctx.saveAll();
     }
 
-    public void saveAll(boolean recurse) {
-        ctx.saveAll(recurse);
-    }
+//    public void saveAll(boolean recurse) {
+//        ctx.saveAll(recurse);
+//    }
 
     public DataModel getDataModel(String path) {
         return ctx.getDataModel(path);
     }
 
-    public void addSelectionModel(String name, SelectionModel model) {
-        ctx.addSelectionModel(name, model);
+    public void addSelectionModel(SelectionModel model) {
+        ctx.addSelectionModel(model);
     }
 
-    public SelectionModel removeSelectionModel(String name) {
-        return ctx.removeSelectionModel(name);
+    public void removeSelectionModel(SelectionModel model) {
+        ctx.removeSelectionModel(model);
+    }
+    
+    public SelectionModel getSelectionModel(String name) {
+        return ctx.getSelectionModel(name);
     }
 
     public Binding getBinding(Object component) {
         return ctx.getBinding(component);
+    }
+
+    public void addValidationListener(ValidationListener listener) {
+        ctx.addValidationListener(listener);
+    }
+
+    public void removeValidationListener(ValidationListener listener) {
+        ctx.removeValidationListener(listener);
+    }
+
+    public void addBindingContextListener(BindingContextListener listener) {
+        ctx.addBindingContextListener(listener);
+    }
+
+    public void removeBindingContextListener(BindingContextListener listener) {
+        ctx.removeBindingContextListener(listener);
     }
 }

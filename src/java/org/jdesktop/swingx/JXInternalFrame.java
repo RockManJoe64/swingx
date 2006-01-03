@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.util.List;
 
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JRootPane;
 import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
@@ -36,85 +37,85 @@ import org.jdesktop.validation.ValidationListener;
 
 
 /**
- * A smarter JFrame specifically used for top level frames for Applications.
- * This frame uses a JXRootPane.
  */
-public class JXFrame extends JFrame implements BindingContext, DataAware {
+public class JXInternalFrame extends JInternalFrame implements BindingContext, DataAware {
 
-    public JXFrame() {
-        this(null, false);
-    }
-    
-    public JXFrame(String title, boolean exitOnClose) {
-        super(title);
-        if (exitOnClose) {
-            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        }
-    }
-
-    public JXFrame(String title) {
-        this(title, false);
-    }
-
-    /**
-     * Overloaded to create a JXRootPane.
+    /** 
+     * Creates a non-resizable, non-closable, non-maximizable,
+     * non-iconifiable <code>JInternalFrame</code> with no title.
      */
-    protected JRootPane createRootPane() {
-        return new JXRootPane();
+    public JXInternalFrame() {
+        super();
     }
 
-    /**
-     * Overloaded to make this public.
-     */
-    public void setRootPane(JRootPane root) {
-        super.setRootPane(root);
-    }
-
-    /**
-     * Add a component to the Frame.
-     */
-    public void addComponent(Component comp) {
-        JXRootPane root = getRootPaneExt();
-        if (root != null) {
-            root.addComponent(comp);
-        }
-        // XXX should probably fire some sort of container event.
-    }
-
-    /**
-     * Removes a component from the frame.
-     */
-    public void removeComponent(Component comp) {
-        JXRootPane root = getRootPaneExt();
-        if (root != null) {
-            root.removeComponent(comp);
-        }
-        // XXX should probably fire some sort of container event.
-    }
-
-    /**
-     * Return the extended root pane. If this frame doesn't contain
-     * an extended root pane the root pane should be accessed with
-     * getRootPane().
+    /** 
+     * Creates a non-resizable, non-closable, non-maximizable,
+     * non-iconifiable <code>JInternalFrame</code> with the specified title.
+     * Note that passing in a <code>null</code> <code>title</code> results in
+     * unspecified behavior and possibly an exception.
      *
-     * @return the extended root pane or null.
+     * @param title  the non-<code>null</code> <code>String</code>
+     *     to display in the title bar
      */
-    public JXRootPane getRootPaneExt() {
-        if (rootPane instanceof JXRootPane) {
-            return (JXRootPane)rootPane;
-        }
-        return null;
+    public JXInternalFrame(String title) {
+        super(title);
     }
 
-    /**
-     * Overloaded to pack when visible is true.
+    /** 
+     * Creates a non-closable, non-maximizable, non-iconifiable 
+     * <code>JInternalFrame</code> with the specified title
+     * and resizability.
+     *
+     * @param title      the <code>String</code> to display in the title bar
+     * @param resizable  if <code>true</code>, the internal frame can be resized
      */
-//    public void setVisible(boolean visible) {
-//        if (visible) {
-//            pack();
-//        }
-//        super.setVisible(visible);
-//    }
+    public JXInternalFrame(String title, boolean resizable) {
+        super(title, resizable);
+    }
+
+    /** 
+     * Creates a non-maximizable, non-iconifiable <code>JInternalFrame</code>
+     * with the specified title, resizability, and
+     * closability.
+     *
+     * @param title      the <code>String</code> to display in the title bar
+     * @param resizable  if <code>true</code>, the internal frame can be resized
+     * @param closable   if <code>true</code>, the internal frame can be closed
+     */
+    public JXInternalFrame(String title, boolean resizable, boolean closable) {
+        super(title, resizable, closable);
+    }
+
+    /** 
+     * Creates a non-iconifiable <code>JInternalFrame</code>
+     * with the specified title,
+     * resizability, closability, and maximizability.
+     *
+     * @param title       the <code>String</code> to display in the title bar
+     * @param resizable   if <code>true</code>, the internal frame can be resized
+     * @param closable    if <code>true</code>, the internal frame can be closed
+     * @param maximizable if <code>true</code>, the internal frame can be maximized
+     */
+    public JXInternalFrame(String title, boolean resizable, boolean closable,
+                          boolean maximizable) {
+        super(title, resizable, closable, maximizable);
+    }
+
+    /** 
+     * Creates a <code>JInternalFrame</code> with the specified title,
+     * resizability, closability, maximizability, and iconifiability.
+     * All <code>JInternalFrame</code> constructors use this one.
+     *
+     * @param title       the <code>String</code> to display in the title bar
+     * @param resizable   if <code>true</code>, the internal frame can be resized
+     * @param closable    if <code>true</code>, the internal frame can be closed
+     * @param maximizable if <code>true</code>, the internal frame can be maximized
+     * @param iconifiable if <code>true</code>, the internal frame can be iconified
+     */
+    public JXInternalFrame(String title, boolean resizable, boolean closable, 
+                                boolean maximizable, boolean iconifiable) {
+        super(title, resizable, closable, maximizable, iconifiable);
+    }
 
     /*************      Data Binding  - Data-Aware  ****************/
     private String dataPath = "";

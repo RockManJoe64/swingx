@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx;
 
@@ -12,7 +26,6 @@ import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
-import javax.swing.UIManager;
 
 import org.jdesktop.swingx.plaf.JXTaskPaneContainerAddon;
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
@@ -20,9 +33,55 @@ import org.jdesktop.swingx.plaf.TaskPaneContainerUI;
 
 /**
  * <code>JXTaskPaneContainer</code> provides an elegant view
- * to display a list of tasks ordered by groups.
- * It can be added to a JScrollPane.
+ * to display a list of tasks ordered by groups ({@link org.jdesktop.swingx.JXTaskPane}.
+ * 
+ * <p>
+ * Although {@link org.jdesktop.swingx.JXTaskPane} can be added to any other
+ * container, the <code>JXTaskPaneContainer</code> will provide better
+ * fidelity when it comes to matching the look and feel of the host operating
+ * system than any other panel. As example, when using on a Windows platform,
+ * the <code>JXTaskPaneContainer</code> will be painted with light gradient
+ * background. Also <code>JXTaskPaneContainer</code> takes care of using the
+ * right {@link java.awt.LayoutManager} (as required by
+ * {@link org.jdesktop.swingx.JXCollapsiblePane}) so that
+ * {@link org.jdesktop.swingx.JXTaskPane} behaves correctly when collapsing and
+ * expanding its content.
+ *  
+ * <p>
+ * <code>JXTaskPaneContainer<code> can be added to a JScrollPane.
+ * 
+ * <p>
+ * Example:
+ * <pre>
+ * <code>
+ * JXFrame frame = new JXFrame();
+ * 
+ * // a container to put all JXTaskPane together
+ * JXTaskPaneContainer taskPaneContainer = new JXTaskPaneContainer();
+ * 
+ * // add JXTaskPanes to the container
+ * JXTaskPane actionPane = createActionPane();
+ * JXTaskPane miscActionPane = createMiscActionPane();
+ * JXTaskPane detailsPane = createDetailsPane();
+ * taskPaneContainer.add(actionPane);
+ * taskPaneContainer.add(miscActionPane);
+ * taskPaneContainer.add(detailsPane);
  *
+ * // put the action list on the left in a JScrollPane
+ * // as we have several taskPane and we want to make sure they
+ * // all get visible.   
+ * frame.add(new JScrollPane(taskPaneContainer), BorderLayout.EAST);
+ * 
+ * // and a file browser in the middle
+ * frame.add(fileBrowser, BorderLayout.CENTER);
+ * 
+ * frame.pack().
+ * frame.setVisible(true);
+ * </code>
+ * </pre>
+ *
+ * @author <a href="mailto:fred@L2FProd.com">Frederic Lavigne</a>
+ * 
  * @javabean.attribute
  *          name="isContainer"
  *          value="Boolean.TRUE"
@@ -62,8 +121,7 @@ public class JXTaskPaneContainer extends JComponent implements Scrollable {
    * @see javax.swing.JComponent#updateUI
    */
   public void updateUI() {
-    setUI((TaskPaneContainerUI)LookAndFeelAddons.getUI(this, TaskPaneContainerUI.class, UIManager
-      .getUI(this)));
+    setUI((TaskPaneContainerUI)LookAndFeelAddons.getUI(this, TaskPaneContainerUI.class));
   }
 
   /**

@@ -3,18 +3,44 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
 
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
+import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
@@ -22,14 +48,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.AbstractSearchable.SearchResult;
 
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.jdesktop.swingx.decorator.HighlighterPipeline;
 import org.jdesktop.swingx.decorator.PipelineEvent;
 import org.jdesktop.swingx.decorator.PipelineListener;
-import org.jdesktop.swingx.decorator.Selection;
+import org.jdesktop.swingx.decorator.SelectionMapper;
 import org.jdesktop.swingx.decorator.Sorter;
+import org.jdesktop.swingx.expression.RendererExpression;
 
 /**
  * JXList
@@ -47,7 +75,8 @@ import org.jdesktop.swingx.decorator.Sorter;
  * @author Ramesh Gupta
  * @author Jeanette Winzenburg
  */
-public class JXList extends JList {
+public class JXList extends JList implements DataAware {
+    public static final String EXECUTE_BUTTON_ACTIONCOMMAND = "executeButtonAction";
 
     /** The pipeline holding the filters. */
     protected FilterPipeline filters;
@@ -83,21 +112,136 @@ public class JXList extends JList {
 
     private boolean filterEnabled;
 
-    private Selection selection;
+    private SelectionMapper selectionMapper;
+
+    private Searchable searchable;
+    
+    private RendererExpression expression;
 
     public JXList() {
+        init();
     }
 
     public JXList(ListModel dataModel) {
         super(dataModel);
+        init();
     }
 
     public JXList(Object[] listData) {
         super(listData);
+        init();
     }
 
     public JXList(Vector listData) {
         super(listData);
+        init();
+    }
+
+    private void init() {
+        Action findAction = createFindAction();
+        getActionMap().put("find", findAction);
+        // JW: this should be handled by the LF!
+        KeyStroke findStroke = KeyStroke.getKeyStroke("control F");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(findStroke, "find");
+        
+    }
+
+    private Action createFindAction() {
+        Action findAction = new UIAction("find") {
+
+            public void actionPerformed(ActionEvent e) {
+                doFind();
+                
+            }
+            
+        };
+        return findAction;
+    }
+
+    protected void doFind() {
+        SearchFactory.getInstance().showFindInput(this, getSearchable());
+        
+    }
+
+    /**
+     * 
+     * @returns a not-null Searchable for this editor.  
+     */
+    public Searchable getSearchable() {
+        if (searchable == null) {
+            searchable = new ListSearchable();
+        }
+        return searchable;
+    }
+
+    /**
+     * sets the Searchable for this editor. If null, a default 
+     * searchable will be used.
+     * 
+     * @param searchable
+     */
+    public void setSearchable(Searchable searchable) {
+        this.searchable = searchable;
+    }
+    
+
+    public class ListSearchable extends AbstractSearchable {
+
+        @Override
+        protected void findMatchAndUpdateState(Pattern pattern, int startRow, boolean backwards) {
+            SearchResult searchResult = null;
+            if (backwards) {
+                for (int index = startRow; index >= 0 && searchResult == null; index--) {
+                    searchResult = findMatchAt(pattern, index);
+                }
+            } else {
+                for (int index = startRow; index < getSize() && searchResult == null; index++) {
+                    searchResult = findMatchAt(pattern, index);
+                }
+            }
+            updateState(searchResult);
+        }
+
+        @Override
+        protected SearchResult findExtendedMatch(Pattern pattern, int row) {
+            
+            return findMatchAt(pattern, row);
+        }
+        /**
+         * Matches the cell content at row/col against the given Pattern.
+         * Returns an appropriate SearchResult if matching or null if no
+         * matching
+         * 
+         * @param pattern 
+         * @param row a valid row index in view coordinates
+         * @param column a valid column index in view coordinates
+         * @return
+         */
+        protected SearchResult findMatchAt(Pattern pattern, int row) {
+            Object value = getElementAt(row);
+            if (value != null) {
+                Matcher matcher = pattern.matcher(value.toString());
+                if (matcher.find()) {
+                    return createSearchResult(matcher, row, -1);
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        protected int getSize() {
+            return getElementCount();
+        }
+
+        @Override
+        protected void moveMatchMarker() {
+          setSelectedIndex(lastSearchResult.foundRow);
+          if (lastSearchResult.foundRow >= 0) {
+              ensureIndexIsVisible(lastSearchResult.foundRow);
+          }
+            
+        }
+
     }
 
     /**
@@ -112,21 +256,57 @@ public class JXList extends JList {
         if (rolloverEnabled == old)
             return;
         if (rolloverEnabled) {
-            rolloverProducer = new RolloverProducer();
+            rolloverProducer = createRolloverProducer();
             addMouseListener(rolloverProducer);
             addMouseMotionListener(rolloverProducer);
-            linkController = new LinkController();
-            addPropertyChangeListener(linkController);
+            getLinkController().install(this);
         } else {
             removeMouseListener(rolloverProducer);
             removeMouseMotionListener(rolloverProducer);
             rolloverProducer = null;
-            removePropertyChangeListener(linkController);
-            linkController = null;
+            getLinkController().release();
         }
         firePropertyChange("rolloverEnabled", old, isRolloverEnabled());
     }
 
+    
+    protected LinkController getLinkController() {
+        if (linkController == null) {
+            linkController = createLinkController();
+        }
+        return linkController;
+    }
+
+    protected LinkController createLinkController() {
+        return new LinkController();
+    }
+
+
+    /**
+     * creates and returns the RolloverProducer to use with this tree.
+     * 
+     * @return
+     */
+    protected RolloverProducer createRolloverProducer() {
+        RolloverProducer r = new RolloverProducer() {
+            protected void updateRolloverPoint(JComponent component,
+                    Point mousePoint) {
+                JXList list = (JXList) component;
+                int row = list.locationToIndex(mousePoint);
+                if (row >= 0) {
+                    Rectangle cellBounds = list.getCellBounds(row, row);
+                    if (!cellBounds.contains(mousePoint)) {
+                        row = -1;
+                    }
+                }
+                int col = row < 0 ? -1 : 0;
+                rollover.x = col;
+                rollover.y = row;
+            }
+
+        };
+        return r;
+    }
     /**
      * returns the rolloverEnabled property.
      * 
@@ -136,32 +316,188 @@ public class JXList extends JList {
         return rolloverProducer != null;
     }
 
-    public void setLinkVisitor(ActionListener linkVisitor) {
-        if (linkVisitor != null) {
-            setRolloverEnabled(true);
-            getDelegatingRenderer().setLinkVisitor(linkVisitor);
-        } else {
-            // JW: think - need to revert?
+    /**
+     * listens to rollover properties. 
+     * Repaints effected component regions.
+     * Updates link cursor.
+     * 
+     * @author Jeanette Winzenburg
+     */
+    public static class LinkController implements PropertyChangeListener {
+
+        private Cursor oldCursor;
+        private JXList list;
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (RolloverProducer.ROLLOVER_KEY.equals(evt.getPropertyName())) {
+                   rollover((JXList) evt.getSource(), (Point) evt.getOldValue(),
+                            (Point) evt.getOldValue());
+            } else if (RolloverProducer.CLICKED_KEY.equals(evt.getPropertyName())) {
+                    click((JXList) evt.getSource(), (Point) evt.getOldValue(),
+                            (Point) evt.getNewValue());
+            }
         }
+
+
+        public void install(JXList list) {
+            release();  
+            this.list = list;
+            list.addPropertyChangeListener(this);
+            registerExecuteButtonAction();
+          }
+          
+          public void release() {
+              if (list == null) return;
+              list.removePropertyChangeListener(this);
+              unregisterExecuteButtonAction();
+          }
+
+//    --------------------------------- JList rollover
+        
+        private void rollover(JXList list, Point oldLocation, Point newLocation) {
+            setLinkCursor(list, newLocation);
+            // JW: partial repaints incomplete
+            list.repaint();
+        }
+
+        private void click(JXList list, Point oldLocation, Point newLocation) {
+            if (!isLinkElement(list, newLocation)) return;
+            ListCellRenderer renderer = list.getCellRenderer();
+            // PENDING: JW - don't ask the model, ask the list!
+            Component comp = renderer.getListCellRendererComponent(list, list.getModel().getElementAt(newLocation.y), newLocation.y, false, true);
+            if (comp instanceof AbstractButton) {
+                // this is fishy - needs to be removed as soon as JList is editable
+                ((AbstractButton) comp).doClick();
+                list.repaint();
+            }
+        }
+        
+        /**
+         * something weird: cursor in JList behaves different from JTable?
+         * @param list
+         * @param location
+         */
+        private void setLinkCursor(JXList list, Point location) {
+            if (isLinkElement(list, location)) {
+                    oldCursor = list.getCursor();
+                    list.setCursor(Cursor
+                            .getPredefinedCursor(Cursor.HAND_CURSOR));
+            } else {
+                    list.setCursor(oldCursor);
+                    oldCursor = null;
+            }
+
+        }
+        private boolean isLinkElement(JXList list, Point location) {
+            if (location == null || location.y < 0) return false;
+            // PENDING: JW - don't ask the model, ask the list!
+//            return (list.getModel().getElementAt(location.y) instanceof LinkModel);
+            return false;
+        }
+
+        private void unregisterExecuteButtonAction() {
+            list.getActionMap().put(EXECUTE_BUTTON_ACTIONCOMMAND, null);
+            KeyStroke space = KeyStroke.getKeyStroke("released SPACE");
+            list.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(space , null);
+        }
+
+        private void registerExecuteButtonAction() {
+            list.getActionMap().put(EXECUTE_BUTTON_ACTIONCOMMAND, createExecuteButtonAction());
+            KeyStroke space = KeyStroke.getKeyStroke("released SPACE");
+            list.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(space , EXECUTE_BUTTON_ACTIONCOMMAND);
+            
+        }
+
+        private Action createExecuteButtonAction() {
+            Action action = new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    AbstractButton button = getClickableRendererComponent();
+                    if (button != null) {
+                        button.doClick();
+                        list.repaint();
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return isClickable();
+                }
+
+                private boolean isClickable() {
+                    return getClickableRendererComponent() != null;
+                }
+                
+                private AbstractButton getClickableRendererComponent() {
+                    if (list == null || !list.isEnabled() || !list.hasFocus()) return null;
+                    int leadRow = list.getLeadSelectionIndex();
+                    if (leadRow < 0 ) return null;
+                    ListCellRenderer renderer = list.getCellRenderer();
+                    Component rendererComp = renderer.getListCellRendererComponent(list, list.getElementAt(leadRow), leadRow, false, true);
+                    return rendererComp instanceof AbstractButton ? (AbstractButton) rendererComp : null;
+                }
+                
+            };
+            return action;
+        }
+
 
     }
 
+   
     // ---------------------------- filters
 
+    /**
+     * returns the element at the given index. The index is
+     * in view coordinates which might differ from model 
+     * coordinates if filtering is enabled and filters/sorters
+     * are active.
+     * 
+     * @param viewIndex the index in view coordinates
+     * @return the element at the index
+     * @throws IndexOutOfBoundsException 
+     *          if viewIndex < 0 or viewIndex >= getElementCount()
+     */
     public Object getElementAt(int viewIndex) {
         return getModel().getElementAt(viewIndex);
     }
 
-    public int getModelSize() {
+    /**
+     * Returns the number of elements in this list in view 
+     * coordinates. If filters are active this number might be
+     * less than the number of elements in the underlying model.
+     * 
+     * @return
+     */
+    public int getElementCount() {
         return getModel().getSize();
     }
 
-    public int convertRowIndexToModel(int viewIndex) {
+    /**
+     * Convert row index from view coordinates to model coordinates accounting
+     * for the presence of sorters and filters.
+     * 
+     * @param viewIndex index in view coordinates
+     * @return index in model coordinates
+     * @throws IndexOutOfBoundsException if viewIndex < 0 or viewIndex >= getElementCount() 
+     */
+    public int convertIndexToModel(int viewIndex) {
         return isFilterEnabled() ? getFilters().convertRowIndexToModel(
                 viewIndex) : viewIndex;
     }
 
-    public int convertRowIndexToView(int modelIndex) {
+    /**
+     * Convert index from model coordinates to view coordinates accounting
+     * for the presence of sorters and filters.
+     * 
+     * PENDING Filter guards against out of range - should not? 
+     * 
+     * @param modelIndex index in model coordinates
+     * @return index in view coordinates if the model index maps to a view coordinate
+     *          or -1 if not contained in the view.
+     * 
+     */
+    public int convertIndexToView(int modelIndex) {
         return isFilterEnabled() ? getFilters().convertRowIndexToView(
                 modelIndex) : modelIndex;
     }
@@ -181,12 +517,22 @@ public class JXList extends JList {
      * including the selection - are in view coordinates and getModel returns a
      * wrapper around the underlying model.
      * 
+     * Note: as an implementation side-effect calling this method clears the
+     * selection (done in super.setModel).
+     * 
+     * PENDING: cleanup state transitions!! - currently this can be safely
+     * applied once only to enable. Internal state is inconsistent if trying to
+     * disable again.
+     * 
+     * see Issue #2-swinglabs.
+     * 
      * @param enabled
      */
     public void setFilterEnabled(boolean enabled) {
         boolean old = isFilterEnabled();
         if (old == enabled)
             return;
+        filterEnabled = enabled;
         if (!old) {
             wrappingModel = new WrappingListModel(getModel());
             super.setModel(wrappingModel);
@@ -195,7 +541,7 @@ public class JXList extends JList {
             wrappingModel = null;
             super.setModel(model);
         }
-        filterEnabled = enabled;
+
     }
 
     public boolean isFilterEnabled() {
@@ -218,22 +564,29 @@ public class JXList extends JList {
         }
     }
 
-    private Selection getSelection() {
-        if (selection == null) {
-            selection = new Selection(filters, getSelectionModel());
+    private SelectionMapper getSelectionMapper() {
+        if (selectionMapper == null) {
+            selectionMapper = new SelectionMapper(filters, getSelectionModel());
         }
-        return selection;
+        return selectionMapper;
     }
 
     public FilterPipeline getFilters() {
-        if (filters == null) {
+        if ((filters == null) && isFilterEnabled()) {
             setFilters(null);
         }
         return filters;
     }
 
-    /** Sets the FilterPipeline for filtering table rows. */
+    /** Sets the FilterPipeline for filtering table rows. 
+     *  PRE: isFilterEnabled()
+     * 
+     * @param pipeline the filterPipeline to use.
+     * @throws IllegalStateException if !isFilterEnabled()
+     */
     public void setFilters(FilterPipeline pipeline) {
+        if (!isFilterEnabled()) throw
+            new IllegalStateException("filters not enabled - not allowed to set filters");
         FilterPipeline old = filters;
         Sorter sorter = null;
         if (old != null) {
@@ -245,8 +598,8 @@ public class JXList extends JList {
         }
         filters = pipeline;
         filters.setSorter(sorter);
-        getSelection().setFilters(filters);
         use(filters);
+        getSelectionMapper().setFilters(filters);
     }
 
     /**
@@ -356,7 +709,7 @@ public class JXList extends JList {
                 }
 
                 public void contentsChanged(ListDataEvent e) {
-                    getSelection().lock();
+                    getSelectionMapper().lock();
                     fireContentsChanged(this, -1, -1);
                     updateSelection(e);
                     getFilters().flush();
@@ -369,16 +722,16 @@ public class JXList extends JList {
 
         protected void updateSelection(ListDataEvent e) {
             if (e.getType() == ListDataEvent.INTERVAL_REMOVED) {
-                getSelection()
+                getSelectionMapper()
                         .removeIndexInterval(e.getIndex0(), e.getIndex1());
             } else if (e.getType() == ListDataEvent.INTERVAL_ADDED) {
 
                 int minIndex = Math.min(e.getIndex0(), e.getIndex1());
                 int maxIndex = Math.max(e.getIndex0(), e.getIndex1());
                 int length = maxIndex - minIndex + 1;
-                getSelection().insertIndexInterval(minIndex, length, true);
+                getSelectionMapper().insertIndexInterval(minIndex, length, true);
             } else {
-                getSelection().clearModelSelection();
+                getSelectionMapper().clearModelSelection();
             }
 
         }
@@ -399,7 +752,6 @@ public class JXList extends JList {
 
     // ---------------------------- uniform data model
 
-    // MUST ALWAYS ACCESS dataAdapter through accessor method!!!
     protected ComponentAdapter getComponentAdapter() {
         if (dataAdapter == null) {
             dataAdapter = new ListAdapter(this);
@@ -425,7 +777,7 @@ public class JXList extends JList {
         /**
          * Typesafe accessor for the target component.
          * 
-         * @return the target component as a {@link javax.swing.JList}
+         * @return the target component as a {@link org.jdesktop.swingx.JXList}
          */
         public JXList getList() {
             return list;
@@ -441,7 +793,6 @@ public class JXList extends JList {
 
         public int getRowCount() {
             return list.getWrappedModel().getSize();
-            // return list.getModel().getSize();
         }
 
         /**
@@ -449,25 +800,18 @@ public class JXList extends JList {
          */
         public Object getValueAt(int row, int column) {
             return list.getWrappedModel().getElementAt(row);
-            // return list.getModel().getElementAt(row);
         }
 
         public Object getFilteredValueAt(int row, int column) {
             return list.getElementAt(row);
-            /** @todo Implement getFilteredValueAt */
-            // return getValueAt(row, column);
-            // throw new UnsupportedOperationException(
-            // "Method getFilteredValueAt() not yet implemented.");
         }
 
         public void setValueAt(Object aValue, int row, int column) {
-            /** @todo Implement getFilteredValueAt */
             throw new UnsupportedOperationException(
                     "Method getFilteredValueAt() not yet implemented.");
         }
 
         public boolean isCellEditable(int row, int column) {
-            /** @todo Implement getFilteredValueAt */
             return false;
         }
 
@@ -543,8 +887,6 @@ public class JXList extends JList {
 
     private class DelegatingRenderer implements ListCellRenderer {
 
-        private LinkRenderer linkRenderer;
-
         private ListCellRenderer delegateRenderer;
 
         public DelegatingRenderer(ListCellRenderer delegate) {
@@ -562,13 +904,9 @@ public class JXList extends JList {
                 int index, boolean isSelected, boolean cellHasFocus) {
             Component comp = null;
 
-            if (value instanceof LinkModel) {
-                comp = getLinkRenderer().getListCellRendererComponent(list,
-                        value, index, isSelected, cellHasFocus);
-            } else {
-                comp = delegateRenderer.getListCellRendererComponent(list,
-                        value, index, isSelected, cellHasFocus);
-            }
+            comp = delegateRenderer.getListCellRendererComponent(list,
+                    value, index, isSelected, cellHasFocus);
+            
             if (highlighters != null) {
                 ComponentAdapter adapter = getComponentAdapter();
                 adapter.column = 0;
@@ -578,20 +916,7 @@ public class JXList extends JList {
             return comp;
         }
 
-        private LinkRenderer getLinkRenderer() {
-            if (linkRenderer == null) {
-                linkRenderer = new LinkRenderer();
-            }
-            return linkRenderer;
-        }
-
-        public void setLinkVisitor(ActionListener linkVisitor) {
-            getLinkRenderer().setVisitingDelegate(linkVisitor);
-
-        }
-
         public void updateUI() {
-            updateRendererUI(linkRenderer);
             updateRendererUI(delegateRenderer);
         }
 
@@ -628,9 +953,19 @@ public class JXList extends JList {
         }
     }
 
+    public void setRendererExpression(RendererExpression ex) {
+        this.expression = ex;
+    }
+    
+    public RendererExpression getRendererExpression() {
+        return expression;
+    }
+    
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    private String displayName;
+    private String selectionModelName = "listSelection";
     
     /**
      * @param path
@@ -652,24 +987,48 @@ public class JXList extends JList {
         return dataPath;
     }
 
+    public void setBindingContext(BindingContext ctx) {
+        if (this.ctx != null) {
+            DataBoundUtils.unbind(this, this.ctx);
+        }
+        this.ctx = ctx;
+        if (this.ctx != null) {
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx.bind(this, this.dataPath);
+            }
+        }
+    }
+
+    public BindingContext getBindingContext() {
+        return ctx;
+    }
+    
+    public void setDisplayName(String name) {
+        displayName = name;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
     //PENDING
     //addNotify and removeNotify were necessary for java one, not sure if I still
     //need them or not
-//    public void addNotify() {
-//        super.addNotify();
-//        //if ctx does not exist, try to create one
-//        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
-//        }
-//    }
-//
-//    public void removeNotify() {
-//        //if I had a ctx, blow it away
-//        if (ctx != null) {
-//            DataBoundUtils.unbind(this, ctx);
-//        }
-//        super.removeNotify();
-//    }
+    public void addNotify() {
+        super.addNotify();
+        //if ctx does not exist, try to create one
+        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+            ctx = DataBoundUtils.bind(this, dataPath);
+        }
+    }
+
+    public void removeNotify() {
+        //if I had a ctx, blow it away
+        if (ctx != null) {
+            DataBoundUtils.unbind(this, ctx);
+        }
+        super.removeNotify();
+    }
 //
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;
@@ -687,4 +1046,12 @@ public class JXList extends JList {
 //            g.drawImage(ii.getImage(), getWidth() - ii.getIconWidth(), 0, ii.getIconWidth(), ii.getIconHeight(), ii.getImageObserver());
 //        }
 //    }
+
+    public String getSelectionModelName() {
+        return selectionModelName;
+    }
+
+    public void setSelectionModelName(String selectionModelName) {
+        this.selectionModelName = selectionModelName;
+    }
 }

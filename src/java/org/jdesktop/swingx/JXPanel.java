@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
@@ -19,6 +33,7 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
@@ -26,7 +41,9 @@ import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
 import org.jdesktop.binding.DataModel;
 import org.jdesktop.binding.SelectionModel;
+import org.jdesktop.binding.event.BindingContextListener;
 import org.jdesktop.swingx.binding.BindingContextSupport;
+import org.jdesktop.validation.ValidationListener;
 
 /**
  * A simple JPanel extension that adds translucency support.
@@ -35,7 +52,7 @@ import org.jdesktop.swingx.binding.BindingContextSupport;
  *
  * @author rbair
  */
-public class JXPanel extends JPanel implements Scrollable, BindingContext {
+public class JXPanel extends JPanel implements Scrollable {
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
     
@@ -394,64 +411,5 @@ public class JXPanel extends JPanel implements Scrollable, BindingContext {
             Graphics2D g2 = (Graphics2D)g;
             g2.drawImage(cachedGradient, null, insets.left, insets.top);
         }
-    }
-    
-    /*************      Data Binding    ****************/
-    private BindingContextSupport ctx = new BindingContextSupport(this);
-
-    public Object removeDataSource(String name) {
-        return ctx.removeDataSource(name);
-    }
-
-    public Binding bind(Object target, String path, Object... params) {
-        return ctx.bind(target, path, params);
-    }
-
-    public void addDataSource(String name, Object dataSource) {
-        ctx.addDataSource(name, dataSource);
-    }
-
-    public void unbind(Object target) {
-        ctx.unbind(target);
-    }
-
-    public BindingContext[] getChildrenContexts() {
-        return ctx.getChildrenContexts();
-    }
-    
-    public BindingContext getParentContext() {
-        return ctx.getParentContext();
-    }
-
-    public void loadAll() {
-        ctx.loadAll();
-    }
-
-    public void loadAll(boolean recurse) {
-        ctx.loadAll(recurse);
-    }
-
-    public void saveAll() {
-        ctx.saveAll();
-    }
-
-    public void saveAll(boolean recurse) {
-        ctx.saveAll(recurse);
-    }
-
-    public DataModel getDataModel(String path) {
-        return ctx.getDataModel(path);
-    }
-
-    public void addSelectionModel(String name, SelectionModel model) {
-        ctx.addSelectionModel(name, model);
-    }
-
-    public SelectionModel removeSelectionModel(String name) {
-        return ctx.removeSelectionModel(name);
-    }
-
-    public Binding getBinding(Object component) {
-        return ctx.getBinding(component);
     }
 }

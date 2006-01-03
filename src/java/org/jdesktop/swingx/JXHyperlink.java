@@ -1,3 +1,23 @@
+/*
+ * $Id$
+ *
+ * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
+ * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.jdesktop.swingx;
 
 import java.awt.Color;
@@ -6,14 +26,17 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.action.LinkAction;
 
 import org.jdesktop.swingx.plaf.JXHyperlinkAddon;
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
 
 /**
  * A hyperlink component that derives from JButton to provide compatibility
- * mostly for binding actions enabled/disabled behavior accesility i18n etc...
+ * mostly for binding actions enabled/disabled behavior accesilibity i18n etc...
+ *
+ * This component tracks its state and changes way it is being painted after
+ * being clicked for the first time.
  * 
  * @author Richard Bair
  * @author Shai Almog
@@ -33,22 +56,6 @@ public class JXHyperlink extends JButton {
     }
 
     /**
-     * Initialization that would ideally be moved into various look and feel
-     * classes.
-     */
-//    static {
-//        loadDefaults();
-//    }
-//
-//    static void loadDefaults() {
-//        UIDefaults defaults = UIManager.getDefaults();
-//        defaults.put(uiClassID,
-//                "org.jdesktop.swingx.plaf.basic.BasicHyperlinkUI");
-//    }
-
-    private boolean hasBeenVisited = false;
-
-    /**
      * Color for the hyper link if it has not yet been clicked. This color can
      * be set both in code, and through the UIManager with the property
      * "JXHyperlink.unclickedColor".
@@ -62,25 +69,30 @@ public class JXHyperlink extends JButton {
      */
     private Color clickedColor = new Color(0x99, 0, 0x99);
 
-    /** Creates a new instance of JXHyperlink */
+    /**
+     * Creates a new instance of JXHyperlink with default parameters
+     */
     public JXHyperlink() {
         super();
     }
 
-    public JXHyperlink(Action action) {
+    public JXHyperlink(LinkAction action) {
         super(action);
         init();
     }
 
     /**
-     * @return
+     * @return Color for the hyper link if it has not yet been clicked.
      */
     public Color getUnclickedColor() {
         return unclickedColor;
     }
 
     /**
-     * @param color
+     * Sets the color for the previously not visited link. This value will override the one
+     * set by the "JXHyperlink.unclickedColor" UIManager property and defaults.
+     *
+     * @param color Color for the hyper link if it has not yet been clicked.
      */
     public void setClickedColor(Color color) {
         Color old = getClickedColor();
@@ -92,14 +104,17 @@ public class JXHyperlink extends JButton {
     }
 
     /**
-     * @return
+     * @return Color for the hyper link if it has already been clicked.
      */
     public Color getClickedColor() {
         return clickedColor;
     }
 
     /**
-     * @param color
+     * Sets the color for the previously visited link. This value will override the one
+     * set by the "JXHyperlink.clickedColor" UIManager property and defaults.
+     *
+     * @param color Color for the hyper link if it has already been clicked.
      */
     public void setUnclickedColor(Color color) {
         Color old = getUnclickedColor();
@@ -110,17 +125,39 @@ public class JXHyperlink extends JButton {
         firePropertyChange("unclickedColor", old, getUnclickedColor());
     }
 
+    /**
+     * Sets if this link has been clicked before. This will luckily affect the way
+     * this component is being painted.
+     *
+     * @param visited If <code>true</code> marks link as visited.
+     */
     protected void setVisited(boolean visited) {
-        boolean old = isVisited();
-        hasBeenVisited = visited;
-        setForeground(isVisited() ? getClickedColor() : getUnclickedColor());
-        firePropertyChange("visited", old, isVisited());
+        Action action = getAction();
+        if (action != null) {
+            //using the untypesafe approach because netbeans was throwing errors
+            //due to class cast problems
+            action.putValue(LinkAction.VISITED, visited);
+        }
     }
 
+    /**
+     * @return <code>true</code> if hyper link has already been clicked.
+     */
     protected boolean isVisited() {
-        return hasBeenVisited;
+        Action action = getAction();
+        //using the untypesafe approach because netbeans was throwing errors
+        //due to class cast problems
+        if (action != null && action.getValue(LinkAction.VISITED) != null) {
+            return (Boolean)action.getValue(LinkAction.VISITED);
+        } else {
+            return false;
+        }
     }
 
+    /**
+     * Create listener that will watch the changes of the provided <code>Action</code>
+     * and will update JXHyperlink's properties accordingly.
+     */
     protected PropertyChangeListener createActionPropertyChangeListener(
             final Action a) {
         final PropertyChangeListener superListener = super
@@ -128,95 +165,35 @@ public class JXHyperlink extends JButton {
         // JW: need to do something better - only weak refs allowed!
         // no way to hook into super
         PropertyChangeListener l = new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent evt) {
-                if (LinkModel.VISITED_PROPERTY.equals(evt.getPropertyName())) {
-                    setVisitedFromActionProperty(a);
+                if (LinkAction.VISITED.equals(evt.getPropertyName())) {
+                    init();
                 } else {
                     superListener.propertyChange(evt);
                 }
-
             }
-
         };
         return l;
-    }
-
-    protected void configurePropertiesFromAction(Action a) {
-        super.configurePropertiesFromAction(a);
-        setVisitedFromActionProperty(a);
-    }
-
-    private void setVisitedFromActionProperty(Action a) {
-        Boolean visited = (Boolean) a.getValue(LinkModel.VISITED_PROPERTY);
-        setVisited(visited != null ? visited.booleanValue() : false);
     }
 
     private void init() {
         setForeground(isVisited() ? getClickedColor() : getUnclickedColor());
     }
 
+    /**
+     * Returns a string that specifies the name of the L&F class
+     * that renders this component.
+     */
     public String getUIClassID() {
         return uiClassID;
     }
 
-    /*************      Data Binding    ****************/
-    private String dataPath = "";
-    private BindingContext ctx = null;
-    
-    /**
-     * @param path
-     */
-    public void setDataPath(String path) {
-        path = path == null ? "" : path;
-        if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
-            String oldPath = this.dataPath;
-            this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
-            firePropertyChange("dataPath", oldPath, this.dataPath);
-        }
-    }
-    
-    public String getDataPath() {
-        return dataPath;
+    public void setAction(Action a) {
+        //This assert was failing in NB. Not sure why -- I was using a LinkAction.
+        //I think it could be a classloader issue
+//        assert a == null || a instanceof LinkAction : "Failed because action is of type " + a.getClass().getName();
+        super.setAction(a);
+        init();
     }
 
-    //PENDING
-    //addNotify and removeNotify were necessary for java one, not sure if I still
-    //need them or not
-//    public void addNotify() {
-//        super.addNotify();
-//        //if ctx does not exist, try to create one
-//        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-//            ctx = DataBoundUtils.bind(JXEditorPane.this, dataPath);
-//        }
-//    }
-//
-//    public void removeNotify() {
-//        //if I had a ctx, blow it away
-//        if (ctx != null) {
-//            DataBoundUtils.unbind(this, ctx);
-//        }
-//        super.removeNotify();
-//    }
-//
-//    //BEANS SPECIFIC CODE:
-//    private boolean designTime = false;
-//    public void setDesignTime(boolean designTime) {
-//        this.designTime = designTime;
-//    }
-//    public boolean isDesignTime() {
-//        return designTime;
-//    }
-//    public void paintComponent(Graphics g) {
-//        super.paintComponent(g);
-//        if (designTime && dataPath != null && !dataPath.equals("")) {
-//            //draw the binding icon
-//            ImageIcon ii = new ImageIcon(getClass().getResource("icon/chain.png"));
-//            g.drawImage(ii.getImage(), getWidth() - ii.getIconWidth(), 0, ii.getIconWidth(), ii.getIconHeight(), ii.getImageObserver());
-//        }
-//    }
 }

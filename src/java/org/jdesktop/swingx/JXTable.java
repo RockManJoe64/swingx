@@ -3,18 +3,36 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
 
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -27,8 +45,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.DefaultCellEditor;
@@ -40,11 +63,14 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SizeSequence;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -58,19 +84,21 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.jdesktop.binding.BindingContext;
-import org.jdesktop.binding.impl.BindingDescriptor;
 
 import org.jdesktop.swingx.action.BoundAction;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
+import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterPipeline;
+import org.jdesktop.swingx.decorator.PatternHighlighter;
 import org.jdesktop.swingx.decorator.PipelineEvent;
 import org.jdesktop.swingx.decorator.PipelineListener;
-import org.jdesktop.swingx.decorator.RowSizing;
-import org.jdesktop.swingx.decorator.Selection;
+import org.jdesktop.swingx.decorator.SearchHighlighter;
+import org.jdesktop.swingx.decorator.SelectionMapper;
+import org.jdesktop.swingx.decorator.SizeSequenceMapper;
 import org.jdesktop.swingx.decorator.Sorter;
+import org.jdesktop.swingx.decorator.AlternateRowHighlighter.UIAlternateRowHighlighter;
 import org.jdesktop.swingx.icon.ColumnControlIcon;
-import org.jdesktop.swingx.plaf.JXTableAddon;
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
 import org.jdesktop.swingx.table.ColumnControlButton;
 import org.jdesktop.swingx.table.ColumnFactory;
@@ -142,14 +170,48 @@ import org.jdesktop.swingx.table.TableColumnModelExt;
  * normally not pick this up.
  * 
  * <p>
- * Last, you can also provide searches on a JXTable using the search methods.
+ * Last, you can also provide searches on a JXTable using the Searchable property.
+ * 
+ * <p>
+ * Keys/Actions registered with this component:
+ * 
+ * <ul>
+ * <li> "find" - open an appropriate search widget for searching cell content. The
+ *   default action registeres itself with the SearchFactory as search target.
+ * <li> "print" - print the table
+ * <li> {@link JXTable#HORIZONTAL_ACTION_COMMAND} - toggle the horizontal scrollbar
+ * <li> {@link JXTable#PACKSELECTED_ACTION_COMMAND} - resize the selected column to fit the widest
+ *  cell content 
+ * <li> {@link JXTable#PACKALL_ACTION_COMMAND} - resize all columns to fit the widest
+ *  cell content in each column
+ * 
+ * </ul>
+ * 
+ * <p>
+ * Key bindings.
+ * 
+ * <ul>
+ * <li> "control F" - bound to actionKey "find".
+ * </ul>
+ * 
+ * <p>
+ * Client Properties.
+ * 
+ * <ul>
+ * <li> {@link JXTable#MATCH_HIGHLIGHTER} - set to Boolean.TRUE to 
+ *  use a SearchHighlighter to mark a cell as matching.
+ * </ul>
  * 
  * @author Ramesh Gupta
  * @author Amy Fowler
  * @author Mark Davidson
  * @author Jeanette Winzenburg
  */
-public class JXTable extends JTable implements Searchable {
+public class JXTable extends JTable implements DataAware { 
+    private static final Logger LOG = Logger.getLogger(JXTable.class.getName());
+    
+    public static final String EXECUTE_BUTTON_ACTIONCOMMAND = "executeButtonAction";
+
     /**
      * Constant string for horizontal scroll actions, used in JXTable's Action
      * Map.
@@ -168,34 +230,28 @@ public class JXTable extends JTable implements Searchable {
     public static final String PACKSELECTED_ACTION_COMMAND = 
         ColumnControlButton.COLUMN_CONTROL_MARKER + "packSelected";
 
-    /** TODO */
+    /** The prefix marker to find component related properties in the resourcebundle. */
     public static final String UIPREFIX = "JXTable.";
+
+    /** key for client property to use SearchHighlighter as match marker. */
+    public static final String MATCH_HIGHLIGHTER = AbstractSearchable.MATCH_HIGHLIGHTER;
 
     static {
         // Hack: make sure the resource bundle is loaded
-        LookAndFeelAddons.contribute(new JXTableAddon());
+        LookAndFeelAddons.getAddon();
     }
 
-    /**
-     * For data binding
-     */
-    private String dataPath = "";
-    private BindingContext ctx = null;
-    private String[] fieldNames;
-
-//    public static boolean TRACE = false;
-
     /** The FilterPipeline for the table. */
-    protected FilterPipeline filters = null;
+    protected FilterPipeline filters;
 
     /** The HighlighterPipeline for the table. */
-    protected HighlighterPipeline highlighters = null;
+    protected HighlighterPipeline highlighters;
 
     /** The ComponentAdapter for model data access. */
     protected ComponentAdapter dataAdapter;
 
     /** The handler for mapping view/model coordinates of row selection. */
-    private Selection selection;
+    private SelectionMapper selectionMapper;
 
     /** flag to indicate if table is interactively sortable. */
     private boolean sortable;
@@ -215,6 +271,12 @@ public class JXTable extends JTable implements Searchable {
     /** The default number of visible rows (in a ScrollPane). */
     private int visibleRowCount = 18;
 
+    private SizeSequenceMapper rowModelMapper;
+
+    private Field rowModelField;
+
+    private boolean rowHeightEnabled;
+
     /**
      * flag to indicate if the column control is visible.
      */
@@ -230,10 +292,6 @@ public class JXTable extends JTable implements Searchable {
      * which to hide
      */
     private JComponent columnControlButton;
-
-    /** The JXFindDialog we open on find() */
-    private JXFindDialog dialog = null;
-
 
     /**
      * Mouse/Motion/Listener keeping track of mouse moved in cell coordinates.
@@ -256,6 +314,8 @@ public class JXTable extends JTable implements Searchable {
      *  the height has not been set explicitly by the application.
      */
     protected boolean isXTableRowHeightSet;
+
+    protected Searchable searchable;
 
     /** Instantiates a JXTable with a default table model, no data. */
     public JXTable() {
@@ -345,7 +405,7 @@ public class JXTable extends JTable implements Searchable {
         setSortable(true);
         // guarantee getFilters() to return != null
         setFilters(null);
-        initActions();
+        initActionsAndBindings();
         // instantiate row height depending on font size
         updateRowHeightUI(false);
     }
@@ -363,19 +423,54 @@ public class JXTable extends JTable implements Searchable {
         if (rolloverEnabled == old)
             return;
         if (rolloverEnabled) {
-            rolloverProducer = new RolloverProducer();
+            rolloverProducer = createRolloverProducer();
             addMouseListener(rolloverProducer);
             addMouseMotionListener(rolloverProducer);
-            linkController = new LinkController();
-            addPropertyChangeListener(linkController);
+            getLinkController().install(this);
+
         } else {
             removeMouseListener(rolloverProducer);
             removeMouseMotionListener(rolloverProducer);
             rolloverProducer = null;
-            removePropertyChangeListener(linkController);
-            linkController = null;
+            getLinkController().release();
         }
         firePropertyChange("rolloverEnabled", old, isRolloverEnabled());
+    }
+
+    protected LinkController getLinkController() {
+        if (linkController == null) {
+            linkController = createLinkController();
+        }
+        return linkController;
+    }
+
+    protected LinkController createLinkController() {
+        return new LinkController();
+    }
+
+
+    /**
+     * creates and returns the RolloverProducer to use.
+     * 
+     * @return
+     */
+    protected RolloverProducer createRolloverProducer() {
+        RolloverProducer r = new RolloverProducer() {
+            protected void updateRolloverPoint(JComponent component,
+                    Point mousePoint) {
+                JXTable table = (JXTable) component;
+                int col = table.columnAtPoint(mousePoint);
+                int row = table.rowAtPoint(mousePoint);
+                if ((col < 0) || (row < 0)) {
+                    row = -1;
+                    col = -1;
+                }
+                rollover.x = col;
+                rollover.y = row;
+            }
+
+        };
+        return r;
     }
 
     /**
@@ -388,21 +483,103 @@ public class JXTable extends JTable implements Searchable {
     }
 
     /**
-     * If the default editor for LinkModel.class is of type LinkRenderer enables
-     * link visiting with the given linkVisitor. As a side-effect the rollover
-     * property is set to true.
+     * listens to rollover properties. 
+     * Repaints effected component regions.
+     * Updates link cursor.
      * 
-     * @param linkVisitor
+     * @author Jeanette Winzenburg
      */
-    public void setDefaultLinkVisitor(ActionListener linkVisitor) {
-        TableCellEditor renderer = getDefaultEditor(LinkModel.class);
-        if (renderer instanceof LinkRenderer) {
-            ((LinkRenderer) renderer).setVisitingDelegate(linkVisitor);
+    public static class LinkController implements PropertyChangeListener {
+
+        private Cursor oldCursor;
+        private JXTable table;
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (RolloverProducer.ROLLOVER_KEY.equals(evt.getPropertyName())) {
+               rollover((JXTable) evt.getSource(), (Point) evt
+                            .getOldValue(), (Point) evt.getNewValue());
+            } 
         }
-        setRolloverEnabled(true);
+
+        public void install(JXTable table) {
+          release();  
+          this.table = table;
+          table.addPropertyChangeListener(this);
+          registerExecuteButtonAction();
+        }
+        
+        public void release() {
+            if (table == null) return;
+            table.removePropertyChangeListener(this);
+            unregisterExecuteButtonAction();
+        }
+
+//    --------------------------- JTable rollover
+        
+        private void rollover(JXTable table, Point oldLocation, Point newLocation) {
+            if (oldLocation != null) {
+                Rectangle r = table.getCellRect(oldLocation.y, oldLocation.x, false);
+                r.x = 0;
+                r.width = table.getWidth();
+                table.repaint(r);
+            }
+            if (newLocation != null) {
+                Rectangle r = table.getCellRect(newLocation.y, newLocation.x, false);
+                r.x = 0;
+                r.width = table.getWidth();
+                table.repaint(r);
+            }
+        }
+
+        private void unregisterExecuteButtonAction() {
+            table.getActionMap().put(EXECUTE_BUTTON_ACTIONCOMMAND, null);
+            KeyStroke space = KeyStroke.getKeyStroke("released SPACE");
+            table.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(space , null);
+        }
+
+        private void registerExecuteButtonAction() {
+            table.getActionMap().put(EXECUTE_BUTTON_ACTIONCOMMAND, createExecuteButtonAction());
+            KeyStroke space = KeyStroke.getKeyStroke("released SPACE");
+            table.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(space , EXECUTE_BUTTON_ACTIONCOMMAND);
+            
+        }
+
+        private Action createExecuteButtonAction() {
+            Action action = new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    AbstractButton button = getClickableRendererComponent();
+                    if (button != null) {
+                        button.doClick();
+                        table.repaint();
+                    }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return isClickable();
+                }
+
+                private boolean isClickable() {
+                    return getClickableRendererComponent() != null;
+                }
+                
+                private AbstractButton getClickableRendererComponent() {
+                    if (table == null || !table.isEnabled() || !table.hasFocus()) return null;
+                    int leadRow = table.getSelectionModel().getLeadSelectionIndex();
+                    int leadColumn = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                    if (leadRow < 0 || leadColumn < 0 || table.isCellEditable(leadRow, leadColumn)) return null;
+                    TableCellRenderer renderer = table.getCellRenderer(leadRow, leadColumn);
+                    Component rendererComp = table.prepareRenderer(renderer, leadRow, leadColumn);
+                    return rendererComp instanceof AbstractButton ? (AbstractButton) rendererComp : null;
+                }
+                
+            };
+            return action;
+        }
+
     }
 
-    
 //--------------------------------- ColumnControl
     
     /**
@@ -416,7 +593,9 @@ public class JXTable extends JTable implements Searchable {
     }
 
     /**
-     * set's the viewports background to this.background. PENDING: need to
+     * set's the viewports background to this.background.<p> 
+     * 
+     * PENDING: need to
      * repeat on background changes to this!
      * 
      */
@@ -429,7 +608,7 @@ public class JXTable extends JTable implements Searchable {
 
     /**
      * configure the upper right corner of an enclosing scrollpane with/o the
-     * ColumnControl, depending on setting of columnControl visibility flag.
+     * ColumnControl, depending on setting of columnControl visibility flag.<p>
      * 
      * PENDING: should choose corner depending on component orientation.
      */
@@ -449,18 +628,20 @@ public class JXTable extends JTable implements Searchable {
                 if (isColumnControlVisible()) {
                     verticalScrollPolicy = scrollPane
                             .getVerticalScrollBarPolicy();
-                    scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER,
+                    scrollPane.setCorner(JScrollPane.UPPER_TRAILING_CORNER,
                             getColumnControl());
 
                     scrollPane
                             .setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
                 } else {
-                    scrollPane
-                            .setVerticalScrollBarPolicy(verticalScrollPolicy == 0 ? ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-                                    : verticalScrollPolicy);
-
+                    if (verticalScrollPolicy != 0) {
+                        // Fix #155-swingx: reset only if we had force always before
+                        // PENDING: JW - doesn't cope with dynamically changing the policy
+                        // shouldn't be much of a problem because doesn't happen too often?? 
+                        scrollPane.setVerticalScrollBarPolicy(verticalScrollPolicy);
+                    }
                     try {
-                        scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER,
+                        scrollPane.setCorner(JScrollPane.UPPER_TRAILING_CORNER,
                                 null);
                     } catch (Exception ex) {
                         // Ignore spurious exception thrown by JScrollPane. This
@@ -470,6 +651,17 @@ public class JXTable extends JTable implements Searchable {
                 }
             }
         }
+    }
+
+    /**
+     * Hack around core swing JScrollPane bug: can't cope with
+     * corners when changing component orientation at runtime.
+     * overridden to re-configure the columnControl.
+     */
+    @Override
+    public void setComponentOrientation(ComponentOrientation o) {
+        super.setComponentOrientation(o);
+        configureColumnControl();
     }
 
     /**
@@ -507,10 +699,6 @@ public class JXTable extends JTable implements Searchable {
     public void setColumnControlVisible(boolean showColumnControl) {
         boolean old = columnControlVisible;
         this.columnControlVisible = showColumnControl;
-        // JW: hacking issue #38(swingx) to initially add all columns
-        // if (showColumnControl) {
-        // getColumnControl();
-        // }
         configureColumnControl();
         firePropertyChange("columnControlVisible", old, columnControlVisible);
     }
@@ -534,7 +722,7 @@ public class JXTable extends JTable implements Searchable {
                 } catch (PrinterException ex) {
                     // REMIND(aim): should invoke pluggable application error
                     // handler
-                    ex.printStackTrace();
+                    LOG.log(Level.WARNING, "", ex);
                 }
             } else if ("find".equals(getName())) {
                 find();
@@ -543,15 +731,8 @@ public class JXTable extends JTable implements Searchable {
 
     }
 
-    /** Opens the JXFindDialog for the table. */
-    private void find() {
-        if (dialog == null) {
-            dialog = new JXFindDialog(this);
-        }
-        dialog.setVisible(true);
-    }
 
-    private void initActions() {
+    private void initActionsAndBindings() {
         // Register the actions that this class can handle.
         ActionMap map = getActionMap();
         map.put("print", new Actions("print"));
@@ -559,6 +740,9 @@ public class JXTable extends JTable implements Searchable {
         map.put(PACKALL_ACTION_COMMAND, createPackAllAction());
         map.put(PACKSELECTED_ACTION_COMMAND, createPackSelectedAction());
         map.put(HORIZONTALSCROLL_ACTION_COMMAND, createHorizontalScrollAction());
+        // JW: this should be handled by the LF!
+        KeyStroke findStroke = KeyStroke.getKeyStroke("control F");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(findStroke, "find");
     }
 
     /** Creates an Action for horizontal scrolling. */
@@ -613,7 +797,7 @@ public class JXTable extends JTable implements Searchable {
      * well.
      */
     public void packSelected() {
-        int selected = getSelectedColumn();
+        int selected = getColumnModel().getSelectionModel().getLeadSelectionIndex();
         if (selected >= 0) {
             packColumn(selected, getDefaultPackMargin());
         }
@@ -658,8 +842,7 @@ public class JXTable extends JTable implements Searchable {
         if (e.getValueIsAdjusting())
             return;
         Action packSelected = getActionMap().get(PACKSELECTED_ACTION_COMMAND);
-        if ((packSelected != null)) {// && (e.getSource() instanceof
-                                        // ListSelectionModel)){
+        if ((packSelected != null)) {
             packSelected.setEnabled(!((ListSelectionModel) e.getSource())
                     .isSelectionEmpty());
         }
@@ -690,7 +873,6 @@ public class JXTable extends JTable implements Searchable {
         // RG: If there are no filters, call superclass version rather than
         // accessing model directly
         return filters == null ?
-//        return ((filters == null) || !filters.isAssigned()) ? 
                 super.getRowCount() : filters.getOutputSize();
     }
 
@@ -726,21 +908,23 @@ public class JXTable extends JTable implements Searchable {
      * {@inheritDoc}
      */
     public Object getValueAt(int row, int column) {
-        return getFilters().getValueAt(row, convertColumnIndexToModel(column));
+        return getModel().getValueAt(convertRowIndexToModel(row), 
+                convertColumnIndexToModel(column));
     }
 
     /**
      * {@inheritDoc}
      */
     public void setValueAt(Object aValue, int row, int column) {
-        getFilters().setValueAt(aValue, row, convertColumnIndexToModel(column));
+        getModel().setValueAt(aValue, convertRowIndexToModel(row),
+                convertColumnIndexToModel(column));
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isCellEditable(int row, int column) {
-        return getFilters().isCellEditable(row,
+        return getModel().isCellEditable(convertRowIndexToModel(row),
                 convertColumnIndexToModel(column));
     }
 
@@ -748,48 +932,43 @@ public class JXTable extends JTable implements Searchable {
      * {@inheritDoc}
      */
     public void setModel(TableModel newModel) {
-        // JW: need to clear here because super.setModel
-        // calls tableChanged...
-        // fixing #173
-//        clearSelection();
-        getSelection().lock();
+        // JW: need to look here? is done in tableChanged as well. 
+        getSelectionMapper().lock();
         super.setModel(newModel);
-        // JW: PENDING - needs cleanup, probably much simpler now...
-        // not needed because called in tableChanged
-//        use(filters);
     }
 
-    /** ? */
+    /** 
+     * additionally updates filtered state.
+     * {@inheritDoc}
+     */
     public void tableChanged(TableModelEvent e) {
-        // make Selection deaf ... super doesn't know about row
+        if (getSelectionModel().getValueIsAdjusting()) {
+            // this may happen if the uidelegate/editor changed selection
+            // and adjusting state
+            // before firing a editingStopped
+            // need to enforce update of model selection
+            getSelectionModel().setValueIsAdjusting(false);
+        }
+        // JW: make SelectionMapper deaf ... super doesn't know about row
         // mapping and sets rowSelection in model coordinates
         // causing complete confusion.
-        getSelection().lock();
+        getSelectionMapper().lock();
         super.tableChanged(e);
         updateSelectionAndRowModel(e);
         use(filters);
-        // JW: this is for the sake of the very first call to setModel, done in
-        // super on instantiation - at that time filters cannot be set
-        // because they will be re-initialized to null 
-        // ... arrrgggg
-//        if (filters != null) {
-//            filters.flush(); // will call updateOnFilterContentChanged()
-//        } else {
-//            // not really needed... we reach this branch only on the
-//            // very first super.setModel()
-//            getSelection().restoreSelection();
-//        }
     }
 
     /**
-     * reset model selection coordinates in Selection after
+     * reset model selection coordinates in SelectionMapper after
      * model events.
      * 
      * @param e
      */
     private void updateSelectionAndRowModel(TableModelEvent e) {
-        // c&p from JTable
-        // still missing: checkLeadAnchor
+        // JW: c&p from JTable
+        // JW: still missing: checkLeadAnchor (#172-swingx)
+        // super checkLeadAnchor is subtly buggy in lead/anchor update
+        // because it calls model.getRowCount() instead of getRowCount!!
         if (e.getType() == TableModelEvent.INSERT) {
             int start = e.getFirstRow();
             int end = e.getLastRow();
@@ -800,10 +979,10 @@ public class JXTable extends JTable implements Searchable {
                 end = getModel().getRowCount() - 1;
             }
 
-            // Adjust the selection to account for the new rows.
+            // Adjust the selectionMapper to account for the new rows.
             int length = end - start + 1;
-            getSelection().insertIndexInterval(start, length, true);
-            getRowSizing().insertIndexInterval(start, length, getRowHeight());
+            getSelectionMapper().insertIndexInterval(start, length, true);
+            getRowModelMapper().insertIndexInterval(start, length, getRowHeight());
 
         } else if (e.getType() == TableModelEvent.DELETE) {
             int start = e.getFirstRow();
@@ -816,26 +995,59 @@ public class JXTable extends JTable implements Searchable {
             }
 
             int deletedCount = end - start + 1;
-            int previousRowCount = getModel().getRowCount() + deletedCount;
-            // Adjust the selection to account for the new rows
-            getSelection().removeIndexInterval(start, end);
-            getRowSizing().removeIndexInterval(start, deletedCount);
+            // Adjust the selectionMapper to account for the new rows
+            getSelectionMapper().removeIndexInterval(start, end);
+            getRowModelMapper().removeIndexInterval(start, deletedCount);
 
         } else if (getSelectionModel().isSelectionEmpty()) {
+            // JW: this is incomplete! see #167-swingx
             // possibly got a dataChanged or structureChanged
             // super will have cleared selection
-            getSelection().clearModelSelection();
-            getRowSizing().clearModelSizes();
-            getRowSizing().setViewSizeSequence(getSuperRowModel(), getRowHeight());
+            getSelectionMapper().clearModelSelection();
+            getRowModelMapper().clearModelSizes();
+            updateViewSizeSequence();
+             
         }
 
     }
-    
-    private Selection getSelection() {
-        if (selection == null) {
-            selection = new Selection(filters, getSelectionModel());
+
+    /**
+     * Trying to hack around #172-swingx: lead/anchor of row selection model
+     * is not adjusted to valid (not even model indices!) in the 
+     * usual clearSelection after dataChanged/structureChanged.
+     * 
+     * @param e
+     */
+    private void hackLeadAnchor(TableModelEvent e) {
+        int lead = getSelectionModel().getLeadSelectionIndex();
+        int anchor = getSelectionModel().getAnchorSelectionIndex();
+        int lastRow = getModel().getRowCount() - 1;
+        if ((lead > lastRow) || (anchor > lastRow)) {
+            lead = anchor = lastRow;
+            getSelectionModel().setAnchorSelectionIndex(lead);
+            getSelectionModel().setLeadSelectionIndex(lead);
         }
-        return selection;
+    }
+
+
+    /**
+     * Called if individual row height mapping need to be updated.
+     * This implementation guards against unnessary access of 
+     * super's private rowModel field.
+     */
+    protected void updateViewSizeSequence() {
+        SizeSequence sizeSequence = null;
+        if (isRowHeightEnabled()) {
+            sizeSequence = getSuperRowModel();
+        }
+        getRowModelMapper().setViewSizeSequence(sizeSequence, getRowHeight());
+    }
+    
+    private SelectionMapper getSelectionMapper() {
+        if (selectionMapper == null) {
+            selectionMapper = new SelectionMapper(filters, getSelectionModel());
+        }
+        return selectionMapper;
     }
 
 
@@ -892,9 +1104,11 @@ public class JXTable extends JTable implements Searchable {
         }
         filters = pipeline;
         filters.setSorter(sorter);
-        getSelection().setFilters(filters);
-        getRowSizing().setFilters(filters);
+        // JW: first assign to prevent (short?) illegal internal state
+        // #173-swingx
         use(filters);
+        getRowModelMapper().setFilters(filters);
+        getSelectionMapper().setFilters(filters);
     }
 
 
@@ -921,8 +1135,6 @@ public class JXTable extends JTable implements Searchable {
      * method called on change notification from filterpipeline.
      */
     protected void updateOnFilterContentChanged() {
-        // Force private rowModel in JTable to null;
-//        adminSetRowHeight(getRowHeight());
         revalidate();
         repaint();
     }
@@ -950,13 +1162,6 @@ public class JXTable extends JTable implements Searchable {
         this.sortable = sortable;
         if (!isSortable()) resetSorter();
         firePropertyChange("sortable", !sortable, sortable);
-        // JW @todo: this is a hack!
-        // check if the sortable/not sortable toggling still works with the
-        // sorter in pipeline
-//        if (getInteractiveSorter() != null) {
-//            updateOnFilterContentChanged();
-//        }
-//
     }
 
     /** Returns true if the table is sortable. */
@@ -964,14 +1169,6 @@ public class JXTable extends JTable implements Searchable {
         return sortable;
     }
 
-    // public void setAutomaticSort(boolean automaticEnabled) {
-    // this.automaticSortDisabled = !automaticEnabled;
-    //
-    // }
-    //
-    // public boolean isAutomaticSort() {
-    // return !automaticSortDisabled;
-    // }
 
     private void setInteractiveSorter(Sorter sorter) {
         // this check is for the sake of the very first call after instantiation
@@ -1000,7 +1197,7 @@ public class JXTable extends JTable implements Searchable {
     }
 
     public void columnRemoved(TableColumnModelEvent e) {
-        // old problem: need access to removed column
+        // JW - old problem: need access to removed column
         // to get hold of removed modelIndex
         // to remove interactive sorter if any
         // no way
@@ -1181,7 +1378,7 @@ public class JXTable extends JTable implements Searchable {
             return ((TableColumnModelExt) getColumnModel())
                     .getColumnExt(identifier);
         } else {
-            // pending: not tested!
+            // PENDING: not tested!
             try {
                 TableColumn column = getColumn(identifier);
                 if (column instanceof TableColumnExt) {
@@ -1278,132 +1475,286 @@ public class JXTable extends JTable implements Searchable {
     }
 
 //----------------------- Search support 
-    
-    /**
-     * Performs a search across the table using String that represents a regex
-     * pattern; {@link java.util.regex.Pattern}. All columns and all rows are
-     * searched; the row id of the first match is returned.
-     */
-    public int search(String searchString) {
-        return search(searchString, -1);
+
+
+    /** Opens the find widget for the table. */
+    private void find() {
+        SearchFactory.getInstance().showFindInput(this, getSearchable());
     }
 
     /**
-     * Performs a search on a column using String that represents a regex
-     * pattern; {@link java.util.regex.Pattern}. The specified column searched;
-     * the row id of the first match is returned.
-     */
-    public int search(String searchString, int columnIndex) {
-        Pattern pattern = null;
-        if (searchString != null) {
-            return search(Pattern.compile(searchString, 0), columnIndex);
-        }
-        return -1;
-    }
-
-    /**
-     * Performs a search across the table using a
-     * {@link java.util.regex.Pattern}. All columns and all rows are searched;
-     * the row id of the first match is returned.
-     */
-    public int search(Pattern pattern) {
-        return search(pattern, -1);
-    }
-
-    /**
-     * Performs a search across the table using a
-     * {@link java.util.regex.Pattern}. starting at a given row. All columns
-     * and all rows are searched; the row id of the first match is returned.
-     */
-    public int search(Pattern pattern, int startIndex) {
-        return search(pattern, startIndex, false);
-    }
-
-    // Save the last column with the match.
-    private int lastCol = 0;
-
-    private RowSizing rowSizing;
-
-    private Field rowModelField;
-
-    private boolean rowHeightEnabled;
-
-    /**
-     * Performs a search across the table using a
-     * {@link java.util.regex.Pattern}. starting at a given row. All columns
-     * and all rows are searched; the row id of the first match is returned.
      * 
-     * @param startIndex
-     *            row to start search
-     * @param backwards
-     *            whether to start at the last row and search up to the first.
-     * @return row with a match.
+     * @returns a not-null Searchable for this editor.  
      */
-    public int search(Pattern pattern, int startIndex, boolean backwards) {
-        if (pattern == null) {
-            lastCol = 0;
-            return -1;
+    public Searchable getSearchable() {
+        if (searchable == null) {
+            searchable = new TableSearchable();
         }
-        int rows = getRowCount();
-        int endCol = getColumnCount();
-
-        int matchRow = -1;
-
-        if (backwards == true) {
-            if (startIndex < 0)
-                startIndex = rows;
-            int startRow = startIndex - 1;
-            for (int r = startRow; r >= 0 && matchRow == -1; r--) {
-                for (int c = endCol - 1; c >= 0; c--) {
-                    Object value = getValueAt(r, c);
-                    if ((value != null) &&
-                    // JW: differs from PatternHighlighter/Filter
-                            pattern.matcher(value.toString()).find()) {
-                        // pattern.matcher(value.toString()).matches()) {
-                        changeSelection(r, c, false, false);
-                        matchRow = r;
-                        lastCol = c;
-                        break; // No need to search other columns
-                    }
-                }
-                if (matchRow == -1) {
-                    lastCol = endCol;
-                }
-            }
-        } else {
-            int startRow = startIndex + 1;
-            for (int r = startRow; r < rows && matchRow == -1; r++) {
-                for (int c = lastCol; c < endCol; c++) {
-                    Object value = getValueAt(r, c);
-                    if ((value != null) &&
-                    // JW: differs from PatternHighlighter/Filter
-                            pattern.matcher(value.toString()).find()) {
-                        // pattern.matcher(value.toString()).matches()) {
-                        changeSelection(r, c, false, false);
-                        matchRow = r;
-                        lastCol = c;
-                        break; // No need to search other columns
-                    }
-                }
-                if (matchRow == -1) {
-                    lastCol = 0;
-                }
-            }
-        }
-
-        if (matchRow != -1) {
-            Object viewport = getParent();
-            if (viewport instanceof JViewport) {
-                Rectangle rect = getCellRect(getSelectedRow(), 0, true);
-                Point pt = ((JViewport) viewport).getViewPosition();
-                rect.setLocation(rect.x - pt.x, rect.y - pt.y);
-                ((JViewport) viewport).scrollRectToVisible(rect);
-            }
-        }
-        return matchRow;
+        return searchable;
     }
 
+    /**
+     * sets the Searchable for this editor. If null, a default 
+     * searchable will be used.
+     * 
+     * @param searchable
+     */
+    public void setSearchable(Searchable searchable) {
+        this.searchable = searchable;
+    }
 
+    public class TableSearchable extends AbstractSearchable {
+
+        private SearchHighlighter searchHighlighter;
+        
+
+        @Override
+        protected void findMatchAndUpdateState(Pattern pattern, int startRow,
+                boolean backwards) {
+            SearchResult matchRow = null;
+            if (backwards) {
+                // CHECK: off-one end still needed?
+                // Probably not - the findXX don't have side-effects any longer
+                // hmmm... still needed: even without side-effects we need to
+                // guarantee calling the notfound update at the very end of the
+                // loop.
+                for (int r = startRow; r >= -1 && matchRow == null; r--) {
+                    matchRow = findMatchBackwardsInRow(pattern, r);
+                    updateState(matchRow);
+                }
+            } else {
+                for (int r = startRow; r <= getSize() && matchRow == null; r++) {
+                    matchRow = findMatchForwardInRow(pattern, r);
+                    updateState(matchRow);
+                }
+            }
+            // KEEP - JW: Needed to update if loop wasn't entered!
+            // the alternative is to go one off in the loop. Hmm - which is
+            // preferable?
+            // updateState(matchRow);
+
+        }
+
+        /**
+         * called if sameRowIndex && !hasEqualRegEx. Matches the cell at
+         * row/lastFoundColumn against the pattern. PRE: lastFoundColumn valid.
+         * 
+         * @param pattern
+         * @param row
+         * @return
+         */
+        protected SearchResult findExtendedMatch(Pattern pattern, int row) {
+            return findMatchAt(pattern, row, lastSearchResult.foundColumn);
+        }
+
+        /**
+         * Searches forward through columns of the given row. Starts at
+         * lastFoundColumn or first column if lastFoundColumn < 0. returns an
+         * appropriate SearchResult if a matching cell is found in this row or
+         * null if no match is found. A row index out off range results in a
+         * no-match.
+         * 
+         * @param pattern
+         * @param row
+         *            the row to search
+         * @return
+         */
+        private SearchResult findMatchForwardInRow(Pattern pattern, int row) {
+            int startColumn = (lastSearchResult.foundColumn < 0) ? 0 : lastSearchResult.foundColumn;
+            if (isValidIndex(row)) {
+                for (int column = startColumn; column < getColumnCount(); column++) {
+                    SearchResult result = findMatchAt(pattern, row, column);
+                    if (result != null)
+                        return result;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Searches forward through columns of the given row. Starts at
+         * lastFoundColumn or first column if lastFoundColumn < 0. returns an
+         * appropriate SearchResult if a matching cell is found in this row or
+         * null if no match is found. A row index out off range results in a
+         * no-match.
+         * 
+         * @param pattern
+         * @param row
+         *            the row to search
+         * @return
+         */
+        private SearchResult findMatchBackwardsInRow(Pattern pattern, int row) {
+            int startColumn = (lastSearchResult.foundColumn < 0) ? getColumnCount() - 1
+                    : lastSearchResult.foundColumn;
+            if (isValidIndex(row)) {
+                for (int column = startColumn; column >= 0; column--) {
+                    SearchResult result = findMatchAt(pattern, row, column);
+                    if (result != null)
+                        return result;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Matches the cell content at row/col against the given Pattern.
+         * Returns an appropriate SearchResult if matching or null if no
+         * matching
+         * 
+         * @param pattern
+         * @param row
+         *            a valid row index in view coordinates
+         * @param column
+         *            a valid column index in view coordinates
+         * @return
+         */
+        protected SearchResult findMatchAt(Pattern pattern, int row, int column) {
+            Object value = getValueAt(row, column);
+            if (value != null) {
+                Matcher matcher = pattern.matcher(value.toString());
+                if (matcher.find()) {
+                    return createSearchResult(matcher, row, column);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Called if startIndex is different from last search, reset the column
+         * to -1 and make sure a backwards/forwards search starts at last/first
+         * row, respectively.
+         * 
+         * @param startIndex
+         * @param backwards
+         * @return
+         */
+        protected int adjustStartPosition(int startIndex, boolean backwards) {
+            lastSearchResult.foundColumn = -1;
+            return super.adjustStartPosition(startIndex, backwards);
+        }
+
+        /**
+         * Moves the internal start for matching as appropriate and returns the
+         * new startIndex to use. Called if search was messaged with the same
+         * startIndex as previously.
+         * 
+         * @param startRow
+         * @param backwards
+         * @return
+         */
+        @Override
+        protected int moveStartPosition(int startRow, boolean backwards) {
+            if (backwards) {
+                lastSearchResult.foundColumn--;
+                if (lastSearchResult.foundColumn < 0) {
+                    startRow--;
+                }
+            } else {
+                lastSearchResult.foundColumn++;
+                if (lastSearchResult.foundColumn >= getColumnCount()) {
+                    lastSearchResult.foundColumn = -1;
+                    startRow++;
+                }
+            }
+            return startRow;
+        }
+
+        /**
+         * Checks if the startIndex is a candidate for trying a re-match.
+         * 
+         * 
+         * @param startIndex
+         * @return true if the startIndex should be re-matched, false if not.
+         */
+        protected boolean isEqualStartIndex(final int startIndex) {
+            return super.isEqualStartIndex(startIndex)
+                    && isValidColumn(lastSearchResult.foundColumn);
+        }
+
+        /**
+         * checks if row is in range: 0 <= row < getRowCount().
+         * 
+         * @param column
+         * @return
+         */
+        private boolean isValidColumn(int column) {
+            return column >= 0 && column < getColumnCount();
+        }
+
+
+        @Override
+        protected int getSize() {
+            return getRowCount();
+        }
+
+        @Override
+        protected void moveMatchMarker() {
+            int row = lastSearchResult.foundRow;
+            int column = lastSearchResult.foundColumn;
+            Pattern pattern = lastSearchResult.pattern;
+            if ((row < 0) || (column < 0)) {
+                if (markByHighlighter()) {
+                    getSearchHighlighter().setPattern(null);
+                }
+                return;
+            }
+            if (markByHighlighter()) {
+                Rectangle cellRect = getCellRect(row, column, true);
+                if (cellRect != null) {
+                    scrollRectToVisible(cellRect);
+                }
+                ensureInsertedSearchHighlighters();
+                // TODO (JW) - cleanup SearchHighlighter state management
+                getSearchHighlighter().setPattern(pattern);
+                int modelColumn = convertColumnIndexToModel(column);
+                getSearchHighlighter().setHighlightCell(row, modelColumn);
+            } else { // use selection
+                changeSelection(row, column, false, false);
+                if (!getAutoscrolls()) {
+                    // scrolling not handled by moving selection
+                    Rectangle cellRect = getCellRect(row, column, true);
+                    if (cellRect != null) {
+                        scrollRectToVisible(cellRect);
+                    }
+                }
+            }
+        }
+
+        private boolean markByHighlighter() {
+            return Boolean.TRUE.equals(getClientProperty(MATCH_HIGHLIGHTER));
+        }
+
+        private SearchHighlighter getSearchHighlighter() {
+            if (searchHighlighter == null) {
+                searchHighlighter = createSearchHighlighter();
+            }
+            return searchHighlighter;
+        }
+
+        private void ensureInsertedSearchHighlighters() {
+            if (getHighlighters() == null) {
+                setHighlighters(new HighlighterPipeline(
+                        new Highlighter[] { getSearchHighlighter() }));
+            } else if (!isInPipeline(getSearchHighlighter())) {
+                getHighlighters().addHighlighter(getSearchHighlighter());
+            }
+        }
+
+        private boolean isInPipeline(PatternHighlighter searchHighlighter) {
+            Highlighter[] inPipeline = getHighlighters().getHighlighters();
+            if ((inPipeline.length > 0) && 
+               (searchHighlighter.equals(inPipeline[inPipeline.length -1]))) {
+                return true;
+            }
+            getHighlighters().removeHighlighter(searchHighlighter);
+            return false;
+        }
+
+        protected SearchHighlighter createSearchHighlighter() {
+            return new SearchHighlighter();
+        }
+
+    }
 //-------------------------------- sizing support
     
     /** ? */
@@ -1540,29 +1891,31 @@ public class JXTable extends JTable implements Searchable {
             return table;
         }
 
-        /**
-         * {@inheritDoc}
-         */
-        public boolean hasFocus() {
-
-            boolean rowIsLead = (table.getSelectionModel()
-                    .getLeadSelectionIndex() == row);
-            boolean colIsLead = (table.getColumnModel().getSelectionModel()
-                    .getLeadSelectionIndex() == column);
-            return table.isFocusOwner() && (rowIsLead && colIsLead);
-
-        }
 
         public String getColumnName(int columnIndex) {
-            TableColumnModel columnModel = table.getColumnModel();
-            if (columnModel == null) {
-                return "Column " + columnIndex;
-            }
-            TableColumn column = columnModel.getColumn(columnIndex);
-
+            TableColumn column = getColumnByModelIndex(columnIndex);
             return column == null ? "" : column.getHeaderValue().toString();
         }
 
+        protected TableColumn getColumnByModelIndex(int modelColumn) {
+            List columns = table.getColumns(true);
+            for (Iterator iter = columns.iterator(); iter.hasNext();) {
+                TableColumn column = (TableColumn) iter.next();
+                if (column.getModelIndex() == modelColumn) {
+                    return column;
+                }
+            }
+            return null;
+        }
+
+        
+        public String getColumnIdentifier(int columnIndex) {
+            
+            TableColumn column = getColumnByModelIndex(columnIndex);
+            Object identifier = column != null ? column.getIdentifier() : null;
+            return identifier != null ? identifier.toString() : null;
+        }
+        
         public int getColumnCount() {
             return table.getModel().getColumnCount();
         }
@@ -1575,22 +1928,27 @@ public class JXTable extends JTable implements Searchable {
          * {@inheritDoc}
          */
         public Object getValueAt(int row, int column) {
-            // RG: eliminate superfluous back-and-forth conversions
             return table.getModel().getValueAt(row, column);
         }
 
-        public Object getFilteredValueAt(int row, int column) {
-            return table.getValueAt(row, column); // in view coordinates
-        }
-
         public void setValueAt(Object aValue, int row, int column) {
-            // RG: eliminate superfluous back-and-forth conversions
             table.getModel().setValueAt(aValue, row, column);
         }
 
         public boolean isCellEditable(int row, int column) {
-            // RG: eliminate superfluous back-and-forth conversions
             return table.getModel().isCellEditable(row, column);
+        }
+
+        
+        
+        public boolean isTestable(int column) {
+            return getColumnByModelIndex(column) != null;
+        }
+//-------------------------- accessing view state/values
+        
+        public Object getFilteredValueAt(int row, int column) {
+            return getValueAt(table.convertRowIndexToModel(row), column);
+//            return table.getValueAt(row, modelToView(column)); // in view coordinates
         }
 
         /**
@@ -1598,6 +1956,16 @@ public class JXTable extends JTable implements Searchable {
          */
         public boolean isSelected() {
             return table.isCellSelected(row, column);
+        }
+        /**
+         * {@inheritDoc}
+         */
+        public boolean hasFocus() {
+            boolean rowIsLead = (table.getSelectionModel()
+                    .getLeadSelectionIndex() == row);
+            boolean colIsLead = (table.getColumnModel().getSelectionModel()
+                    .getLeadSelectionIndex() == column);
+            return table.isFocusOwner() && (rowIsLead && colIsLead);
         }
 
         /**
@@ -1614,10 +1982,6 @@ public class JXTable extends JTable implements Searchable {
             return table.convertColumnIndexToModel(columnIndex);
         }
 
-        public String getColumnIdentifier(int columnIndex) {
-            Object identifier = table.getColumnExt(columnIndex).getIdentifier();
-            return identifier != null ? identifier.toString() : null;
-        }
 
     }
 
@@ -1642,8 +2006,41 @@ public class JXTable extends JTable implements Searchable {
             highlighters.addChangeListener(getHighlighterChangeListener());
         }
         firePropertyChange("highlighters", old, getHighlighters());
+        repaint();
+    }
+    
+    /**
+     * Adds a Highlighter.
+     * 
+     * If the HighlighterPipeline returned from getHighlighters() is null, creates
+     * and sets a new pipeline containing the given Highlighter. Else, appends
+     * the Highlighter to the end of the pipeline.
+     * 
+     * @param highlighter the Highlighter to add - must not be null.
+     * @throws NullPointerException if highlighter is null.
+     */
+    public void addHighlighter(Highlighter highlighter) {
+        HighlighterPipeline pipeline = getHighlighters();
+        if (pipeline == null) {
+           setHighlighters(new HighlighterPipeline(new Highlighter[] {highlighter})); 
+        } else {
+            pipeline.addHighlighter(highlighter);
+        }
     }
 
+    /**
+     * Removes the Highlighter.
+     * 
+     * Does nothing if the HighlighterPipeline is null or does not contain
+     * the given Highlighter.
+     * 
+     * @param highlighter the highlighter to remove.
+     */
+    public void removeHighlighter(Highlighter highlighter) {
+        if ((getHighlighters() == null)) return;
+        getHighlighters().removeHighlighter(highlighter);
+    }
+    
     /**
      * returns the ChangeListener to use with highlighters. Creates one if
      * necessary.
@@ -1669,7 +2066,11 @@ public class JXTable extends JTable implements Searchable {
     /**
      * Returns the decorated <code>Component</code> used as a stamp to render
      * the specified cell. Overrides superclass version to provide support for
-     * cell decorators.
+     * cell decorators. 
+     * 
+     * Adjusts component orientation (guaranteed to happen before applying 
+     * Highlighters).
+     * see - https://swingx.dev.java.net/issues/show_bug.cgi?id=145
      * 
      * @param renderer
      *            the <code>TableCellRenderer</code> to prepare
@@ -1683,17 +2084,14 @@ public class JXTable extends JTable implements Searchable {
      */
     public Component prepareRenderer(TableCellRenderer renderer, int row,
             int column) {
-        // JW PENDING: testing cadavers ... check if still needed  
-//        Object value = getValueAt(row, column);
-//        Class columnClass = getColumnClass(column);
-//        boolean typeclash = !columnClass.isInstance(value);
-//        TableColumn tableColumn = getColumnModel().getColumn(column);
-//        getColumnClass(column);
         Component stamp = super.prepareRenderer(renderer, row, column);
+        adjustComponentOrientation(stamp);
         if (highlighters == null) {
             return stamp; // no need to decorate renderer with highlighters
         } else {
-            // MUST ALWAYS ACCESS dataAdapter through accessor method!!!
+            // PENDING - JW: code duplication - 
+            // add method to access component adapter with row/column
+            // set as needed!
             ComponentAdapter adapter = getComponentAdapter();
             adapter.row = row;
             adapter.column = column;
@@ -1702,12 +2100,35 @@ public class JXTable extends JTable implements Searchable {
     }
 
     
+    /**
+     * Overridden to adjust the editor's component orientation if 
+     * appropriate.
+     */
+    @Override
+    public Component prepareEditor(TableCellEditor editor, int row, int column) {
+        Component comp =  super.prepareEditor(editor, row, column);
+        adjustComponentOrientation(comp);
+        return comp;
+    }
+
+    /**
+     * adjusts the Component's orientation to JXTable's CO if appropriate.
+     * Here: always.
+     * 
+     * @param stamp
+     */
+    protected void adjustComponentOrientation(Component stamp) {
+        if (stamp.getComponentOrientation().equals(getComponentOrientation())) return;
+        stamp.applyComponentOrientation(getComponentOrientation());
+    }
 
     /**
      * Returns a new instance of the default renderer for the specified class.
      * This differs from <code>getDefaultRenderer()</code> in that it returns
      * a <b>new </b> instance each time so that the renderer may be set and
      * customized on a particular column.
+     * 
+     * PENDING: must not return null!
      * 
      * @param columnClass
      *            Class of value being rendered
@@ -1720,7 +2141,7 @@ public class JXTable extends JTable implements Searchable {
             try {
                 return (TableCellRenderer) renderer.getClass().newInstance();
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.fine("could not create renderer for " + columnClass);
             }
         }
         return null;
@@ -1729,7 +2150,6 @@ public class JXTable extends JTable implements Searchable {
     /** ? */
     protected void createDefaultEditors() {
         super.createDefaultEditors();
-        setLazyEditor(LinkModel.class, "org.jdesktop.swingx.LinkRenderer");
     }
 
     /**
@@ -1786,9 +2206,6 @@ public class JXTable extends JTable implements Searchable {
                 "org.jdesktop.swingx.JXTable$BooleanRenderer");
         setLazyRenderer(boolean.class,
                 "org.jdesktop.swingx.JXTable$BooleanRenderer");
-
-        // Other
-        setLazyRenderer(LinkModel.class, "org.jdesktop.swingx.LinkRenderer");
     }
 
 
@@ -1818,36 +2235,44 @@ public class JXTable extends JTable implements Searchable {
     public static class NumberRenderer extends DefaultTableCellRenderer {
         public NumberRenderer() {
             super();
-            setHorizontalAlignment(JLabel.RIGHT);
+            setHorizontalAlignment(JLabel.TRAILING);
         }
     }
 
     public static class DoubleRenderer extends NumberRenderer {
-        NumberFormat formatter;
+        private final NumberFormat formatter;
 
         public DoubleRenderer() {
-            super();
+            this(null);
         }
 
-        public void setValue(Object value) {
+        public DoubleRenderer(NumberFormat formatter) {
             if (formatter == null) {
                 formatter = NumberFormat.getInstance();
             }
+            this.formatter = formatter;
+        }
+
+        public void setValue(Object value) {
             setText((value == null) ? "" : formatter.format(value));
         }
     }
 
     public static class DateRenderer extends DefaultTableCellRenderer {
-        DateFormat formatter;
+        private final DateFormat formatter;
 
         public DateRenderer() {
-            super();
+            this(null);
         }
 
-        public void setValue(Object value) {
+        public DateRenderer(DateFormat formatter) {
             if (formatter == null) {
                 formatter = DateFormat.getDateInstance();
             }
+            this.formatter = formatter;
+        }
+
+        public void setValue(Object value) {
             setText((value == null) ? "" : formatter.format(value));
         }
     }
@@ -1863,11 +2288,17 @@ public class JXTable extends JTable implements Searchable {
         }
     }
 
-    public static class BooleanRenderer extends JCheckBox implements
-            TableCellRenderer {
+    /*
+     * re- c&p'd from 1.5 JTable. 
+     */
+    public static class BooleanRenderer extends JCheckBox implements // , UIResource
+            TableCellRenderer     {
+        private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
+
         public BooleanRenderer() {
             super();
             setHorizontalAlignment(JLabel.CENTER);
+            setBorderPainted(true);
         }
 
         public Component getTableCellRendererComponent(JTable table,
@@ -1881,18 +2312,24 @@ public class JXTable extends JTable implements Searchable {
                 setBackground(table.getBackground());
             }
             setSelected((value != null && ((Boolean) value).booleanValue()));
+
+            if (hasFocus) {
+                setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+            } else {
+                setBorder(noFocusBorder);
+            }
+
             return this;
         }
     }
 
-//---------------------------- updateUI support
+// ---------------------------- updateUI support
     
     /**
      * bug fix: super doesn't update all renderers/editors.
      */
     public void updateUI() {
         super.updateUI();
-        // JW PENDING: update columnControl
         if (columnControlButton != null) {
             columnControlButton.updateUI();
         }
@@ -1905,20 +2342,21 @@ public class JXTable extends JTable implements Searchable {
                 .elements(); defaultRenderers.hasMoreElements();) {
             updateRendererUI(defaultRenderers.nextElement());
         }
-        Enumeration columns = getColumnModel().getColumns();
-        if (getColumnModel() instanceof TableColumnModelExt) {
-            columns = Collections
-                    .enumeration(((TableColumnModelExt) getColumnModel())
-                            .getAllColumns());
-        }
-        while (columns.hasMoreElements()) {
-            TableColumn column = (TableColumn) columns.nextElement();
+        List columns = getColumns(true);
+        for (Iterator iter = columns.iterator(); iter.hasNext();) {
+            TableColumn column = (TableColumn) iter.next();
             updateEditorUI(column.getCellEditor());
             updateRendererUI(column.getCellRenderer());
             updateRendererUI(column.getHeaderRenderer());
         }
         updateRowHeightUI(true);
+        updateHighlighters();
         configureViewportBackground();
+    }
+
+    protected void updateHighlighters() {
+        if (getHighlighters() == null) return;
+        getHighlighters().updateUI();
     }
 
     /** ? */
@@ -1937,7 +2375,7 @@ public class JXTable extends JTable implements Searchable {
         if (rowHeight > 0) {
             isXTableRowHeightSet = true;
         }
-        getRowSizing().setViewSizeSequence(getSuperRowModel(), getRowHeight());
+        updateViewSizeSequence();
 
     }
 
@@ -1945,7 +2383,7 @@ public class JXTable extends JTable implements Searchable {
     public void setRowHeight(int row, int rowHeight) {
         if (!isRowHeightEnabled()) return;
         super.setRowHeight(row, rowHeight);
-        getRowSizing().setViewSizeSequence(getSuperRowModel(), getRowHeight());
+        updateViewSizeSequence();
         resizeAndRepaint();
     }
 
@@ -1970,7 +2408,6 @@ public class JXTable extends JTable implements Searchable {
         if (!enabled) {
             adminSetRowHeight(getRowHeight());
         }
-//        getRowSizing().setViewSizeSequence(getSuperRowModel(), getRowHeight());
         firePropertyChange("rowHeightEnabled", old, rowHeightEnabled);
     }
     
@@ -1989,14 +2426,14 @@ public class JXTable extends JTable implements Searchable {
                 return (SizeSequence) field.get(this);
             }
         } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.fine("cannot use reflection " +
+            " - expected behaviour in sandbox");
         } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.fine("problem while accessing super's private field - private api changed?");
         } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.fine("cannot access private field " +
+                " - expected behaviour in sandbox. " +
+                "Could be program logic running wild in unrestricted contexts");
         }
         return null;
     }
@@ -2012,10 +2449,11 @@ public class JXTable extends JTable implements Searchable {
                 rowModelField.setAccessible(true);
             } catch (SecurityException e) {
                 rowModelField = null;
-                e.printStackTrace();
+                LOG.fine("cannot access JTable private field rowModel " +
+                                "- expected behaviour in sandbox");
             } catch (NoSuchFieldException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                LOG.fine("problem while accessing super's private field" +
+                                " - private api changed?");
             }
         }
         return rowModelField;
@@ -2025,11 +2463,11 @@ public class JXTable extends JTable implements Searchable {
      * 
      * @return
      */
-    protected RowSizing getRowSizing() {
-        if (rowSizing == null) {
-            rowSizing = new RowSizing(filters);
+    protected SizeSequenceMapper getRowModelMapper() {
+        if (rowModelMapper == null) {
+            rowModelMapper = new SizeSequenceMapper(filters);
         }
-        return rowSizing;
+        return rowModelMapper;
     }
 
     /**
@@ -2119,7 +2557,12 @@ public class JXTable extends JTable implements Searchable {
     // protected TableModel createDefaultDataModel() {
     // return new DefaultTableModelExt();
     // }
-
+    
+    /*************      Data Binding    ****************/
+    private String dataPath = "";
+    private BindingContext ctx = null;
+    private String selectionModelName = "tableSelection";
+    
     /**
      * @param path
      */
@@ -2139,22 +2582,64 @@ public class JXTable extends JTable implements Searchable {
     public String getDataPath() {
         return dataPath;
     }
-    
-    public void setFieldNames(String[] fieldNames) {
-        this.fieldNames = fieldNames;
-//        if (ctx != null) {
-//            for (BindingDescriptor bd : ctx.getBindingDescriptors()) {
-//                if (bd.target == this) {
-//                    if (((DirectTableBinding)bd.binding) != null) {
-//                        ((DirectTableBinding)bd.binding).release();
-//                        ((DirectTableBinding)bd.binding).initialize();
-//                    }
-//                }
-//            }
-//        }
+
+    public void setBindingContext(BindingContext ctx) {
+        if (this.ctx != null) {
+            DataBoundUtils.unbind(this, this.ctx);
+        }
+        this.ctx = ctx;
+        if (this.ctx != null) {
+            if (DataBoundUtils.isValidPath(this.dataPath)) {
+                ctx.bind(this, this.dataPath);
+            }
+        }
+    }
+
+    public BindingContext getBindingContext() {
+        return ctx;
     }
     
-    public String[] getFieldNames() {
-        return fieldNames;
+    //PENDING
+    //addNotify and removeNotify were necessary for java one, not sure if I still
+    //need them or not
+    public void addNotify() {
+        super.addNotify();
+        //if ctx does not exist, try to create one
+        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+            ctx = DataBoundUtils.bind(this, dataPath);
+        }
+    }
+
+    public void removeNotify() {
+        //if I had a ctx, blow it away
+        if (ctx != null) {
+            DataBoundUtils.unbind(this, ctx);
+        }
+        super.removeNotify();
+    }
+//
+//    //BEANS SPECIFIC CODE:
+//    private boolean designTime = false;
+//    public void setDesignTime(boolean designTime) {
+//        this.designTime = designTime;
+//    }
+//    public boolean isDesignTime() {
+//        return designTime;
+//    }
+//    public void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        if (designTime && dataPath != null && !dataPath.equals("")) {
+//            //draw the binding icon
+//            ImageIcon ii = new ImageIcon(getClass().getResource("icon/chain.png"));
+//            g.drawImage(ii.getImage(), getWidth() - ii.getIconWidth(), 0, ii.getIconWidth(), ii.getIconHeight(), ii.getImageObserver());
+//        }
+//    }
+    
+    public String getSelectionModelName() {
+        return selectionModelName;
+    }
+
+    public void setSelectionModelName(String selectionModelName) {
+        this.selectionModelName = selectionModelName;
     }
 }
