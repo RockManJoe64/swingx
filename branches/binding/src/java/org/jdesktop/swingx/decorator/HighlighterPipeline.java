@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.decorator;
@@ -13,10 +27,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BoundedRangeModel;
-import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.table.DefaultTableCellRenderer;
+
+import org.jdesktop.swingx.decorator.Highlighter.UIHighlighter;
+
+import org.jdesktop.swingx.decorator.AlternateRowHighlighter.UIAlternateRowHighlighter;
+import org.jdesktop.swingx.decorator.Highlighter.UIHighlighter;
 
 /**
  * A class which manages the lists of highlighters.
@@ -27,12 +46,29 @@ import javax.swing.event.EventListenerList;
  * @author Jeanette Winzenburg
  * 
  */
-public class HighlighterPipeline {
+public class HighlighterPipeline implements UIHighlighter {
     protected transient ChangeEvent changeEvent = null;
     protected EventListenerList listenerList = new EventListenerList();
 
     protected List<Highlighter> highlighters;
-    private final static Highlighter nullHighlighter = new Highlighter(null, null);
+    // JW: this is a hack to make JXTable renderers behave...
+    private final static Highlighter resetDefaultTableCellRendererHighlighter = new Highlighter(null, null, true){
+
+        @Override
+        protected void applyBackground(Component renderer, ComponentAdapter adapter) {
+            if (!adapter.isSelected()) {
+                renderer.setBackground(null);
+            }
+        }
+
+        @Override
+        protected void applyForeground(Component renderer, ComponentAdapter adapter) {
+            if (!adapter.isSelected()) {
+                renderer.setForeground(null);
+            }
+        }
+        
+    };
     private ChangeListener highlighterChangeListener;
 
     public HighlighterPipeline() {
@@ -46,15 +82,6 @@ public class HighlighterPipeline {
      */
     public HighlighterPipeline(Highlighter[] inList) {
         this();
-        // always returns a new copy of inList
-        // XXX seems like there is too much happening here
-        // JW: and probably not what's intended - the array
-        // is cloned, not its content!
-        // don't need to anyway - highlighters are shareable
-        // between Pipelines - the order serves no purpose
-//        List copy = Arrays.asList((Highlighter[])inList.clone());
-//        highlighters = new ArrayList(copy.size());
-//        highlighters.addAll(copy);
         for (int i = 0; i < inList.length; i++) {
             addHighlighter(inList[i]);
         }
@@ -85,9 +112,11 @@ public class HighlighterPipeline {
         } else {
             highlighters.add(highlighters.size(), hl);
         }
+        updateUI(hl);
         hl.addChangeListener(getHighlighterChangeListener());
         fireStateChanged();
     }
+
 
     private ChangeListener getHighlighterChangeListener() {
         if (highlighterChangeListener == null) {
@@ -123,6 +152,13 @@ public class HighlighterPipeline {
         return (Highlighter[])highlighters.toArray(new Highlighter[highlighters.size()]);
     }
 
+    public Highlighter getHighlighter(int index) {
+        return highlighters.get(index);
+    }
+    
+    public int getSize() {
+        return highlighters.size();
+    }
 
     /**
      * Applies all the highlighters to the components.
@@ -130,26 +166,64 @@ public class HighlighterPipeline {
      * @throws NullPointerException if either stamp or adapter is null.
      */
     public Component apply(Component stamp, ComponentAdapter adapter) {
-        //JW
-        // table renderers have different state memory as renderers
-        // without the null they don't unstamp!
-        // but... null has adversory effect on JXList f.i. - selection
-        // color is changed
-        // 
-        if (adapter.getComponent() instanceof JTable) {
-        /** @todo optimize the following bug fix */
-            stamp = nullHighlighter.highlight(stamp, adapter);      // fixed bug from M1
-        }
+        stamp = resetDefaultTableCellRenderer(stamp, adapter);
         for (Iterator<Highlighter> iter = highlighters.iterator(); iter.hasNext();) {
             stamp = iter.next().highlight(stamp, adapter);
             
         }
-//        Iterator iter = highlighters.iterator();
-//        while (iter.hasNext()) {
-//            Highlighter hl = (Highlighter)iter.next();
-//            stamp = hl.highlight(stamp, adapter);
-//        }
         return stamp;
+    }
+
+    /**
+     * This is a hack around DefaultTableCellRenderer color "memory".
+     * 
+     * The issue is that the default has internal color management 
+     * which is different from other types of renderers. The
+     * consequence of the internal color handling is that there's
+     * a color memory which must be reset somehow. The "old" hack around
+     * reset the xxColors of all types of renderers to the adapter's
+     * target XXColors, introducing #178-swingx (Highlighgters must not
+     * change any colors except those for which their color properties are
+     * explicitly set).
+     * 
+     * This hack limits the interference to renderers of type 
+     * DefaultTableCellRenderer, applying a hacking highlighter which
+     *  resets the renderers XXColors to null if unselected. Note that
+     *  both hacks loose any colors previously set by clients (in 
+     *  prepareRenderer before applying the pipeline). 
+     * 
+     * @param stamp
+     * @param adapter
+     * @return
+     */
+    private Component resetDefaultTableCellRenderer(Component stamp, ComponentAdapter adapter) {
+        //JW
+        // table renderers have different state memory as list/tree renderers
+        // without the null they don't unstamp!
+        // but... null has adversory effect on JXList f.i. - selection
+        // color is changed. This is related to #178-swingx: 
+        // highlighter background computation is weird.
+        // 
+        if (stamp instanceof DefaultTableCellRenderer) {    
+        /** @todo optimize the following bug fix */
+            stamp = resetDefaultTableCellRendererHighlighter.highlight(stamp, adapter); 
+        }
+        return stamp;
+    }
+
+    public void updateUI() {
+        for (Highlighter highlighter : highlighters) {
+            updateUI(highlighter);
+        }
+    }   
+
+    /**
+     * @param hl
+     */
+    private void updateUI(Highlighter hl) {
+        if (hl instanceof UIHighlighter) {
+            ((UIHighlighter) hl).updateUI();
+        }
     }
 
     /**
@@ -213,7 +287,7 @@ public class HighlighterPipeline {
                 ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
             }          
         }
-    }   
+    }
 
 
 }

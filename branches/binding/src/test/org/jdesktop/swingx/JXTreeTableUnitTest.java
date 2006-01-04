@@ -10,22 +10,43 @@ package org.jdesktop.swingx;
 import java.awt.Point;
 
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.FileSystemModel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
-// import de.kleopatra.view.LFSwitcher;
 
 public class JXTreeTableUnitTest extends InteractiveTestCase {
 
     protected TreeTableModel treeTableModel;
-
+    protected TreeTableModel simpleTreeTableModel;
+    
     public JXTreeTableUnitTest() {
         super("JXTreeTable Unit Test");
     }
+
+    /**
+     * Issue #54: hidden columns not removed on setModel.
+     * sanity test (make sure nothing evil introduced in treeTable as 
+     * compared to table)
+     */
+    public void testRemoveAllColumsAfterModelChanged() {
+        JXTreeTable table = new JXTreeTable(new FileSystemModel());
+        TableColumnExt columnX = table.getColumnExt(1);
+        columnX.setVisible(false);
+        int columnCount = table.getColumnCount(true);
+        assertEquals("total column count must be same as model", table.getModel().getColumnCount(), columnCount);
+        assertEquals("visible column count must one less as total", columnCount - 1, table.getColumnCount());
+        table.setTreeTableModel(new FileSystemModel());
+        assertEquals("visible columns must be same as total", 
+                table.getColumnCount(), table.getColumnCount(true));
+      }
 
     /**
      * Issue #241: treeModelListeners not removed.
@@ -38,12 +59,12 @@ public class JXTreeTableUnitTest extends InteractiveTestCase {
     }
     
     public void testRowForPath() {
-        JXTreeTable treeTable = new JXTreeTable(treeTableModel);
+        JXTreeTable treeTable = new JXTreeTable(simpleTreeTableModel);
         // @todo - make sure we find an expandible row instead of hardcoding
-        int row = 5;
+        int rowCount = treeTable.getRowCount();
+        int row = 2;
         TreePath path = treeTable.getPathForRow(row);
         assertEquals("original row must be retrieved", row, treeTable.getRowForPath(path));
-        int rowCount = treeTable.getRowCount();
         treeTable.expandRow(row - 1);
         // sanity assert
         assertTrue("really expanded", treeTable.getRowCount() > rowCount);
@@ -171,6 +192,9 @@ public class JXTreeTableUnitTest extends InteractiveTestCase {
     // ------------------ init
     protected void setUp() throws Exception {
         super.setUp();
+        JXTree tree = new JXTree();
+        DefaultTreeModel treeModel = (DefaultTreeModel) tree.getModel();
+        simpleTreeTableModel = new DefaultTreeTableModel((TreeNode) treeModel.getRoot());
         treeTableModel = new FileSystemModel();
     }
 

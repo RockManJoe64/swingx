@@ -3,12 +3,27 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.plaf.basic;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -16,6 +31,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -36,13 +53,17 @@ import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 
-import org.jdesktop.swingx.JXTaskPane;
+import org.jdesktop.swingx.JXCollapsiblePane;
 import org.jdesktop.swingx.JXHyperlink;
+import org.jdesktop.swingx.JXTaskPane;
+import org.jdesktop.swingx.action.LinkAction;
 import org.jdesktop.swingx.icon.EmptyIcon;
 import org.jdesktop.swingx.plaf.TaskPaneUI;
 
 /**
  * Base implementation of the <code>JXTaskPane</code> UI.
+ * 
+ * @author <a href="mailto:fred@L2FProd.com">Frederic Lavigne</a>
  */
 public class BasicTaskPaneUI extends TaskPaneUI {
 
@@ -52,13 +73,15 @@ public class BasicTaskPaneUI extends TaskPaneUI {
     return new BasicTaskPaneUI();
   }
 
+  protected static int TITLE_HEIGHT = 25;
+  protected static int ROUND_HEIGHT = 5;
+  
   protected JXTaskPane group;
 
   protected boolean mouseOver;
   protected MouseInputListener mouseListener;
 
-  protected boolean animationRunning = false;
-  protected float animationStage = 0.0f;
+  protected PropertyChangeListener propertyListener;
   
   public void installUI(JComponent c) {
     super.installUI(c);
@@ -93,6 +116,8 @@ public class BasicTaskPaneUI extends TaskPaneUI {
     group.addMouseListener(mouseListener);
 
     group.addFocusListener(focusListener);
+    propertyListener = createPropertyListener();
+    group.addPropertyChangeListener(propertyListener);
   }
 
   protected void installKeyboardActions() {
@@ -125,31 +150,59 @@ public class BasicTaskPaneUI extends TaskPaneUI {
     group.removeMouseListener(mouseListener);
     group.removeMouseMotionListener(mouseListener);
     group.removeFocusListener(focusListener);
+    group.removePropertyChangeListener(propertyListener);
   }
 
   protected MouseInputListener createMouseInputListener() {
     return new ToggleListener();
   }
 
+  protected PropertyChangeListener createPropertyListener() {
+    return new ChangeListener();
+  }
+  
   protected boolean isInBorder(MouseEvent event) {
     return event.getY() < getTitleHeight();
   }
 
-  protected int getTitleHeight() {
-    return 25;
+  protected final int getTitleHeight() {
+    return TITLE_HEIGHT;
   }
 
   protected Border createPaneBorder() {
     return new PaneBorder();
   }
 
+  @Override
+  public Dimension getPreferredSize(JComponent c) {
+    Component component = group.getComponent(0);
+    if (!(component instanceof JXCollapsiblePane)) {
+      // something wrong in this JXTaskPane
+      return super.getPreferredSize(c);
+    }
+    
+    JXCollapsiblePane collapsible = (JXCollapsiblePane)component;
+    Dimension dim = collapsible.getPreferredSize();
+    
+    Border groupBorder = group.getBorder();
+    if (groupBorder instanceof PaneBorder) {
+      Dimension border = ((PaneBorder)groupBorder).getPreferredSize(group);
+      dim.width = Math.max(dim.width, border.width);
+      dim.height += border.height;
+    } else {
+      dim.height += getTitleHeight();
+    }      
+    
+    return dim;
+  }
+  
   protected Border createContentPaneBorder() {
     Color borderColor = UIManager.getColor("TaskPane.borderColor");
     return new CompoundBorder(new ContentPaneBorder(borderColor), BorderFactory
       .createEmptyBorder(10, 10, 10, 10));
   }
   
-  public Component createAction(Action action) {
+  public Component createAction(LinkAction action) {
     JXHyperlink button = new JXHyperlink(action);
     button.setOpaque(false);
     button.setBorder(null);
@@ -162,8 +215,8 @@ public class BasicTaskPaneUI extends TaskPaneUI {
   protected void ensureVisible() {
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
-      group.scrollRectToVisible(
-        new Rectangle(group.getWidth(), group.getHeight()));
+        group.scrollRectToVisible(
+          new Rectangle(group.getWidth(), group.getHeight()));
       }
     });
   }
@@ -174,6 +227,22 @@ public class BasicTaskPaneUI extends TaskPaneUI {
     }
     public void focusLost(FocusEvent e) {
       e.getComponent().repaint();
+    }
+  }
+  
+  class ChangeListener implements PropertyChangeListener {
+    public void propertyChange(PropertyChangeEvent evt) {
+      // if group is expanded but not animated
+      // or if animated has reached expanded state
+      // scroll to visible if scrollOnExpand is enabled
+      if ((JXTaskPane.EXPANDED_CHANGED_KEY.equals(evt.getPropertyName())
+        && Boolean.TRUE.equals(evt.getNewValue()) && !group.isAnimated())
+        || (JXCollapsiblePane.ANIMATION_STATE_KEY.equals(evt.getPropertyName()) && "expanded"
+          .equals(evt.getNewValue()))) {
+        if (group.isScrollOnExpand()) {
+          ensureVisible();
+        }
+      }
     }
   }
   
@@ -245,11 +314,6 @@ public class BasicTaskPaneUI extends TaskPaneUI {
     }
   }
 
-  protected static int getTitleHeight(Component c) {
-    return ((BasicTaskPaneUI) ((JXTaskPane)c).getUI())
-      .getTitleHeight();
-  }
-
   /**
    * The border around the content pane
    */
@@ -277,7 +341,7 @@ public class BasicTaskPaneUI extends TaskPaneUI {
    * "expanded" status and the "special" type.
    *  
    */
-  protected static class PaneBorder implements Border {
+  protected class PaneBorder implements Border {
 
     protected Color borderColor;
     protected Color titleForeground;
@@ -288,6 +352,8 @@ public class BasicTaskPaneUI extends TaskPaneUI {
 
     protected Color titleOver;
     protected Color specialTitleOver;
+    
+    protected JLabel label;
     
     public PaneBorder() {
       borderColor = UIManager.getColor("TaskPane.borderColor");      
@@ -312,23 +378,46 @@ public class BasicTaskPaneUI extends TaskPaneUI {
       if (specialTitleOver == null) {
         specialTitleOver = specialTitleBackground.brighter();
       }
+      
+      label = new JLabel();
+      label.setOpaque(false);
+      label.setIconTextGap(8);
     }
     
     public Insets getBorderInsets(Component c) {
-      return new Insets(getTitleHeight(c), 0, 0, 0);
+      return new Insets(getTitleHeight(), 0, 0, 0);
     }
 
     public boolean isBorderOpaque() {
       return true;
     }
 
+    /**
+     * Calculates the preferred border size, its size so all its content fits.
+     */
+    public Dimension getPreferredSize(JXTaskPane group) {
+      // calculate the title width so it is fully visible
+      // it starts with the title width
+      configureLabel(group);
+      Dimension dim = label.getPreferredSize();
+      // add the title left offset
+      dim.width += 3;
+      // add the controls width
+      dim.width += TITLE_HEIGHT;
+      // and some space between label and controls
+      dim.width += 3;
+      
+      dim.height = getTitleHeight();
+      return dim;
+    }
+    
     protected void paintTitleBackground(JXTaskPane group, Graphics g) {
       if (group.isSpecial()) {
         g.setColor(specialTitleBackground);
       } else {
         g.setColor(titleBackgroundGradientStart);
       }
-      g.fillRect(0, 0, group.getWidth(), getTitleHeight(group) - 1);
+      g.fillRect(0, 0, group.getWidth(), getTitleHeight() - 1);
     }
 
     protected void paintTitle(
@@ -339,23 +428,51 @@ public class BasicTaskPaneUI extends TaskPaneUI {
       int y,
       int width,
       int height) {
-      JLabel label = new JLabel();
-      label.setOpaque(false);
+      configureLabel(group);
       label.setForeground(textColor);
-      label.setFont(g.getFont());
-      label.setIconTextGap(8);
-      label.setText(group.getTitle());
-      label.setIcon(
-        group.getIcon() == null ? new EmptyIcon() : group.getIcon());
       g.translate(x, y);
       label.setBounds(0, 0, width, height);
       label.paint(g);
       g.translate(-x, -y);
     }
 
-    protected void paintExpandedControls(JXTaskPane group, Graphics g) {
+    protected void configureLabel(JXTaskPane group) {
+      label.applyComponentOrientation(group.getComponentOrientation());
+      label.setFont(group.getFont());
+      label.setText(group.getTitle());
+      label.setIcon(
+        group.getIcon() == null ? new EmptyIcon() : group.getIcon());      
     }
+    
+    protected void paintExpandedControls(JXTaskPane group, Graphics g, int x,
+      int y, int width, int height) {}
 
+    protected Color getPaintColor(JXTaskPane group) {
+      Color paintColor;
+      if (isMouseOverBorder()) {
+        if (mouseOver) {
+          if (group.isSpecial()) {
+            paintColor = specialTitleOver;
+          } else {
+            paintColor = titleOver;
+          }
+        } else {
+          if (group.isSpecial()) {
+            paintColor = specialTitleForeground;
+          } else {
+            paintColor = titleForeground;
+          }
+        }
+      } else {
+        if (group.isSpecial()) {
+          paintColor = specialTitleForeground;
+        } else {
+          paintColor = titleForeground;
+        }
+      }
+      return paintColor;
+    }
+    
     public void paintBorder(
       Component c,
       Graphics g,
@@ -366,40 +483,127 @@ public class BasicTaskPaneUI extends TaskPaneUI {
 
       JXTaskPane group = (JXTaskPane)c;
 
+      // calculate position of title and toggle controls
+      int controlWidth = TITLE_HEIGHT - 2 * ROUND_HEIGHT;
+      int controlX = group.getWidth() - TITLE_HEIGHT;
+      int controlY = ROUND_HEIGHT - 1;
+      int titleX = 3;
+      int titleY = 0;
+      int titleWidth = group.getWidth() - getTitleHeight() - 3;
+      int titleHeight = getTitleHeight();
+      
+      if (!group.getComponentOrientation().isLeftToRight()) {
+        controlX = group.getWidth() - controlX - controlWidth;        
+        titleX = group.getWidth() - titleX - titleWidth;
+      }
+      
       // paint the title background
       paintTitleBackground(group, g);
 
       // paint the the toggles
-      paintExpandedControls(group, g);
+      paintExpandedControls(group, g, controlX, controlY, controlWidth,
+        controlWidth);
 
       // paint the title text and icon
-      Color paintColor;
-      if (group.isSpecial()) {
-        paintColor = specialTitleForeground;
-      } else {
-        paintColor = titleForeground;
-      }
+      Color paintColor = getPaintColor(group);
 
       // focus painted same color as text
       if (group.hasFocus()) {
-        g.setColor(paintColor);
-        BasicGraphicsUtils.drawDashedRect(
-          g,
+        paintFocus(g, 
+          paintColor, 
           3,
           3,
           width - 6,
-          getTitleHeight(c) - 6);
+          getTitleHeight() - 6);
       }
 
       paintTitle(
         group,
         g,
         paintColor,
-        3,
-        0,
-        c.getWidth() - getTitleHeight(c) - 3,
-        getTitleHeight(c));
+        titleX,
+        titleY,
+        titleWidth,
+        titleHeight);
     }
+    
+    protected void paintRectAroundControls(JXTaskPane group, Graphics g, int x,
+      int y, int width, int height, Color highColor, Color lowColor) {      
+      if (mouseOver) {
+        int x2 = x + width;
+        int y2 = y + height;
+        g.setColor(highColor);
+        g.drawLine(x, y, x2, y);
+        g.drawLine(x, y, x, y2);
+        g.setColor(lowColor);
+        g.drawLine(x2, y, x2, y2);
+        g.drawLine(x, y2, x2, y2);
+      }
+    }
+    
+    protected void paintOvalAroundControls(JXTaskPane group, Graphics g, int x,
+      int y, int width, int height) {      
+      if (group.isSpecial()) {
+        g.setColor(specialTitleBackground.brighter());
+        g.drawOval(
+          x,
+          y,
+          width,
+          height);
+      } else {
+        g.setColor(titleBackgroundGradientStart);
+        g.fillOval(
+          x,
+          y,
+          width,
+          height);
+
+        g.setColor(titleBackgroundGradientEnd.darker());
+        g.drawOval(
+          x,
+          y,
+          width,
+          width);
+      }
+    }
+    
+    protected void paintChevronControls(JXTaskPane group, Graphics g, int x,
+      int y, int width, int height) {      
+      ChevronIcon chevron;
+      if (group.isExpanded()) {
+        chevron = new ChevronIcon(true);
+      } else {
+        chevron = new ChevronIcon(false);
+      }
+      int chevronX = x + width / 2 - chevron.getIconWidth() / 2;
+      int chevronY = y + (height / 2 - chevron.getIconHeight());
+      chevron.paintIcon(group, g, chevronX, chevronY);
+      chevron.paintIcon(
+        group,
+        g,
+        chevronX,
+        chevronY + chevron.getIconHeight() + 1);
+    }
+    
+    protected void paintFocus(Graphics g, Color paintColor, int x, int y, int width, int height) {
+        g.setColor(paintColor);
+        BasicGraphicsUtils.drawDashedRect(
+          g,
+          x,
+          y,
+          width,
+          height);
+    }
+    
+    /**
+     * Default implementation returns false.
+     *  
+     * @return true if this border wants to display things differently when the
+     *         mouse is over it
+     */
+    protected boolean isMouseOverBorder() {
+      return false;
+    }    
   }
 
 }

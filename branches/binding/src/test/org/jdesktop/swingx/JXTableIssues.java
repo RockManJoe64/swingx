@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -45,6 +44,170 @@ public class JXTableIssues extends InteractiveTestCase {
         super("JXTableIssues");
         // TODO Auto-generated constructor stub
     }
+
+    
+
+    /**
+     * 
+     * Issue #172-swingx.
+     * 
+     * The sequence: clearSelection() - setFilter - setRowSelectionInterval
+     * throws Exception.
+     * 
+     * example (first, from Diego):
+     * http://www.javadesktop.org/forums/thread.jspa?messageID=117814
+     *
+     */
+    public void testClearSelectionAndFilter() {
+        JXTable table = new JXTable(createAscendingModel(0, 20));
+        int modelRow = table.getRowCount() - 1;
+        // set a selection near the end - will be invalid after filtering
+        table.setRowSelectionInterval(modelRow, modelRow);
+        table.clearSelection();
+        table.setFilters(new FilterPipeline(new Filter[] {new PatternFilter("9", 0, 0) }));
+        int viewRow = table.convertRowIndexToView(modelRow);
+        assertTrue("view index visible", viewRow >= 0);
+        table.setRowSelectionInterval(viewRow, viewRow);
+    }
+
+    /**
+     * 
+     * Issue #172-swingx.
+     * 
+     * The sequence:  setFilter - clearSelection() - setRowSelectionInterval
+     * is okay. 
+     * 
+     * Looks like in SelectionMapper.setPipeline needs to check for empty 
+     * selection in view selectionModel and update the anchor/lead (in 
+     * the view selection) to valid values! 
+     * 
+     * example (first, from Diego):
+     * http://www.javadesktop.org/forums/thread.jspa?messageID=117814
+     *
+     */
+    public void testFilterAndClearSelection() {
+        JXTable table = new JXTable(createAscendingModel(0, 20));
+        int modelRow = table.getRowCount() - 1;
+        // set a selection near the end - will be invalid after filtering
+        table.setRowSelectionInterval(modelRow, modelRow);
+        table.setFilters(new FilterPipeline(new Filter[] {new PatternFilter("9", 0, 0) }));
+        table.clearSelection();
+        int viewRow = table.convertRowIndexToView(modelRow);
+        assertTrue("view index visible", viewRow >= 0);
+        table.setRowSelectionInterval(viewRow, viewRow);
+    }
+    /**
+     * 
+     * Issue #172-swingx. really related?
+     * 
+     * 
+     * reported exception if row removed (Ray, at the end of)
+     * http://www.javadesktop.org/forums/thread.jspa?messageID=117814
+     *
+     */
+    public void testSelectionAndRemoveRowOfMisbehavingModel() {
+        DefaultTableModel model = new DefaultTableModel(10, 2) {
+
+            @Override
+            public void fireTableRowsDeleted(int firstRow, int lastRow) {
+                fireTableStructureChanged();
+            }
+            
+            
+        };
+        for (int i = 0; i < model.getRowCount(); i++) {
+            model.setValueAt(i, i, 0);
+        }
+        JXTable table = new JXTable(model);
+        int modelRow = table.getRowCount() - 1;
+        // TODO JW: this should be equivalent to setting an ascending sorter
+        // but doesn't throw an exception. Understand the difference!!
+        table.setSorter(0);
+//        table.setSorter(0);
+        // set a selection near the end - will be invalid after filtering
+        table.setRowSelectionInterval(modelRow, modelRow);
+        model.removeRow(modelRow);
+        int lastRow = table.getModel().getRowCount() - 1;
+        int viewRow = table.convertRowIndexToView(lastRow);
+        assertTrue("view index visible", viewRow >= 0);
+        table.setRowSelectionInterval(viewRow, viewRow);
+    }
+
+
+    
+    /**
+     * 
+     * Issue #172-swingx. really related?
+     * 
+     * 
+     * reported exception if row removed (Ray, at the end of)
+     * http://www.javadesktop.org/forums/thread.jspa?messageID=117814
+     *
+     */
+    public void testSelectionAndRemoveRowOfMisbehavingModelRay() {
+        DefaultTableModel model = new DefaultTableModel(10, 2) {
+
+            @Override
+            public void fireTableRowsDeleted(int firstRow, int lastRow) {
+                fireTableStructureChanged();
+            }
+            
+            
+        };
+        for (int i = 0; i < model.getRowCount(); i++) {
+            model.setValueAt(i, i, 0);
+        }
+        JXTable table = new JXTable(model);
+        int modelRow = table.getRowCount() - 1;
+        Filter[] filters = new Filter[] {new ShuttleSorter(0, true)};
+        FilterPipeline filterPipe = new FilterPipeline(filters);
+        table.setFilters(filterPipe);        
+        // set a selection near the end - will be invalid after filtering
+        table.setRowSelectionInterval(modelRow, modelRow);
+        model.removeRow(modelRow);
+        int lastRow = table.getModel().getRowCount() - 1;
+        int viewRow = table.convertRowIndexToView(lastRow);
+        // JW: here's the problem - the anchor of the selectionModel is not updated correctly
+        // after removing the last model row
+        // not longer valid (as of 50u6)
+//        assertEquals("anchor must be last", lastRow, table.getSelectionModel().getAnchorSelectionIndex());
+        assertTrue("view index visible", viewRow >= 0);
+        assertEquals("view index is last", viewRow, lastRow);
+        table.setRowSelectionInterval(viewRow, viewRow);
+    }
+
+
+    /**
+     * Issue #167-swingx: table looses individual row height 
+     * on update.
+     * 
+     * This happens if the indy row is filtered and the selection is empty - 
+     * updateSelectionAndRowHeight case analysis is incomplete. 
+     *
+     */
+    public void testKeepRowHeightOnUpdateAndEmptySelection() {
+        JXTable table = new JXTable(10, 3);
+        table.setRowHeightEnabled(true);
+        // sanity assert
+        assertTrue("row height enabled", table.isRowHeightEnabled());
+        table.setRowHeight(0, 25);
+        // sanity assert
+        assertEquals(25, table.getRowHeight(0));
+        // setting an arbitrary value
+        table.setValueAt("dummy", 1, 0);
+        assertEquals(25, table.getRowHeight(0));
+        // filter to leave only the row with the value set
+        table.setFilters(new FilterPipeline(new Filter[] {new PatternFilter("d", 0, 0)}));
+        assertEquals(1, table.getRowCount());
+        // setting an arbitrary value in the visible rows
+        table.setValueAt("otherdummy", 0, 1);
+        // reset filter to show all
+        table.setFilters(null);
+        assertEquals(25, table.getRowHeight(0));
+        
+        
+    }
+    
 
     /**
      * Issue #223 - part d)
@@ -130,7 +293,7 @@ public class JXTableIssues extends InteractiveTestCase {
     
     
     public void testComponentAdapterCoordinates() {
-        JXTable table = new JXTable(createModel(0, 10));
+        JXTable table = new JXTable(createAscendingModel(0, 10));
         Object originalFirstRowValue = table.getValueAt(0,0);
         Object originalLastRowValue = table.getValueAt(table.getRowCount() - 1, 0);
         assertEquals("view row coordinate equals model row coordinate", 
@@ -284,7 +447,7 @@ public class JXTableIssues extends InteractiveTestCase {
             }
             
         };
-        JFrame frame = wrapWithScrollingInFrame(xtable, table, "selection after data changed");
+        JXFrame frame = wrapWithScrollingInFrame(xtable, table, "selection after data changed");
         addAction(frame, action);
         frame.setVisible(true);
         
@@ -390,7 +553,7 @@ public class JXTableIssues extends InteractiveTestCase {
     }
     
     
-    private DefaultTableModel createModel(int startRow, int count) {
+    private DefaultTableModel createAscendingModel(int startRow, int count) {
         DefaultTableModel model = new DefaultTableModel(count, 5);
         for (int i = 0; i < model.getRowCount(); i++) {
             model.setValueAt(new Integer(startRow++), i, 0);
@@ -412,20 +575,6 @@ public class JXTableIssues extends InteractiveTestCase {
                 table.getDefaultRenderer(Object.class), newRenderer);
     }
 
-    /**
-     * Issue #??: JXTable pattern search differs from 
-     * PatternHighlighter/Filter.
-     * 
-     */
-    public void testRespectPatternInSearch() {
-        JXTable table = new JXTable(createModel(0, 11));
-        int row = 1;
-        String lastName = table.getValueAt(row, 0).toString();
-        int found = table.search(Pattern.compile(lastName), -1, false);
-        assertEquals("found must be equal to row", row, found);
-        found = table.search(Pattern.compile(lastName), found, false);
-        assertEquals("search must fail", -1, found);
-    }
 
     /**
      * Issue #??: JXTable pattern search differs from 
@@ -440,12 +589,12 @@ public class JXTableIssues extends InteractiveTestCase {
      *  fixed!
      */
     public void testWildCardInSearchByString() {
-        JXTable table = new JXTable(createModel(0, 11));
+        JXTable table = new JXTable(createAscendingModel(0, 11));
         int row = 1;
         String lastName = table.getValueAt(row, 0).toString();
-        int found = table.search(lastName, -1);
+        int found = table.getSearchable().search(lastName, -1);
         assertEquals("found must be equal to row", row, found);
-        found = table.search(lastName, found);
+        found = table.getSearchable().search(lastName, found);
         assertEquals("search must succeed", 10, found);
     }
 

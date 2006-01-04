@@ -8,39 +8,59 @@
 package org.jdesktop.swingx.decorator;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.util.regex.Pattern;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 
-import junit.framework.TestCase;
-
+import org.jdesktop.swingx.InteractiveTestCase;
+import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.decorator.AlternateRowHighlighter.UIAlternateRowHighlighter;
 import org.jdesktop.swingx.util.ChangeReport;
 
-public class HighlighterTest extends TestCase {
+public class HighlighterTest extends InteractiveTestCase {
 
-    private Highlighter[] highlighters;
-    private static final boolean UNSELECTED = false;
-    private static final boolean SELECTED = true;
-    private static final boolean FAIL_ALWAYS = false;
-    private static final boolean PASS_ALWAYS = true;
+    protected Highlighter[] highlighters;
+    protected static final boolean UNSELECTED = false;
+    protected static final boolean SELECTED = true;
+    protected static final boolean FAIL_ALWAYS = false;
+    protected static final boolean PASS_ALWAYS = true;
     
     
-    private JLabel backgroundNull ;
-    private JLabel foregroundNull;
+    protected JLabel backgroundNull ;
+    protected JLabel foregroundNull;
+    protected JLabel allNull;
+    protected JLabel allColored;
+    
+    protected Color background = Color.RED;
+    protected Color foreground = Color.BLUE;
+    
+    protected Highlighter emptyHighlighter;
 
     protected void setUp() {
         highlighters = new Highlighter[] {
             new AlternateRowHighlighter(Color.white, new Color(0xF0, 0xF0, 0xE0), null),
-            new PatternHighlighter(null, Color.red, "s.*", 0, 0)
+            new PatternHighlighter(null, foreground, "^s", 0, 0)
         };
         backgroundNull = new JLabel("test");
-        backgroundNull.setForeground(Color.red);
+        backgroundNull.setForeground(foreground);
         backgroundNull.setBackground(null);
         
         foregroundNull = new JLabel("test");
         foregroundNull.setForeground(null);
-        foregroundNull.setBackground(Color.red);
+        foregroundNull.setBackground(background);
+        
+        allNull = new JLabel("test");
+        allNull.setForeground(null);
+        allNull.setBackground(null);
+        
+        allColored = new JLabel("test");
+        allColored.setForeground(foreground);
+        allColored.setBackground(background);
+        
+        emptyHighlighter = new Highlighter();
     }
 
     protected void tearDown() {
@@ -50,7 +70,94 @@ public class HighlighterTest extends TestCase {
         highlighters = null;
     }
 
+    
+// UIHighlighter
+    
+    public void testUIHighlighter() {
+        AlternateRowHighlighter highlighter = new UIAlternateRowHighlighter();
+    }
+//----------------------- highlighter constructors, immutable highlighters
+ 
+    
+    public void testConstructors() {
+        Highlighter empty = new Highlighter();
+        assertColors(empty, null, null, null, null, false);
+        Highlighter normal = new Highlighter(background, foreground);
+        assertColors(normal, background, foreground, null, null, false);
+        Highlighter normalImmutable = new Highlighter(background, foreground, true);
+        assertColors(normalImmutable, background, foreground, null, null, true);
+        Color selectedBackground = Color.YELLOW;
+        Color selectedForeground = Color.BLACK;
+        Highlighter full = new Highlighter(background, foreground, 
+                selectedBackground , selectedForeground);
+        assertColors(full, background, foreground, selectedBackground, selectedForeground, false);
+        Highlighter fullImmutable = new Highlighter(background, foreground, 
+                selectedBackground , selectedForeground, true);
+        assertColors(fullImmutable, background, foreground, selectedBackground, selectedForeground, true);
+        
+    }
+    
+    public void testImmutable() {
+        Highlighter immutable = new Highlighter(background, foreground, true);
+        ChangeReport report = new ChangeReport();
+        immutable.addChangeListener(report);
+        assertEquals("no listeners", 0, immutable.getChangeListeners().length);
+        immutable.setForeground(Color.BLACK);
+        immutable.setBackground(Color.YELLOW);
+        immutable.setSelectedForeground(Color.BLACK);
+        immutable.setSelectedBackground(Color.YELLOW);
+        // nothing changed
+        assertColors(immutable, background, foreground, null, null, true);
+    }
+    
+    public void testAlternateRowImmutable() {
+        Color evenColor = Color.YELLOW;
+        AlternateRowHighlighter immutable = new AlternateRowHighlighter(background, evenColor, foreground, true);
+        assertColors(immutable, background, foreground, null, null, true);
+        assertAlternateColors(immutable, background, evenColor);
+        immutable.setOddRowBackground(Color.GRAY);
+        immutable.setEvenRowBackground(Color.CYAN);
+        assertColors(immutable, background, foreground, null, null, true);
+        assertAlternateColors(immutable, background, evenColor);
+        
+    }
 
+    /**
+     * @param immutable
+     * @param oddColor TODO
+     * @param evenColor
+     */
+    private void assertAlternateColors(AlternateRowHighlighter immutable, Color oddColor, Color evenColor) {
+        assertEquals("oddbackground", oddColor, immutable.getOddRowBackground());
+        assertEquals("evenbackground", evenColor, immutable.getEvenRowBackground());
+    }
+    
+    
+    public void testImmutablePredefinedHighlighters() {
+        assertTrue("ledger must be immutable", Highlighter.ledgerBackground.isImmutable());
+        assertTrue("notepad must be immutable", Highlighter.notePadBackground.isImmutable());
+        assertTrue("beige must be immutable", AlternateRowHighlighter.beige.isImmutable());
+        assertTrue("floral must be immutable", AlternateRowHighlighter.floralWhite.isImmutable());
+        assertTrue("lineprinter must be immutable", AlternateRowHighlighter.linePrinter.isImmutable());
+        assertTrue("classiclineprinter must be immutable", AlternateRowHighlighter.classicLinePrinter.isImmutable());
+        assertTrue("quickSilver must be immutable", AlternateRowHighlighter.quickSilver.isImmutable());
+    }
+    
+    private void assertColors(Highlighter highlighter, Color background, Color foreground,
+            Color  selectedBackground, Color selectedForeground, boolean immutable) {
+        assertEquals("background", background, highlighter.getBackground());
+        assertEquals("foreground", foreground, highlighter.getForeground());
+        assertEquals("selectedbackground", selectedBackground, highlighter.getSelectedBackground());
+        assertEquals("selectedForeground", selectedForeground, highlighter.getSelectedForeground());
+        assertEquals("immutable", immutable, highlighter.isImmutable());
+    }
+
+//----------------------- mutable pipeline
+    
+    /**
+     * there had been exceptions when adding/removing highlighters to/from
+     * an initially empty pipeline. 
+     */
     public void testAddToEmptyHighlighterPipeline() {
         HighlighterPipeline pipeline = new HighlighterPipeline(new Highlighter[] { });
         pipeline.addHighlighter(new Highlighter());
@@ -136,7 +243,9 @@ public class HighlighterTest extends TestCase {
         assertEquals("event count must be increased", ++count,  changeReport.getEventCount() );
         highlighter.setEvenRowBackground(Color.red);
         assertEquals("event count must be increased", ++count,  changeReport.getEventCount() );
-
+        highlighter.setLinesPerGroup(5);
+        assertEquals("event count must be increased", ++count,  changeReport.getEventCount() );
+        
     }
 
     /**
@@ -212,7 +321,7 @@ public class HighlighterTest extends TestCase {
     public void testJavaDocExample() {
         Highlighter[]   highlighters = new Highlighter[] {
             new AlternateRowHighlighter(Color.white, new Color(0xF0, 0xF0, 0xE0), null),
-            new PatternHighlighter(null, Color.red, "s.*", 0, 0)
+            new PatternHighlighter(null, Color.red, "^s", 0, 0)
         };
 
         HighlighterPipeline highlighterPipeline = new HighlighterPipeline(highlighters);
@@ -270,6 +379,10 @@ public class HighlighterTest extends TestCase {
         assertNotNull("background must not be null", foregroundNull.getBackground());
         assertNull("background must be null", backgroundNull.getBackground());
         assertNotNull("foreground must not be null", backgroundNull.getForeground());
+        assertNull("foreground must be null", allNull.getForeground());
+        assertNull("background must be null", allNull.getBackground());
+        assertEquals(background, allColored.getBackground());
+        assertEquals(foreground, allColored.getForeground());
     }
     
     /**
@@ -338,21 +451,29 @@ public class HighlighterTest extends TestCase {
         assertApplyHighlightColors(Color.green, Color.magenta, label, testStatus, selected);
     }
 
-    private void assertApplyNoColors(JLabel label, boolean testStatus, boolean selected) {
-        assertApplyHighlightColors(null, null, label, testStatus, selected);
-    }
-    private void assertApplyHighlightColors(Color background, Color foreground, JLabel label, boolean testStatue, boolean selected) {
-        testLabelSanity();
-        HighlighterPipeline pipeline = createPipeline(background, foreground, testStatue);
+    private void assertApplyHighlightColors(Color background, Color foreground, JLabel label, boolean testStatus, boolean selected) {
+        Highlighter highlighter = createConditionalHighlighter(background, foreground, testStatus);
         ComponentAdapter adapter = createComponentAdapter(label, selected);
-        pipeline.apply(label, adapter);
+        Color labelForeground = label.getForeground();
+        Color labelBackground = label.getBackground();
+        highlighter.highlight(label, adapter);
+        if (testStatus && !selected) {
+            if (background == null) {
+                assertEquals(labelBackground, label.getBackground());
+            } else {
+                assertEquals(background, label.getBackground());
+            }
+            if (foreground == null) {
+                assertEquals(labelForeground, label.getForeground());
+                
+            } else {
+                assertEquals(foreground, label.getForeground());
+            }
+        }
     }
 
     //---------------------------------------------------
     
-    private HighlighterPipeline createPipeline(Color background, Color foreground, boolean pass) {
-        return new HighlighterPipeline(new Highlighter[] { createConditionalHighlighter(background, foreground, pass)});
-    }
 
     private Highlighter createConditionalHighlighter(Color background, Color foreground, final boolean pass) {
         ConditionalHighlighter highlighter = new ConditionalHighlighter(background, foreground, 0, -1) {
@@ -367,21 +488,83 @@ public class HighlighterTest extends TestCase {
 
     public void testNullBackgroundOnHighlighter() {
         HighlighterPipeline pipeline =  new HighlighterPipeline(
-                new Highlighter[] { new Highlighter(Color.orange, null), });
+                new Highlighter[] { new Highlighter(null, null), });
         ComponentAdapter adapter = createComponentAdapter(backgroundNull, false);
         pipeline.apply(backgroundNull, adapter);
     }
     
     public void testNullForegroundOnHighlighter() {
-        JLabel label = new JLabel("test");
         HighlighterPipeline pipeline =  new HighlighterPipeline(
                 new Highlighter[] { new Highlighter(null, null), });
-        ComponentAdapter adapter = createComponentAdapter(label, false);
-        label.setForeground(null);
-        pipeline.apply(label, adapter);
+        ComponentAdapter adapter = createComponentAdapter(foregroundNull, false);
+        pipeline.apply(foregroundNull, adapter);
     }
 
-    private ComponentAdapter createComponentAdapter(final JLabel label, final boolean selected) {
+    
+ 
+    /**
+     * Issue #178-swingx: Highlighters always change the selection color.
+     * sanity test to see if non-selected colors are unchanged.
+     */
+    public void testUnSelectedDoNothingHighlighter() {
+        ComponentAdapter adapter = createComponentAdapter(allColored, false);
+        assertApplied(emptyHighlighter, allColored, adapter);
+    }
+    /**
+     * Issue #178-swingx: Highlighters always change the selection color.
+     */
+    public void testSelectedDoNothingHighlighter() {
+        ComponentAdapter adapter = createComponentAdapter(allColored, true);
+        assertApplied(emptyHighlighter, allColored, adapter);
+    }
+
+
+    public void testXListUnselectedDoNothingHighlighter() {
+        JXXList list = new JXXList();
+        list.setModel(createAscendingListModel(0, 10));
+        
+    }
+    
+    /**
+     * running assertion for all highlighter colors, depending on selection of adapter and
+     * colors set/not set in highlighter.
+     * 
+     * @param highlighter
+     * @param label
+     * @param adapter
+     */
+    protected void assertApplied(Highlighter highlighter, Component label, ComponentAdapter adapter) {
+        Color labelForeground = label.getForeground();
+        Color labelBackground = label.getBackground();
+        highlighter.highlight(label, adapter);
+        if (!adapter.isSelected()) {
+            if (highlighter.getBackground() == null) {
+                assertEquals("unselected: background must not be changed", labelBackground, label.getBackground());
+            } else {
+                assertEquals("unselected: background must be changed", highlighter.getBackground(), label.getBackground());
+            }
+            if (highlighter.getForeground() == null) {
+                assertEquals("unselected: forground must not be changed", labelForeground, label.getForeground());
+            } else {
+                assertEquals("unselected: forground must be changed", highlighter.getForeground(), label.getForeground());
+            }
+        } else {
+            if (highlighter.getSelectedBackground() == null) {
+                assertEquals("selected: background must not be changed", labelBackground, label.getBackground());
+            } else {
+                assertEquals("selected: background must be changed", highlighter.getSelectedBackground(), label.getBackground());
+            }
+            if (highlighter.getSelectedForeground() == null) {
+                assertEquals("selected: forground must not be changed", labelForeground, label.getForeground());
+            } else {
+                assertEquals("selected: forground must be changed", highlighter.getSelectedForeground(), label.getForeground());
+            }
+            
+        }
+    } 
+    
+    
+    protected ComponentAdapter createComponentAdapter(final JLabel label, final boolean selected) {
         ComponentAdapter adapter = new ComponentAdapter(label) {
 
             public Object getValueAt(int row, int column) {
@@ -421,5 +604,25 @@ public class HighlighterTest extends TestCase {
             
         };
         return adapter;
+    }
+    
+    private DefaultListModel createAscendingListModel(int startRow, int count) {
+        DefaultListModel l = new DefaultListModel();
+        for (int row = startRow; row < startRow  + count; row++) {
+            l.addElement(new Integer(row));
+        }
+        return l;
+    }
+    public class JXXList extends JXList {
+
+        /** 
+         * @Override to access the adapter
+         * 
+         */
+        public ComponentAdapter getComponentAdapter() {
+            return super.getComponentAdapter();
+        }
+        
+        
     }
 }
