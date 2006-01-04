@@ -6,9 +6,12 @@
  */
 package org.jdesktop.swingx;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -18,6 +21,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.jdesktop.swingx.util.PropertyChangeReport;
 
@@ -25,11 +31,38 @@ import org.jdesktop.swingx.util.PropertyChangeReport;
  * @author Jeanette Winzenburg
  */
 public class JXTitledPanelTest extends InteractiveTestCase {
+    private static final Logger LOG = Logger.getLogger(JXTitledPanelTest.class
+            .getName());
+    
+    // flag used in setup to explicitly choose LF
+    private boolean defaultToSystemLF;
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        // make sure we have the same default for each test
+        defaultToSystemLF = false;
+        setSystemLF(defaultToSystemLF);
+    }
 
     public JXTitledPanelTest() {
         super("JXTitledPane interactive test");
     }
 
+    
+    public void testLayoutOnLFChange() {
+        JXTitledPanel titledPanel = new JXTitledPanel();
+        assertNotNull(titledPanel.getContentContainer());
+        titledPanel.getContentContainer().setLayout(new BorderLayout());
+        String lf = UIManager.getLookAndFeel().getName();
+        setSystemLF(!defaultToSystemLF);
+        if (lf.equals(UIManager.getLookAndFeel().getName())) {
+            LOG.info("cannot run layoutOnLFChange - equal LF" + lf);
+            return;
+        }
+        SwingUtilities.updateComponentTreeUI(titledPanel);
+        assertTrue(titledPanel.getContentContainer().getLayout() instanceof BorderLayout);
+    }
+    
     /**
      * Issue ??: notifications missing on all "title"XX properties.
      *
@@ -97,7 +130,49 @@ public class JXTitledPanelTest extends InteractiveTestCase {
     }
 
 //--------------------- interactive tests
+
+    public  void interactiveRToL() {
+        String title = "starting title";
+        JXTitledPanel titledPane = new JXTitledPanel(title);
+        titledPane.addLeftDecoration(new JLabel("Leading"));
+        titledPane.addRightDecoration(new JLabel("Trailing"));
+//        panel.getContentContainer().setLayout(new BoxLayout(panel.getContentContainer(), BoxLayout.PAGE_AXIS));
+        Icon icon = new ImageIcon(getClass().getResource("resources/images/wellBottom.gif"));
+        final JLabel label = new JLabel(title);
+        label.setIcon(icon);
+        final JPanel panel = new JPanel(new BorderLayout());
+        panel.add(titledPane, BorderLayout.NORTH);
+        panel.add(label);
+        JXFrame frame = wrapInFrame(panel, "toggle Title");
+        Action toggleCO = new AbstractAction("toggle orientation") {
+
+
+                public void actionPerformed(ActionEvent e) {
+                    ComponentOrientation current = panel.getComponentOrientation();
+                    if (current == ComponentOrientation.LEFT_TO_RIGHT) {
+                        panel.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+//                        panel.revalidate();
+//                        panel.repaint();
+                        label.setText("RightToLeft");
+                    } else {
+                        panel.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+//                      panel.revalidate();
+//                      panel.repaint();
+                        label.setText("LeftToRight");
+
+                    }
+
+                }
+                
+            
+        };
+        addAction(frame, toggleCO);
+        frame.pack();
+        frame.setVisible(true);
+
+    }
     
+
     public  void interactiveIconAndHtmlTest() {
         String title = "<html><u>starting title </u></html>";
         final JXTitledPanel panel = new JXTitledPanel(title);
@@ -105,7 +180,7 @@ public class JXTitledPanelTest extends InteractiveTestCase {
         panel.addLeftDecoration(new JLabel(icon));
         panel.getContentContainer().setLayout(new BoxLayout(panel.getContentContainer(), BoxLayout.Y_AXIS));
         panel.getContentContainer().add(new JLabel(title));
-        JFrame frame = wrapInFrame(panel, "toggle Title");
+        JXFrame frame = wrapInFrame(panel, "toggle Title");
         frame.setVisible(true);
 
     }

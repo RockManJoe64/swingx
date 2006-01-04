@@ -8,16 +8,14 @@
 package org.jdesktop.swingx.decorator;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.jdesktop.swingx.InteractiveTestCase;
+import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.util.AncientSwingTeam;
 import org.jdesktop.swingx.util.PipelineReport;
@@ -32,10 +30,53 @@ public class FilterTest extends InteractiveTestCase {
     protected ComponentAdapter directModelAdapter;
     private PipelineReport pipelineReport;
 
+
+    /**
+     * reported on swingx-dev mailing list:
+     * chained filters must AND - as they did. 
+     * Currently (10/2005) they OR ?.
+     * 
+     * Hmm, can't reproduce - JW.
+     */
+    public void testAndFilter() {
+        PatternFilter first = new PatternFilter("a", 0, 0);
+        PatternFilter second = new PatternFilter("b", 0, 1);
+        FilterPipeline pipeline = new FilterPipeline(new Filter[] {first, second});
+        pipeline.assign(directModelAdapter);
+        assertTrue(pipeline.getOutputSize() > 0);
+        for (int i = 0; i < pipeline.getOutputSize(); i++) {
+            boolean firstMatch = first.getPattern().matcher(pipeline.getValueAt(i, 0).toString()).find();
+            boolean secondMatch = second.getPattern().matcher(pipeline.getValueAt(i, 1).toString()).find();
+            assertTrue(firstMatch);
+            assertEquals("both matchers must find", firstMatch, secondMatch); 
+        }
+        
+    }
+    
+    /**
+     * Issue ??-swingx
+     * pipeline should auto-flush on assigning adapter.
+     *
+     */
+    public void testFlushOnAssign() {
+        Filter filter = new PatternFilter(".*", 0, 0);
+        FilterPipeline pipeline = new FilterPipeline(new Filter[] { filter });
+        pipeline.assign(directModelAdapter);
+        assertEquals("pipeline output size must be model count", 
+                directModelAdapter.getRowCount(), pipeline.getOutputSize());
+        // JW PENDING: remove necessity to explicitly flush...
+        Object value = pipeline.getValueAt(0, 0);
+        assertEquals("value access via sorter must return the same as via pipeline", 
+               value, pipeline.getValueAt(0, 0));
+        
+    }
+    /**
+     * test notification on setSorter: must fire on change only.
+     *
+     */
     public void testPipelineEventOnSameSorter() {
         FilterPipeline pipeline = new FilterPipeline();
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
         pipeline.addPipelineListener(pipelineReport);
         Sorter sorter = new ShuttleSorter();
         pipeline.setSorter(sorter);
@@ -46,10 +87,13 @@ public class FilterTest extends InteractiveTestCase {
         
     }
 
+    /**
+     * test notification on setSorter.
+     *
+     */
     public void testPipelineEventOnSetSorter() {
         FilterPipeline pipeline = new FilterPipeline();
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
         pipeline.addPipelineListener(pipelineReport);
         pipeline.setSorter(new ShuttleSorter());
         assertEquals("pipeline must have fired on setSorter", 1, pipelineReport.getEventCount());
@@ -58,6 +102,11 @@ public class FilterTest extends InteractiveTestCase {
         assertEquals("pipeline must have fired on setSorter null", 1, pipelineReport.getEventCount());
         
     }
+
+    /**
+     * test notification on setSorter: must fire if assigned only.
+     *
+     */
     public void testPipelineEventOnSetSorterUnassigned() {
         FilterPipeline pipeline = new FilterPipeline();
         pipeline.addPipelineListener(pipelineReport);
@@ -76,12 +125,8 @@ public class FilterTest extends InteractiveTestCase {
      *
      */
     public void testSetSorterDiffComponentAdapter() {
-        int sortColumn = 0;
         FilterPipeline pipeline = new FilterPipeline();
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
-        Object value = pipeline.getValueAt(0, sortColumn);
-        Object lastValue = pipeline.getValueAt(pipeline.getOutputSize() - 1, sortColumn);
         Sorter sorter = new ShuttleSorter();
         sorter.assign(new DirectModelAdapter(new DefaultTableModel(10, 5)));
         try {
@@ -103,12 +148,8 @@ public class FilterTest extends InteractiveTestCase {
      *
      */
     public void testInterposeDiffComponentAdapter() {
-        int sortColumn = 0;
         FilterPipeline pipeline = new FilterPipeline();
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
-        Object value = pipeline.getValueAt(0, sortColumn);
-        Object lastValue = pipeline.getValueAt(pipeline.getOutputSize() - 1, sortColumn);
         Sorter sorter = new ShuttleSorter();
         sorter.assign(new DirectModelAdapter(new DefaultTableModel(10, 5)));
         try {
@@ -144,7 +185,6 @@ public class FilterTest extends InteractiveTestCase {
         int sortColumn = 0;
         FilterPipeline pipeline = new FilterPipeline();
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
         assertEquals("size must be number of rows in adapter", 
                 directModelAdapter.getRowCount(), pipeline.getOutputSize());
         Object value = pipeline.getValueAt(0, sortColumn);
@@ -162,7 +202,6 @@ public class FilterTest extends InteractiveTestCase {
         Filter[] sorters = new Filter[] {new ShuttleSorter()};
         FilterPipeline sortedPipeline = new FilterPipeline(sorters);
         sortedPipeline.assign(directModelAdapter);
-//        sortedPipeline.flush();
         Object sortedValue = sortedPipeline.getValueAt(0, sortColumn);
         // prepare the empty pipeline with associated sorter
         FilterPipeline pipeline = new FilterPipeline();
@@ -184,7 +223,6 @@ public class FilterTest extends InteractiveTestCase {
         Filter[] sorters = new Filter[] {new ShuttleSorter()};
         FilterPipeline sortedPipeline = new FilterPipeline(sorters);
         sortedPipeline.assign(directModelAdapter);
-//        sortedPipeline.flush();
         Object sortedValue = sortedPipeline.getValueAt(0, sortColumn);
         // prepare the stand-alone sorter
         Sorter sorter = new ShuttleSorter();
@@ -200,9 +238,6 @@ public class FilterTest extends InteractiveTestCase {
         Filter filter = createDefaultPatternFilter(0);
         FilterPipeline pipeline = new FilterPipeline(new Filter[] { filter });
         pipeline.assign(directModelAdapter);
-        // JW PENDING: remove necessity to explicitly flush...
-//        pipeline.flush();
-        Object value = pipeline.getValueAt(0, 0);
         Sorter sorter = new ShuttleSorter();
         pipeline.setSorter(sorter);
         assertEquals("value access via sorter must return the same as via pipeline", 
@@ -218,11 +253,10 @@ public class FilterTest extends InteractiveTestCase {
      */
     public void testInterpose() {
         int sortColumn = 0;
-        Filter filter = new PatternFilter(".*s.*", 0, sortColumn);
+        Filter filter = new PatternFilter("s", 0, sortColumn);
         Filter[] filters = new Filter[] {filter, new ShuttleSorter()};
         FilterPipeline pipeline = new FilterPipeline(filters);
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
         Object value = pipeline.getValueAt(0, sortColumn);
         Object lastValue = pipeline.getValueAt(pipeline.getOutputSize() - 1, sortColumn);
         Sorter sorter = new ShuttleSorter();
@@ -235,7 +269,6 @@ public class FilterTest extends InteractiveTestCase {
         Filter[] otherFilters = new Filter[] {other};
         FilterPipeline otherPipeline = new FilterPipeline(otherFilters);
         otherPipeline.assign(directModelAdapter);
-//        otherPipeline.flush();
         // the interactive sorter is flexible - can be moved from one 
         // pipeline to the other
         sorter.interpose(otherPipeline, directModelAdapter, null);
@@ -258,32 +291,17 @@ public class FilterTest extends InteractiveTestCase {
         FilterPipeline filters = new FilterPipeline();
         assertEquals(0, filters.getOutputSize());
     }
+
     /**
-     * test paranoia
+     * JW: test paranoia?
      *
      */
     public void testDirectComponentAdapterAccess() {
         FilterPipeline pipeline = createPipeline();
         pipeline.assign(directModelAdapter);
-//        pipeline.flush();
         assertTrue("pipeline must have filtered values", pipeline.getOutputSize() < directModelAdapter.getRowCount());
-//        List lastNames = new ArrayList();
-//        List colors = new ArrayList();
-//        List numbers = new ArrayList();
-//        for (int i = 0; i < pipeline.getOutputSize(); i++) {
-//            lastNames.add(pipeline.getValueAt(i, 1));
-//            colors.add(pipeline.getValueAt(i, 2));
-//            numbers.add(pipeline.getValueAt(i, 3));
-//        }
-//        System.out.println(lastNames);
-//        System.out.println(colors);
-//        System.out.println(numbers);
     }
     
-//    [Kloba, Moore, Saab, Korn, Walker]
-//     [Yellow, Green, Red, Purple, Phthalo Blue]
-//     [14, 88, 4, 12, 4]
-//
     /**
      * order of filters must be retained.
      *
@@ -294,22 +312,10 @@ public class FilterTest extends InteractiveTestCase {
         Sorter sorter = new ShuttleSorter();
         assertEquals("order < 0", -1, sorter.order);
         Filter[] filters = new Filter[] {filterZero, filterTwo, sorter};
-        FilterPipeline pipeline = new FilterPipeline(filters);
+        new FilterPipeline(filters);
         assertOrder(filterZero, filters);
     }
     
-    /**
-     * order of filters must be retained.
-     *
-     */
-    public void testSorterOrder() {
-        Sorter sorter = new ShuttleSorter(); 
-        assertEquals("order < 0", -1, sorter.order);
-        Filter[] filters = new Filter[] {sorter, new ShuttleSorter(2, true)};
-        FilterPipeline pipeline = new FilterPipeline(filters);
-        // JW: pipeline inverts order of sorter - why?
-       // assertOrders(filters);
-    }
 
     /**
      * FilterPipeline allows maximal one sorter per column. 
@@ -318,7 +324,7 @@ public class FilterTest extends InteractiveTestCase {
     public void testDuplicatedSortColumnException() {
         Filter[] filters = new Filter[] {new ShuttleSorter(), new ShuttleSorter()};
         try {
-            FilterPipeline pipeline = new FilterPipeline(filters);
+            new FilterPipeline(filters);
             fail("trying to sort one column more than once must throw IllegalArgumentException");
         
         } catch (IllegalArgumentException e) {    
@@ -336,7 +342,7 @@ public class FilterTest extends InteractiveTestCase {
         Filter filter = createDefaultPatternFilter(0);
         assertEquals("order < 0", -1, filter.order);
         Filter[] filters = new Filter[] {filter};
-        FilterPipeline pipeline = new FilterPipeline(filters);
+        new FilterPipeline(filters);
         try {
             new FilterPipeline(filters);
             fail("sharing filters are not allowed - must throw IllegalArgumentException");
@@ -366,16 +372,14 @@ public class FilterTest extends InteractiveTestCase {
         assertEquals("order equals position in array", position, filter.order);
     }
 
-    private void assertOrders(Filter[] filters) {
+    protected void assertOrders(Filter[] filters) {
         for (int i = 0; i < filters.length; i++) {
             assertEquals("order must be equal to filter position", i, filters[i].order);
         }
     }
     private int getFilterPosition(Filter filter, Filter[] filters) {
-        int position = -1;
         for (int i = 0; i < filters.length; i++) {
             if (filters[i].equals(filter)) {
-                position = i;
                 return i;
             }
         }
@@ -383,9 +387,9 @@ public class FilterTest extends InteractiveTestCase {
     }
     /**
      * returns a pipeline with two default patternfilters on
-     * column 0, 2 and a sorter on column 0.
+     * column 0, 2 and an ascending sorter on column 0.
      */
-    private FilterPipeline createPipeline() {
+    protected FilterPipeline createPipeline() {
         Filter filterZero = createDefaultPatternFilter(0);
         Filter filterTwo = createDefaultPatternFilter(2); 
         Sorter sorter = new ShuttleSorter();
@@ -400,7 +404,7 @@ public class FilterTest extends InteractiveTestCase {
      * @return
      */
     protected Filter createDefaultPatternFilter(int column) {
-        Filter filterZero = new PatternFilter(".*e.*", 0, column);
+        Filter filterZero = new PatternFilter("e", 0, column);
         return filterZero;
     }
     
@@ -411,7 +415,7 @@ public class FilterTest extends InteractiveTestCase {
     public void testJavaDocExample() {
 
         Filter[] filters = new Filter[] {
-            new PatternFilter("S.*", 0, 1), // regex, matchflags, column
+            new PatternFilter("^S", 0, 1), // regex, matchflags, column
             new ShuttleSorter(1, false),   // column 1, descending
             new ShuttleSorter(0, true),    // column 0, ascending
         };
@@ -471,12 +475,10 @@ public class FilterTest extends InteractiveTestCase {
         }
 
         public boolean hasFocus() {
-            // TODO Auto-generated method stub
             return false;
         }
 
         public boolean isSelected() {
-            // TODO Auto-generated method stub
             return false;
         }
 
@@ -491,7 +493,6 @@ public class FilterTest extends InteractiveTestCase {
     public void interactiveTestColumnControlAndFilters() {
         final JXTable table = new JXTable(tableModel);
         table.setColumnControlVisible(true);
-//        table.setFilters(createPipeline());
         Action toggleFilter = new AbstractAction("Toggle Filters") {
             boolean hasFilters;
             public void actionPerformed(ActionEvent e) {
@@ -499,8 +500,6 @@ public class FilterTest extends InteractiveTestCase {
                     table.setFilters(null);
                 } else {
                     table.setFilters(createPipeline());
-//                    FilterPipeline pipeline = new FilterPipeline(new Filter[] {});
-//                    table.setFilters(pipeline);
                 }
                 hasFilters = !hasFilters;
                 
@@ -508,7 +507,37 @@ public class FilterTest extends InteractiveTestCase {
             
         };
         toggleFilter.putValue(Action.SHORT_DESCRIPTION, "filtering first column - problem if invisible ");
-        JFrame frame = wrapWithScrollingInFrame(table, "JXTable ColumnControl and Filters");
+        JXFrame frame = wrapWithScrollingInFrame(table, "JXTable ColumnControl and Filters");
+        addAction(frame, toggleFilter);
+        frame.setVisible(true);
+    }
+
+    /** 
+     * just to see the filtering effects...
+     * 
+     */
+    public void interactiveTestAndFilter() {
+        final JXTable table = new JXTable(tableModel);
+        table.setColumnControlVisible(true);
+        Action toggleFilter = new AbstractAction("Toggle Filters") {
+            boolean hasFilters;
+            public void actionPerformed(ActionEvent e) {
+                if (hasFilters) {
+                    table.setFilters(null);
+                } else {
+                    PatternFilter first = new PatternFilter("a", 0, 0);
+                    PatternFilter second = new PatternFilter("b", 0, 1);
+                    FilterPipeline pipeline = new FilterPipeline(new Filter[] {first, second});
+                    table.setFilters(pipeline);
+                }
+                hasFilters = !hasFilters;
+                
+            }
+            
+        };
+        toggleFilter.putValue(Action.SHORT_DESCRIPTION, 
+                "Filtered rows: col(0) contains 'a' AND col(1) contains 'b'");
+        JXFrame frame = wrapWithScrollingInFrame(table, "JXTable ColumnControl and Filters");
         addAction(frame, toggleFilter);
         frame.setVisible(true);
     }

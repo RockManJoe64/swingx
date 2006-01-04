@@ -6,20 +6,26 @@ package org.jdesktop.swingx;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
 
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -40,25 +46,125 @@ import org.jdesktop.swingx.util.ComponentTreeTableModel;
  * @author Jeanette Winzenburg
  */
 public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
+    private static final Logger LOG = Logger
+            .getLogger(JXTreeTableVisualCheck.class.getName());
     public static void main(String[] args) {
-        // LFSwitcher.metalLF();
+        // NOTE JW: this property has be set "very early" in the application life-cycle
+        // it's immutable once read from the UIManager (into a final static field!!)
+        System.setProperty("sun.swing.enableImprovedDragGesture", "true" );
+        setSystemLF(true);
         JXTreeTableVisualCheck test = new JXTreeTableVisualCheck();
         try {
-          //  test.runInteractiveTests();
-         //   test.runInteractiveTests("interactive.*HighLighters");
+//            test.runInteractiveTests();
+//            test.runInteractiveTests("interactive.*Highligh.*");
          //      test.runInteractiveTests("interactive.*SortingFilter.*");
-           test.runInteractiveTests("interactive.*Model.*");
-         //     test.runInteractiveTests("interactive.*Focus.*");
+//           test.runInteractiveTests("interactive.*Node.*");
+             test.runInteractiveTests("interactive.*Editor.*");
         } catch (Exception ex) {
 
         }
     }
 
+    
+    /**
+     * Issue #224-swingx: TreeTableEditor not bidi compliant.
+     *
+     * the textfield for editing is at the wrong position in RToL.
+     */
+    public void interactiveRToLTreeTableEditor() {
+        final TreeTableModel model = new ComponentTreeTableModel(new JXFrame());
+        final JXTreeTable table = new JXTreeTable(model);
+        final JScrollPane pane = new JScrollPane(table);
+        JXFrame frame = wrapInFrame(pane, "Editor: position follows Component orientation");
+        Action toggleComponentOrientation = new AbstractAction("toggle orientation") {
+
+            public void actionPerformed(ActionEvent e) {
+                ComponentOrientation current = pane.getComponentOrientation();
+                if (current == ComponentOrientation.LEFT_TO_RIGHT) {
+                    pane.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+                } else {
+                    pane.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+
+                }
+
+            }
+
+        };
+        addAction(frame, toggleComponentOrientation);
+        frame.setVisible(true);
+    }
+
+    /**
+     * Issue #223-swingx: TreeTableEditor not bidi compliant.
+     *
+     * the textfield for editing is at the wrong position in RToL.
+     */
+    public void interactiveTreeTableEditorIcons() {
+        final TreeTableModel model = new ComponentTreeTableModel(new JXFrame());
+        final JXTreeTable table = new JXTreeTable(model);
+        final JScrollPane pane = new JScrollPane(table);
+        JXFrame frame = wrapWithScrollingInFrame(pane, "Editor: icons showing");
+        frame.setVisible(true);
+    }
+
+    /**
+     * Issue #82-swingx: update probs with insert node.
+     * 
+     * Adapted from example code in report.
+     *
+     */
+    public void interactiveTestInsertNode() {
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        final InsertTreeTableModel model = new InsertTreeTableModel(root);
+        final  DefaultMutableTreeNode leaf = model.addChild(root);
+        JXTree tree = new JXTree(model);
+        JXTreeTable treeTable = new JXTreeTable(model);
+        JXFrame frame = wrapWithScrollingInFrame(tree, treeTable, "update on insert");
+        Action insertAction = new AbstractAction("insert node") {
+
+            public void actionPerformed(ActionEvent e) {
+                model.addChild(leaf);
+                setEnabled(false);
+                
+            }
+            
+        };
+        addAction(frame, insertAction);
+        frame.setVisible(true);
+    }
+ 
+    /**
+     * Model used to show insert update issue.
+     */
+    public static class InsertTreeTableModel extends DefaultTreeTableModel {
+        public InsertTreeTableModel(TreeNode root) {
+            super(root);
+        }
+
+        public int getColumnCount() {
+            return 2;
+        }
+
+        private DefaultMutableTreeNode addChild(DefaultMutableTreeNode parent) {
+            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode("Child");
+            parent.add(newNode);
+            fireTreeNodesInserted(this, getPathToRoot(parent),
+                    new int[] { parent.getIndex(newNode) },
+                    new Object[] { newNode });
+
+            return newNode;
+        }
+    }
+
+    
+    
     /**
      * see effect of switching treeTableModel.
      * Problem when toggling back to FileSystemModel: hierarchical 
      * column does not show filenames, need to click into table first.
-     *
+     * JW: fixed. The issue was updating of the conversionMethod 
+     * field - needed to be done before calling super.setModel().
+     * 
      */
     public void interactiveTestSetModel() {
         final JXTreeTable treeTable = new JXTreeTable(treeTableModel);
@@ -78,12 +184,68 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         addAction(frame, action);
     }
     
+
+    /**
+     * Issue #168-jdnc: dnd enabled breaks node collapse/expand.
+     */
+    public void interactiveToggleDnDEnabled() {
+        final JXTreeTable treeTable = new JXTreeTable(treeTableModel) {
+
+            /**
+             * testing dirty little hack mentioned in the forum
+             * discussion about the issue: fake a mousePressed if drag enabled.
+             * The usability is slightly impaired because the expand/collapse
+             * is effectively triggered on released only (drag system intercepts
+             * and consumes all other).
+             *  
+             * @param row
+             * @param column
+             * @param e
+             * @return
+             */
+//            @Override
+//            public boolean editCellAt(int row, int column, EventObject e) {
+//                if (getDragEnabled() && e instanceof MouseEvent) {
+//                    MouseEvent me = (MouseEvent) e;
+//                    LOG.info("original mouseEvent " + e);
+//                    e = new MouseEvent((Component)me.getSource(),
+//                    MouseEvent.MOUSE_PRESSED,
+//                    me.getWhen(),
+//                    me.getModifiers(),
+//                    me.getX(),
+//                    me.getY(),
+//                    me.getClickCount(),
+//                    me.isPopupTrigger());
+//                    }
+//                return super.editCellAt(row, column, e);
+//            }
+            
+        };
+        treeTable.setColumnControlVisible(true);
+        final JXTree tree = new JXTree(treeTableModel);
+        JXFrame frame = wrapWithScrollingInFrame(treeTable, tree, "toggle dragEnabled (starting with false)");
+        frame.setVisible(true);
+        Action action = new AbstractAction("Toggle dnd") {
+
+            public void actionPerformed(ActionEvent e) {
+                
+                boolean dragEnabled = !treeTable.getDragEnabled();
+                treeTable.setDragEnabled(dragEnabled);
+                tree.setDragEnabled(dragEnabled);
+               
+            }
+            
+        };
+        addAction(frame, action);
+    }
+
     public void interactiveTestFocusedCellBackground() {
         JXTreeTable xtable = new JXTreeTable(treeTableModel);
         xtable.setBackground(new Color(0xF5, 0xFF, 0xF5)); // ledger
         JFrame frame = wrapWithScrollingInFrame(xtable, "Unselected focused background");
         frame.setVisible(true);
     }
+
 
     /**
      * Issue #226: no per-cell tooltips in TreeColumn.
@@ -95,8 +257,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         tree.setTreeCellRenderer(createRenderer());
         tree.setDefaultRenderer(Object.class, createTableRenderer(tree.getDefaultRenderer(Object.class)));
         JFrame frame = wrapWithScrollingInFrame(tree, "tooltips");
-        frame.setVisible(true);  // RG: Changed from deprecated method show();
-
+        frame.setVisible(true);  
     }
 
     private TableCellRenderer createTableRenderer(final TableCellRenderer delegate) {
@@ -213,18 +374,53 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         };
         treeTable.setRowHeight(22);
         treeTable.setRowMargin(1);
-        JFrame frame = wrapWithScrollingInFrame(treeTable,
+        JXFrame frame = wrapWithScrollingInFrame(treeTable,
                 "Toggle Tree properties ");
         addAction(frame, toggleRoot);
         addAction(frame, toggleHandles);
         frame.setVisible(true);
     }
-    
+
+    /**    
+     * Issue #242: CCE when setting icons.
+     */    
+    public void interactiveTestTreeIcons() {
+        final JXTreeTable treeTable = new JXTreeTable(treeTableModel);
+        Icon downIcon = new ImageIcon(getClass().getResource("resources/images/" + "wellbottom.gif"));
+//        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+//        renderer.setClosedIcon(downIcon);
+//        treeTable.setTreeCellRenderer(renderer);
+        treeTable.setClosedIcon(downIcon);
+//        Action toggleHandles = new AbstractAction("Toggle Handles") {
+//
+//            public void actionPerformed(ActionEvent e) {
+//                treeTable.setShowsRootHandles(!treeTable.getShowsRootHandles());
+//                
+//            }
+//            
+//        };
+//        Action toggleRoot = new AbstractAction("Toggle Root") {
+//
+//            public void actionPerformed(ActionEvent e) {
+//                treeTable.setRootVisible(!treeTable.isRootVisible());
+//                
+//            }
+//            
+//        };
+        treeTable.setRowHeight(22);
+        treeTable.setRowMargin(1);
+        JFrame frame = wrapWithScrollingInFrame(treeTable,
+                "Toggle Tree icons ");
+//        addAction(frame, toggleRoot);
+//        addAction(frame, toggleHandles);
+        frame.setVisible(true);
+    }
+
     /**    issue #148
      *   did not work on LFs which normally respect lineStyle
      *   winLF does not respect it anyway...
      */    
-    public void interactiveTestFilterAndLineStyle() {
+    public void interactiveTestFilterHighlightAndLineStyle() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);
         // issue #148
         // did not work on LFs which normally respect lineStyle
@@ -232,11 +428,17 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         treeTable.putClientProperty("JTree.lineStyle", "Angled");
         treeTable.setRowHeight(22);
         treeTable.setRowMargin(1);
-        treeTable.setHighlighters(new HighlighterPipeline(new Highlighter[] {
-                AlternateRowHighlighter.quickSilver,
-                new HierarchicalColumnHighlighter(),
-                new PatternHighlighter(null, Color.red, "s.*",
-                        Pattern.CASE_INSENSITIVE, 0, -1), }));
+       // add a bunch of highlighters directly
+        treeTable.addHighlighter(AlternateRowHighlighter.quickSilver);
+        treeTable.addHighlighter(new HierarchicalColumnHighlighter());
+        treeTable.addHighlighter(new PatternHighlighter(null, Color.red, "^s",
+                Pattern.CASE_INSENSITIVE, 0, -1));
+        // alternative: set a pipeline containing the bunch of highlighters
+//        treeTable.setHighlighters(new HighlighterPipeline(new Highlighter[] {
+//                AlternateRowHighlighter.quickSilver,
+//                new HierarchicalColumnHighlighter(),
+//                new PatternHighlighter(null, Color.red, "^s",
+//                        Pattern.CASE_INSENSITIVE, 0, -1), }));
         JFrame frame = wrapWithScrollingInFrame(treeTable,
                 "QuickSilver-, Column-, PatternHighligher and LineStyle");
         frame.setVisible(true);
@@ -253,7 +455,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         treeTable.setRowHeight(22);
         treeTable.setRowMargin(1);
         treeTable.setFilters(new FilterPipeline(new Filter[] {
-                new PatternFilter( "d.*",
+                new PatternFilter( "^d",
                         Pattern.CASE_INSENSITIVE, 0), }));
         JFrame frame = wrapWithScrollingInFrame(treeTable,
                 "PatternFilter");
@@ -276,7 +478,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
     }
     
     
-    public void interactiveTestFiltersAndRowHeight() {
+    public void interactiveTestHighlightAndRowHeight() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);
         treeTable.setRowHeight(22);
         treeTable.setRowMargin(1);
@@ -290,9 +492,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
 
     public void interactiveTestAlternateRowHighlighter() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);
-        treeTable
-                .setHighlighters(new HighlighterPipeline(
-                        new Highlighter[] { AlternateRowHighlighter.classicLinePrinter, }));
+        treeTable.addHighlighter(AlternateRowHighlighter.classicLinePrinter);
         treeTable.setRowHeight(22);
         treeTable.setRowMargin(1);
         JFrame frame = wrapWithScrollingInFrame(treeTable,
@@ -326,10 +526,9 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         frame.setVisible(true);
     }
 
-    public void interactiveTestHierarchicalColumn() {
+    public void interactiveTestHierarchicalColumnHighlight() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);
-        treeTable.setHighlighters(new HighlighterPipeline(
-                new Highlighter[] { new HierarchicalColumnHighlighter(), }));
+        treeTable.addHighlighter(new HierarchicalColumnHighlighter());
         JFrame frame = wrapWithScrollingInFrame(treeTable,
                 "HierarchicalColumnHigh");
         frame.setVisible(true);
@@ -361,37 +560,41 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
 
     public void interactiveTestHighlighterRowHeight() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);
-        treeTable.setHighlighters(new HighlighterPipeline(
-                new Highlighter[] { new Highlighter(Color.orange, null), }));
+        treeTable.addHighlighter(new Highlighter(Color.orange, null));
         treeTable.setIntercellSpacing(new Dimension(15, 15));
         treeTable.setRowHeight(48);
         JFrame frame = wrapWithScrollingInFrame(treeTable,
-                "Orange, IntercellSpacing15, big rowheight");
+                "Orange, big rowheight");
         frame.setVisible(true);
     }
 
-    public void interactiveTestHighLighters() {
+    public void interactiveTestHighlighters() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);
         treeTable.setIntercellSpacing(new Dimension(15, 15));
         treeTable.setRowHeight(48);
         // not supported in JXTreeTable
  //       treeTable.setRowHeight(0, 96);
         treeTable.setShowGrid(true);
-        Highlighter conditional = new ConditionalHighlighter(Color.BLUE, null, 0, 0) {
+        // set a bunch of highlighters as a pipeline
+        treeTable.setHighlighters(new HighlighterPipeline(
+                new Highlighter[] {
+                        new Highlighter(Color.orange, null),
+                        new HierarchicalColumnHighlighter(),
+                        new PatternHighlighter(null, Color.red,
+                                "D", 0, 0, 0), 
+                        
+        
+                }));
+        Highlighter conditional = new ConditionalHighlighter(Color.BLUE, Color.WHITE, 0, 0) {
 
             protected boolean test(ComponentAdapter adapter) {
                 return adapter.hasFocus();
             }
             
         };
-        treeTable.setHighlighters(new HighlighterPipeline(
-                new Highlighter[] {
-                        conditional,
-                        new Highlighter(Color.orange, null),
-                        new HierarchicalColumnHighlighter(),
-                        new PatternHighlighter(null, Color.red,
-                                ".*D.*", 0, 0, 0), }));
-        JFrame frame = wrapWithScrollingInFrame(treeTable, "Highlighters");
+        // add the conditional highlighter later
+        treeTable.addHighlighter(conditional);
+        JFrame frame = wrapWithScrollingInFrame(treeTable, "Highlighters: conditional, orange, hierarchy, pattern D");
         frame.setVisible(true);
     }
 

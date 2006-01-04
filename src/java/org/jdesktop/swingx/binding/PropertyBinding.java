@@ -14,7 +14,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import org.jdesktop.binding.DataModel;
-import org.jdesktop.binding.FieldBinding;
+import org.jdesktop.binding.impl.ColumnBinding;
 
 /**
  * General binding that uses reflection to interface a DataModel field to a
@@ -22,13 +22,13 @@ import org.jdesktop.binding.FieldBinding;
  *
  * @author rbair
  */
-public class ReflectionBinding extends FieldBinding {
+public class PropertyBinding extends ColumnBinding {
     private String propertyName;
     private Method getterMethod;
     private Method setterMethod;
     
     /** Creates a new instance of ReflectionBinding */
-    public ReflectionBinding(Object target, String propertyName) {
+    public PropertyBinding(Object target, String propertyName) {
         super(target, getPropertyType(target, propertyName));
         this.propertyName = propertyName;
         
@@ -47,9 +47,9 @@ public class ReflectionBinding extends FieldBinding {
         }
     }
     
-    public ReflectionBinding(Object target, String propertyName, DataModel model, String fieldName) {
+    public PropertyBinding(Object target, String propertyName, DataModel model, String fieldName) {
         this(target, propertyName);
-        setFieldName(fieldName);
+        setColumnName(fieldName);
         setDataModel(model);
     }
     
@@ -84,9 +84,17 @@ public class ReflectionBinding extends FieldBinding {
         }
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
     }
 
-    public void release() {
+    public void doRelease() {
+    }
+
+    protected void setComponentEditable(boolean editable) {
+        //no-op
+    }
+
+    protected void setComponentEnabled(boolean enabled) {
+        //no-op
     }
 }

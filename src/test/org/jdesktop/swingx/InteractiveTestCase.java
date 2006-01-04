@@ -7,14 +7,15 @@
 package org.jdesktop.swingx;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Point;
 import java.lang.reflect.Method;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
@@ -73,8 +74,9 @@ public abstract class InteractiveTestCase extends junit.framework.TestCase {
     public JXFrame wrapInFrame(JComponent component, String title) {
         JXFrame frame = new JXFrame(title, false);
         JToolBar toolbar = new JToolBar();
+        frame.getRootPaneExt().setToolBar(toolbar);
         frame.getContentPane().add(BorderLayout.CENTER, component);
-        frame.getContentPane().add(BorderLayout.NORTH, toolbar);
+//        frame.getContentPane().add(BorderLayout.NORTH, toolbar);
         frame.pack();
         frame.setLocation(frameLocation);
         if (frameLocation.x == 0) {
@@ -123,20 +125,23 @@ public abstract class InteractiveTestCase extends junit.framework.TestCase {
         runInteractiveTests("interactive.*");
     }
 
-    public void addAction(JFrame frame, Action action) {
-        JToolBar toolbar = null;
-        Component[] components = frame.getContentPane().getComponents();
-        for (int i = 0; i < components.length; i++) {
-            if (components[i] instanceof JToolBar) {
-                toolbar = (JToolBar) components[i];
-                break;
-            }
-        }
+    public void addAction(JXFrame frame, Action action) {
+        JToolBar toolbar = frame.getRootPaneExt().getToolBar();
         if (toolbar != null) {
-            toolbar.add(action);
+            AbstractButton button = toolbar.add(action);
+            button.setFocusable(false);
         }
     }
 
+    public void addMessage(JXFrame frame, String message) {
+        JXStatusBar statusBar = frame.getRootPaneExt().getStatusBar();
+        if (statusBar == null) {
+            statusBar = new JXStatusBar();
+            frame.getRootPaneExt().setStatusBar(statusBar);
+        }
+        statusBar.add(new JLabel(message));
+    }
+    
     public static void setSystemLF(boolean system) {
         String lfName = system ? UIManager.getSystemLookAndFeelClassName() :
             UIManager.getCrossPlatformLookAndFeelClassName();

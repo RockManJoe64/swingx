@@ -3,93 +3,106 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.action;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
-import org.jdesktop.swingx.LinkModel;
+import java.awt.event.ItemEvent;
+import javax.swing.Icon;
+import org.jdesktop.swingx.action.AbstractActionExt;
 
 /**
  * @author Jeanette Winzenburg
+ * @author rbair
  */
-public class LinkAction extends AbstractAction {
-    
-    private LinkModel link;
-    private ActionListener delegate;
-    public static final String VISIT_ACTION = "visit";
-    public static final String VISITED_PROPERTY = LinkModel.VISITED_PROPERTY;
-    private PropertyChangeListener linkListener;
-    
-    public LinkAction(LinkModel link) {
-        setLink(link);
+public abstract class LinkAction extends AbstractActionExt {
+    public static final String VISITED = "visited";
+ 
+    /**
+     * Copy constuctor copies the state.
+     */
+    public LinkAction(LinkAction action) {
+        super(action);
+        setVisited(false);
     }
 
-    public void setLink(LinkModel link) {
-        uninstallLinkListener();
-        this.link = link;
-        installLinkListener();
-        updateFromLink();
-    }
-
-    public LinkModel getLink() {
-        return link;
-    }
-
-    public void setVisitingDelegate(ActionListener delegate) {
-        this.delegate = delegate;
+    public LinkAction() {
+        this("");
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if ((delegate != null) && (link != null)) {
-            delegate.actionPerformed(new ActionEvent(link, ActionEvent.ACTION_PERFORMED, VISIT_ACTION));
-        }
-        
+    /**
+     * @inheritDoc
+     */
+    public LinkAction(String name) {
+        super(name);
+        setVisited(false);
     }
 
-    private void uninstallLinkListener() {
-        if (link == null) return;
-        link.removePropertyChangeListener(getLinkListener());
-     
+    /**
+     * @inheritDoc
+     */
+    public LinkAction(String name, Icon icon) {
+        super(name, icon);
+        setVisited(false);
     }
 
-    private void updateFromLink() {
-        if (link != null) {
-            putValue(Action.NAME, link.getText());
-            putValue(Action.SHORT_DESCRIPTION, link.getURL().toString());
-            putValue(VISITED_PROPERTY, new Boolean(link.getVisited()));
-        } else {
-            Object[] keys = getKeys();
-            if (keys == null) return;
-            for (int i = 0; i < keys.length; i++) {
-               putValue(keys[i].toString(), null); 
-            }
-        }
+    /**
+     * Constructs an Action with the label and command
+     *
+     * @param name name of the action usually used as a label
+     * @param command command key of the action
+     */
+    public LinkAction(String name, String command) {
+        this(name);
+        setActionCommand(command);
+        setVisited(false);
     }
 
-    private void installLinkListener() {
-        if (link == null) return;
-        link.addPropertyChangeListener(getLinkListener());
+    /**
+     * @param name display name of the action
+     * @param command the value of the action command key
+     * @param icon icon to display
+     */
+    public LinkAction(String name, String command, Icon icon) {
+        super(name, icon);
+        setActionCommand(command);
+        setVisited(false);
     }
 
-    private PropertyChangeListener getLinkListener() {
-        if (linkListener == null) {
-         linkListener = new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateFromLink();
-            }
-            
-        };
-        }
-        return linkListener;
+    //various setter/getter methods
+    /**
+     * @return the Visited state of the Link
+     */
+    public boolean isVisited() {
+        Boolean b = (Boolean)getValue(VISITED);
+        return b == null ? false : b.booleanValue();
     }
-
     
+    /**
+     * Sets a flag to indicate if the link has been visited. The state of this
+     * flag can be used to render the color of the link.
+     * @param visited flag
+     */
+    public void setVisited(boolean visited) {
+        putValue(VISITED, visited);
+    }
+
+    /**
+     * Do nothing
+     */
+    public void itemStateChanged(ItemEvent e) {
+    }
 }
