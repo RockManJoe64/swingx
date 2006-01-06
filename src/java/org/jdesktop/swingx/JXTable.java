@@ -2573,7 +2573,11 @@ public class JXTable extends JTable implements DataAware {
             String oldPath = this.dataPath;
             this.dataPath = path;
             if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
+                if (ctx == null) {
+                    ctx = DataBoundUtils.bind(this, this.dataPath);
+                } else {
+                    ctx.bind(this, this.dataPath);
+                }
             }
             firePropertyChange("dataPath", oldPath, this.dataPath);
         }
