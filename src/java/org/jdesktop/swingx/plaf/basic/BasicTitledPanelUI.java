@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.plaf.basic;
@@ -24,6 +38,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -48,7 +64,8 @@ import org.jdesktop.swingx.plaf.TitledPanelUI;
  * 
  */
 public abstract class BasicTitledPanelUI extends TitledPanelUI {
-    
+    private static final Logger LOG = Logger.getLogger(BasicTitledPanelUI.class
+            .getName());
     
 	/**
 	 * JLabel used for the title in the Title section of the JTitledPanel.
@@ -223,8 +240,7 @@ public abstract class BasicTitledPanelUI extends TitledPanelUI {
                 }
             }
         } catch (Exception e) {
-            //should log this...TODO
-            e.printStackTrace();
+            LOG.log(Level.FINE, "Failed to install property " + propName, e);
         }
     }
 

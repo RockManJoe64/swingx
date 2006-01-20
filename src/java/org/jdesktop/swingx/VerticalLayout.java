@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx;
 
@@ -63,12 +77,14 @@ public class VerticalLayout implements LayoutManager {
     for (int i = 0, c = parent.getComponentCount(); i < c; i++) {
       Component m = parent.getComponent(i);
       if (m.isVisible()) {
-        pref.height += parent.getComponent(i).getPreferredSize().height + gap;
-        pref.width = Math.max(pref.width, parent.getComponent(i)
-          .getPreferredSize().width);
+        Dimension componentPreferredSize =
+          parent.getComponent(i).getPreferredSize(); 
+        pref.height += componentPreferredSize.height + gap;
+        pref.width = Math.max(pref.width, componentPreferredSize.width);
       }
     }
 
+    pref.width += insets.left + insets.right;
     pref.height += insets.top + insets.bottom;
 
     return pref;
