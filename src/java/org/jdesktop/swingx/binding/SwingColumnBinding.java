@@ -58,14 +58,28 @@ public abstract class SwingColumnBinding extends ColumnBinding {
         //no-op
     }
     
-    
+    /**
+     * @inheritDoc
+     * overridden for convenience (covariant return type)
+     */
     public Component getComponent() {
         return (Component)super.getComponent();
     }
 
+    /**
+     * @inheritDoc
+     * overridden to perform validation.
+     */
     protected ValidationResult doValidation() {
         ValidationResult result = super.doValidation();
-        //update the keys, if necessary
+        //In JGoodies binding, there are keys associated with the components
+        //(I believe they are in the client properties). The JGoodies
+        //ValidationComponentUtils contains the logic for getting these keys
+        
+        //further, since I cannot have a "key" associated with the component on
+        //a deeper level, I have to associate the ValidationResult message with
+        //the components key here, by creating a new ValidationResult associated
+        //with the components key
         Component c = getComponent();
         if (c instanceof JComponent) {
             final Object msgKey = ValidationComponentUtils.getMessageKey((JComponent)c);
@@ -97,17 +111,6 @@ public abstract class SwingColumnBinding extends ColumnBinding {
      * Modifies the UI component in some way to indicate the results of Validation
      */
     protected void doValidationResult(ValidationResult result) {
-        Component c = getComponent();
-        if (c instanceof JComponent) {
-//            ValidationComponentUtils.updateComponentTreeSeverity((JComponent)c, result);
-//            ValidationComponentUtils.updateComponentTreeValidationBackground((JComponent)c, result);
-            if (result.getSeverity() == Severity.ERROR) {
-                ValidationComponentUtils.setErrorBackground((JTextComponent)c);
-            } else if (result.getSeverity() == Severity.WARNING) {
-                ValidationComponentUtils.setWarningBackground((JTextComponent)c);
-            } else {
-                c.setBackground(Color.WHITE);//normal background....
-            }
-        }
+        //TODO
     }
 }
