@@ -17,7 +17,7 @@ import javax.swing.JDialog;
  *
  * @author Richard
  */
-public class JDialogBinding extends SwingColumnBinding {
+public class JDialogBinding extends AWTColumnBinding {
     private String oldValue;
     
     public JDialogBinding(JDialog dlg) {

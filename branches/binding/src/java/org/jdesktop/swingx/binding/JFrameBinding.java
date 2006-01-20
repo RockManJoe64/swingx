@@ -15,7 +15,7 @@ import javax.swing.JFrame;
  *
  * @author Richard
  */
-public class JFrameBinding extends SwingColumnBinding {
+public class JFrameBinding extends AWTColumnBinding {
     private String oldValue;
     
     public JFrameBinding(JFrame frm) {
