@@ -28,7 +28,7 @@ import org.jdesktop.binding.impl.ColumnBinding;
  *
  * @author rbair
  */
-public abstract class SwingColumnBinding extends ColumnBinding {
+public abstract class SwingColumnBinding extends ColumnBinding {    
     /**
      * Basic constructor, creates a new SwingColumnBinding
      * 
@@ -104,5 +104,5 @@ public abstract class SwingColumnBinding extends ColumnBinding {
             }
         }
         return result;
-    }
+    }    
 }
