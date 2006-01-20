@@ -3,21 +3,38 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.auth;
-
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
-import javax.naming.InitialContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.naming.InitialContext;
 /**
  * A login service for connecting to SQL based databases via JDBC
  *
  * @author rbair
  */
 public class JDBCLoginService extends LoginService {
+    private static final Logger LOG = Logger.getLogger(JDBCLoginService.class
+            .getName());
+    
     /**
      * The connection to the database
      */
@@ -44,10 +61,9 @@ public class JDBCLoginService extends LoginService {
         try {
             Class.forName(driver);
         } catch (Exception e) {
-            System.err.println("WARN: The driver passed to the " +
+            LOG.log(Level.WARNING, "The driver passed to the " +
                     "JDBCLoginService constructor could not be loaded. " +
-                    "This may be due to the driver not being on the classpath");
-            e.printStackTrace();
+                    "This may be due to the driver not being on the classpath", e);
         }
         this.setUrl(url);
     }
@@ -64,10 +80,9 @@ public class JDBCLoginService extends LoginService {
         try {
             Class.forName(driver);
         } catch (Exception e) {
-            System.err.println("WARN: The driver passed to the " +
+            LOG.log(Level.WARNING, "The driver passed to the " +
                     "JDBCLoginService constructor could not be loaded. " +
-                    "This may be due to the driver not being on the classpath");
-            e.printStackTrace();
+                    "This may be due to the driver not being on the classpath", e);
         }
         this.setUrl(url);
         this.setProperties(props);
@@ -157,7 +172,8 @@ public class JDBCLoginService extends LoginService {
             try {
                 conn = DriverManager.getConnection(getUrl(), userName, new String(password));
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.log(Level.WARNING, "Connection with properties failed. " +
+                                "Tryint to connect without.", e);
                 //try to connect without using the userName and password
                 conn = DriverManager.getConnection(getUrl());
 
@@ -171,7 +187,7 @@ public class JDBCLoginService extends LoginService {
      * @param server Must be either a valid JDBC URL for the type of JDBC driver you are using,
      * or must be a valid JNDIContext from which to get the database connection
      */
-    public boolean authenticate(String name, char[] password, String server) throws IOException {
+    public boolean authenticate(String name, char[] password, String server) throws Exception {
         //try to form a connection. If it works, conn will not be null
         //if the jndiContext is not null, then try to get the DataSource to use
         //from jndi
@@ -182,7 +198,7 @@ public class JDBCLoginService extends LoginService {
                 try {
                     connectByDriverManager(name, password);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.WARNING, "Login failed", ex);
                     //login failed
                     return false;
                 }
@@ -191,7 +207,7 @@ public class JDBCLoginService extends LoginService {
             try {
                 connectByDriverManager(name, password);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOG.log(Level.WARNING, "", ex);
                 return false;
             }
         }

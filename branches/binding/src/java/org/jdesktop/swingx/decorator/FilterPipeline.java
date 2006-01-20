@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.decorator;
@@ -83,16 +97,7 @@ public class FilterPipeline {
             // binding responsibility to filter
             // instead of fiddling around in other's bowels
             filters[i].assign(this, i);
-//            if (filters[i].order < 0) {
-//                filters[i].order = i;
-//            }
-//            else {
-//                throw new IllegalArgumentException("Element " + i +
-//                    " is part of another pipeline.");
-//            }
         }
-        // individual filters not bound until adapter is bound
-        // JW: why not? 
     }
 
     /**
@@ -154,7 +159,6 @@ public class FilterPipeline {
         if (this.adapter == null) {
             this.adapter = adapter;
             for (int i = 0; i < filters.length; i++) {
-//                filters[i].assign(this);
                 filters[i].assign(adapter);
             }
             if (sorter != null) {
@@ -216,17 +220,18 @@ public class FilterPipeline {
     }
 
     /**
-     * Returns the filter after the supplied filter in this pipeline,
-     * or null, if there aren't any filters after the supplied filter.
-     *
+     * Returns the filter after the supplied filter in this pipeline, or null,
+     * if there aren't any filters after the supplied filter.
+     * 
      * @param filter a filter in this pipeline
-     * @return the filter after the supplied filter in this pipeline,
-     * or null, if there aren't any filters after the supplied filter
+     * @return the filter after the supplied filter in this pipeline, or null,
+     *         if there aren't any filters after the supplied filter
      */
     Filter next(Filter filter) {
-        if (last().equals(filter)) return null;
-        return filter.order + 1 < filters.length ? filters[filter.order + 1] : getSorter();
- //       return last().equals(filter) ? null : filters[filter.order + 1];
+        if (last().equals(filter))
+            return null;
+        return filter.order + 1 < filters.length ? filters[filter.order + 1]
+                : getSorter();
     }
 
     /**
@@ -253,15 +258,9 @@ public class FilterPipeline {
      * @param filter a filter in this pipeline that has changed in any way
      */
     protected void filterChanged(Filter filter) {
-        Filter  next = next(filter); //contains(filter) ? next(filter) : null;
+        Filter  next = next(filter); 
         if (next == null) {
             fireContentsChanged();
-//            if (sorter == null) {
-//                fireContentsChanged();
-//            }
-//            else {
-//                sorter.refresh();   // cascade to interposed sorter
-//            }
         }
         else {
             next.refresh(); // Cascade to next filter
@@ -289,15 +288,6 @@ public class FilterPipeline {
         }
         // fixed issue #64-swingx - removed precondition... (was: isAssigned())
         return getInputSize();
-//        return adapter.getRowCount();
-//        return getInputSize();
-//        Filter  previous = previous(filter);
-//        if (previous == null) {
-//            return adapter.getRowCount();
-//        }
-//        else {
-//            return previous.getSize();
-//        }
     }
 
     /**
@@ -306,7 +296,7 @@ public class FilterPipeline {
      * @return the number of records in the filtered view
      */
     public int getOutputSize() {
-        // don't need to check - but that's heavily dependent on the
+        // JW: don't need to check - but that's heavily dependent on the
         // implementation detail that there's always the identityFilter
         // (which might change any time)
         if (!isAssigned()) return 0;
@@ -347,16 +337,23 @@ public class FilterPipeline {
     /**
      * Returns the value of the cell at the specified coordinates.
      *
+     * 
      * @param row in view coordinates
      * @param column in model coordinates
      * @return the value of the cell at the specified coordinates
      */
     public Object getValueAt(int row, int column) {
+        // JW: this impl relies on the fact that there's always the
+        // identity filter installed
+        // should use adapter if assigned and no filter
         Filter last = last();
         return (last == null) ? null : last.getValueAt(row, column);
     }
 
     public void setValueAt(Object aValue, int row, int column) {
+        // JW: this impl relies on the fact that there's always the
+        // identity filter installed
+        // should use adapter if assigned and no filter
         Filter last = last();
         if (last != null) {
             last.setValueAt(aValue, row, column);
@@ -364,6 +361,9 @@ public class FilterPipeline {
     }
 
     public boolean isCellEditable(int row, int column) {
+        // JW: this impl relies on the fact that there's always the
+        // identity filter installed
+        // should use adapter if assigned and no filter
         Filter last = last();
         return (last == null) ? false : last.isCellEditable(row, column);
     }

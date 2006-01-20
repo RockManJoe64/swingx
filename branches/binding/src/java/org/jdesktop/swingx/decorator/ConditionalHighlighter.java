@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.decorator;
@@ -11,14 +25,17 @@ import java.awt.Color;
 import java.awt.Component;
 
 /**
- * ConditionalHighlighter
- *
+ * ConditionalHighlighter.
+ * 
+ * 
  * @author Ramesh Gupta
  */
 public abstract class ConditionalHighlighter extends Highlighter {
-    protected int               testColumn = 0;                 // always in model coordinates
+    protected int               testColumn = 0;         // always in model coordinates
     protected int               highlightColumn = -1;   // always in model coordinates
-    protected int               mask = 255;
+
+    // JW ?? - changed from 255 to 256 to not be "on" by default...
+    protected int               mask = 256;
 
     public ConditionalHighlighter() {
         // default constructor
@@ -48,11 +65,18 @@ public abstract class ConditionalHighlighter extends Highlighter {
         this.highlightColumn = highlightColumn;
     }
 
+    /**
+     * JW ??
+     */
     public void setMask(int alpha) {
         mask = alpha;
         fireStateChanged();
     }
 
+    /**
+     * JW ??
+     * @return
+     */
     public int getMask() {
         return mask;
     }
@@ -75,6 +99,13 @@ public abstract class ConditionalHighlighter extends Highlighter {
         return renderer;
     }
 
+    /**
+     * ??
+     * 
+     * @param renderer
+     * @param adapter
+     * @return
+     */
     protected Component doMask(Component renderer, ComponentAdapter adapter) {
 
         maskBackground(renderer, adapter);
@@ -84,47 +115,36 @@ public abstract class ConditionalHighlighter extends Highlighter {
         return renderer;
     }
 
+    /**
+     * ??
+     */
     protected void maskBackground(Component renderer, ComponentAdapter adapter) {
         Color seed = renderer.getBackground();
         Color color = adapter.isSelected() ? computeSelectedBackground(seed) : seed;
+        // fix issue#21-swingx: foreground of renderers can be null
         if (color != null) {
             renderer.setBackground(
                                new Color((getMask() << 24) | (color.getRGB() & 0x00FFFFFF), true));
         }
     }
 
+    /**
+     * ??
+     * @param renderer
+     * @param adapter
+     */
     protected void maskForeground(Component renderer, ComponentAdapter adapter) {
         Color seed = renderer.getForeground();
         Color color = adapter.isSelected() ? computeSelectedForeground(seed) : seed;
+        // fix issue#21-swingx: foreground of renderers can be null
         if (color != null) {
             renderer.setForeground(
                                new Color((getMask() << 24) | (color.getRGB() & 0x00FFFFFF), true));
     
         }
     }
-
-    /**
-     *
-     * @param renderer
-     * @param adapter
-     * @return null if the background is null; otherwise delegate to superclass
-     */
-    protected Color computeBackground(Component renderer, ComponentAdapter adapter) {
-        return getBackground() == null ? null :
-            super.computeBackground(renderer, adapter);
-    }
-
-    /**
-     *
-     * @param renderer
-     * @param adapter
-     * @return null if the foreground is null; otherwise delegate to superclass
-     */
-    protected Color computeForeground(Component renderer, ComponentAdapter adapter) {
-        return getForeground() == null ? null :
-            super.computeForeground(renderer, adapter);
-    }
-
+   
+    @Override
     protected Color computeSelectedForeground(Color seed) {
         return getSelectedForeground() == null ? 
                 seed == null ? null : seed.brighter() : getSelectedForeground();
@@ -162,7 +182,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
         // highlightColumn is always in "model" coordinates, but adapter.column
         // is in "view" coordinates. So, convert before comparing.
         if ((highlightColumn < 0) ||
-            (adapter.modelToView(highlightColumn) == adapter.column)) {
+            (highlightColumn == adapter.viewToModel(adapter.column))) {
             return test(adapter);
         }
         return false;   // cell is not a candidate for decoration;

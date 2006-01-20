@@ -1,11 +1,27 @@
-package org.jdesktop.swingx.auth;
-
 /*
  * $Id$
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+package org.jdesktop.swingx.auth;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -25,6 +41,8 @@ import javax.security.auth.login.LoginException;
  * @author Bino George
  */
 public class JAASLoginService extends LoginService {
+    private static final Logger LOG = Logger.getLogger(JAASLoginService.class
+            .getName());
 
 	/**
 	 * Constructor for <b>JAASLoginService</b>
@@ -39,7 +57,7 @@ public class JAASLoginService extends LoginService {
 	 * @inheritDoc
 	 * 	 
 	 */
-	public boolean authenticate(String name, char[] password, String server) {
+	public boolean authenticate(String name, char[] password, String server) throws Exception {
 		try {
 			LoginContext loginContext = null;
 
@@ -48,24 +66,24 @@ public class JAASLoginService extends LoginService {
 			loginContext.login();
 			return true;
 		} catch (AccountExpiredException e) {
-			// TODO log
-			e.printStackTrace();
+			// TODO add explanation?
+			LOG.log(Level.WARNING, "", e);
 			return false;
 		} catch (CredentialExpiredException e) {
-			// TODO log
-			e.printStackTrace();
+                        // TODO add explanation?
+                        LOG.log(Level.WARNING, "", e);
 			return false;
 		} catch (FailedLoginException e) {
-			// TODO log
-			e.printStackTrace();
+                        // TODO add explanation?
+                        LOG.log(Level.WARNING, "", e);
 			return false;
 		} catch (LoginException e) {
-			// TODO log
-			e.printStackTrace();
+                        // TODO add explanation?
+                        LOG.log(Level.WARNING, "", e);
 			return false;
 		} catch (Throwable e) {
-			// TODO log
-			e.printStackTrace();
+                        // TODO add explanation?
+                        LOG.log(Level.WARNING, "", e);
 			return false;
 		}
 	}

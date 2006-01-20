@@ -3,11 +3,27 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.util;
 
 import java.awt.Font;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -20,8 +36,12 @@ import javax.swing.text.html.HTMLDocument;
  * Utility for working with the UIManager
  * @author Richard Bair
  */
+// PENDING: JW - is this still used? Yes, by BasicTipOfTheDayUI
 public final class UIManagerUtils {
-	/**
+    
+    private static final Logger LOG = Logger.getLogger(UIManagerUtils.class
+            .getName());
+        /**
 	 * Hidden constructor
 	 */
 	private UIManagerUtils() {
@@ -96,7 +116,9 @@ public final class UIManagerUtils {
           null);
       } // end of if (doc != null)
     } catch (Exception e) {
-      e.printStackTrace();
+        // TODO change to something meaningful JW - when do we expect this to happen?
+        LOG.log(Level.WARNING, "", e);
+
     }
   }
 }

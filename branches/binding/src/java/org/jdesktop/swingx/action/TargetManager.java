@@ -3,24 +3,36 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.action;
 
 import java.awt.Component;
-
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JComponent;
 import javax.swing.FocusManager;
+import javax.swing.JComponent;
 
 
 
@@ -193,33 +205,6 @@ public class TargetManager {
     }
 
     /**
-     * Listens to changes in the target property, disables managed actions
-     *
-     class TargetListener implements PropertyChangeListener {
-     public void propertyChange(PropertyChangeEvent evt) {
-     ActionManager manager = ActionManager.getInstance();
-
-     // Disable old commands.
-     Targetable target = (Targetable)evt.getOldValue();
-     if (target != null) {
-     String[] commands = target.getCommands();
-     for (int i = 0; i < commands.length; i++) {
-     manager.setEnabled(commands[i], false);
-     }
-     }
-
-     // Enable new commands
-     target = (Targetable)evt.getNewValue();
-     if (target != null) {
-     String[] commands = target.getCommands();
-     for (int i = 0; i < commands.length; i++) {
-     manager.setEnabled(commands[i], true);
-     }
-     }
-     }
-     }*/
-
-    /**
      * Executes the command on the current targetable component.
      * If there isn't current targetable component then the list
      * of targetable components are searched and the first component
@@ -275,18 +260,6 @@ public class TargetManager {
             comp = comp.getParent();
         }
 
-//        Application app = Application.getInstance();
-//        if (app != null) {
-//            ActionMap map = app.getActionMap();
-//            Action action = map.get(command);
-//            if (action != null) {
-//                if (evt == null) {
-//                    evt = new ActionEvent(comp, 0, command.toString());
-//                }
-//                action.actionPerformed(evt);
-//                return true;
-//            }
-//        }
         return false;
     }
 

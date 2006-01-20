@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.decorator;
@@ -46,8 +60,12 @@ public class PatternFilter extends Filter implements PatternMatcher {
      * @see java.util.regex.Pattern
      */
     public void setPattern(Pattern pattern) {
-        this.pattern = pattern;
-        refresh();
+        if (pattern == null) {
+            setPattern(null, 0);
+        } else {
+            this.pattern = pattern;
+            refresh();
+        }
     }
 
     /**
@@ -86,14 +104,22 @@ public class PatternFilter extends Filter implements PatternMatcher {
         }
     }
 
+    /**
+     * @param row
+     * @return
+     */
     public boolean test(int row) {
+        // PENDING: wrong false?
+        // null pattern should be treated the same as null searchString
+        // which is open
+        // !testable should be clarified to mean "ignore" when filtering
         if (pattern == null) {
             return false;
         }
 
-        // If column index in view coordinates is negative, the column is hidden.
-        if (adapter.modelToView(getColumnIndex()) < 0) {
-            return false; // column is not being displayed; obviously no match!
+        // ask the adapter if the column should be includes
+        if (!adapter.isTestable(getColumnIndex())) {
+            return false; 
         }
 
         Object	value = getInputValue(row, getColumnIndex());
@@ -102,7 +128,7 @@ public class PatternFilter extends Filter implements PatternMatcher {
             return false;
         }
         else {
-            boolean	matches = pattern.matcher(value.toString()).matches();
+            boolean matches = pattern.matcher(value.toString()).find();
             return matches;
         }
     }

@@ -3,17 +3,32 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.treetable;
 
-import java.util.EventObject;
-
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.EventObject;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -65,46 +80,68 @@ public class TreeTableCellEditor extends DefaultCellEditor {
         if (tree == null) {
             throw new IllegalArgumentException("null tree");
         }
-
+        // JW: no need to...
         this.tree = tree; // immutable
     }
 
     /**
-     * Overriden to determine an offset that tree would place the
-     * editor at. The offset is determined from the
-     * <code>getRowBounds</code> JTree method, and additionaly
-     * from the icon DefaultTreeCellRenderer will use.
-     * <p>The offset is then set on the TreeTableTextField component
-     * created in the constructor, and returned.
+     * Overriden to determine an offset that tree would place the editor at. The
+     * offset is determined from the <code>getRowBounds</code> JTree method,
+     * and additionaly from the icon DefaultTreeCellRenderer will use.
+     * <p>
+     * The offset is then set on the TreeTableTextField component created in the
+     * constructor, and returned.
      */
     public Component getTableCellEditorComponent(JTable table, Object value,
-                                                 boolean isSelected, int row,
-                                                 int column) {
+            boolean isSelected, int row, int column) {
         Component component = super.getTableCellEditorComponent(table, value,
-            isSelected, row, column);
+                isSelected, row, column);
+        // JW: this implementation is not bidi-compliant, need to do better
+        initEditorOffset(table, row, column, isSelected);
+        return component;
+    }
 
-        //boolean isRootVisible = tree.isRootVisible();
+    /**
+     * @param row
+     * @param isSelected
+     * @return
+     */
+    protected void initEditorOffset(JTable table, int row, int column, boolean isSelected) {
+        if (tree == null) return;
         Rectangle bounds = tree.getRowBounds(row);
         int offset = bounds.x;
+        Object node = tree.getPathForRow(row).getLastPathComponent();
+        boolean leaf = tree.getModel().isLeaf(node);
+        boolean expanded = tree.isExpanded(row);
         TreeCellRenderer tcr = tree.getCellRenderer();
-        if (tcr instanceof DefaultTreeCellRenderer) {
-            Object node = tree.getPathForRow(row).getLastPathComponent();
-            Icon icon;
-            if (tree.getModel().isLeaf(node))
-                icon = ((DefaultTreeCellRenderer) tcr).getLeafIcon();
-            else if (tree.isExpanded(row))
-                icon = ((DefaultTreeCellRenderer) tcr).getOpenIcon();
-            else
-                icon = ((DefaultTreeCellRenderer) tcr).getClosedIcon();
+        Component treeComponent = tcr.getTreeCellRendererComponent(tree, node,
+                isSelected, expanded, leaf, row, false);
+        if (treeComponent instanceof JLabel) {
+            JLabel label = (JLabel) treeComponent;
 
-            if (icon != null) {
-                offset += ((DefaultTreeCellRenderer) tcr).getIconTextGap() +
-                    icon.getIconWidth();
-            }
+            Icon icon = label.getIcon();
+            //offset += icon.getIconWidth() + label.getIconTextGap();
         }
-        ((TreeTableTextField) getComponent()).offset = offset;
-        //((TreeTableTextField) getComponent()).selectAll();
-        return component;
+        ((TreeTableTextField) getComponent()).init(offset, column, bounds.width, table);
+//         JW: the following fails if the renderer is not of type DTCR and
+//         with custom  renderers which might decide to base
+//         decisions about icons based on node type and/or selected state.
+//         TreeCellRenderer tcr = tree.getCellRenderer();
+//         if (tcr instanceof DefaultTreeCellRenderer) {
+//         Object node = tree.getPathForRow(row).getLastPathComponent();
+//         Icon icon;
+//         if (tree.getModel().isLeaf(node))
+//         icon = ((DefaultTreeCellRenderer) tcr).getLeafIcon();
+//         else if (tree.isExpanded(row))
+//         icon = ((DefaultTreeCellRenderer) tcr).getOpenIcon();
+//         else
+//         icon = ((DefaultTreeCellRenderer) tcr).getClosedIcon();
+//        
+//         if (icon != null) {
+//         offset += ((DefaultTreeCellRenderer) tcr).getIconTextGap() +
+//         icon.getIconWidth();
+//         }
+//         }
     }
 
     /**
@@ -116,12 +153,10 @@ public class TreeTableCellEditor extends DefaultCellEditor {
             return true;
         }
         else if (e instanceof MouseEvent) {
-			// RG: Fix Issue 49 -- Move cell expansion/collapse logic to
-			// JXTreeTable.editCellAt();
             return (((MouseEvent) e).getClickCount() >= clickCountToStart);
         }
 
-		// e is some other type of event...
+	// e is some other type of event...
         return false;
     }
 
@@ -131,15 +166,53 @@ public class TreeTableCellEditor extends DefaultCellEditor {
      * make the x location be <code>offset</code>.
      */
     static class TreeTableTextField extends JTextField {
-        int offset; // changed to package private instead of public
-
+        void init(int offset, int column, int width, JTable table) {
+            this.offset = offset;
+            this.column = column;
+            this.width = width;
+            this.table = table;
+        }
+        
+        private int offset; // changed to package private instead of public
+        private int column;
+        private int width;
+        private JTable table;
         public void reshape(int x, int y, int width, int height) {
             // Allows precise positioning of text field in the tree cell.
             //Border border = this.getBorder(); // get this text field's border
             //Insets insets = border == null ? null : border.getBorderInsets(this);
             //int newOffset = offset - (insets == null ? 0 : insets.left);
-            int newOffset = offset - getInsets().left;
-            super.reshape(x + newOffset, y, width - newOffset, height);
+            if(table.getComponentOrientation().isLeftToRight()) {
+                int newOffset = offset - getInsets().left;
+                // this is LtR version
+                super.reshape(x + newOffset, y, width - newOffset, height);
+            } else {
+                // right to left version
+                int newOffset = offset + getInsets().left;
+                int pos = getColumnPositionBidi();
+                width = table.getColumnModel().getColumn(getBidiTreeColumn()).getWidth();
+                width = width - (width - newOffset - this.width);
+                super.reshape(pos, y, width, height);
+            }
+        }
+        
+        /**
+         * Returns the column for the tree in a bidi situation
+         */
+        private int getBidiTreeColumn() {
+            // invert the column offet since this method will always be invoked
+            // in a bidi situation
+            return table.getColumnCount() - this.column - 1;
+        }
+        
+        private int getColumnPositionBidi() {
+            int width = 0;
+            
+            int column = getBidiTreeColumn();
+            for(int iter = 0 ; iter < column ; iter++) {
+                width += table.getColumnModel().getColumn(iter).getWidth();
+            }
+            return width;
         }
     }
 

@@ -3,30 +3,67 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.decorator;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.util.regex.Pattern;
 
 /**
+ * Convenience Highlighter to test and highlight cells in searching.
+ *  
  * @author Jeanette Winzenburg
  */
 public class SearchHighlighter extends PatternHighlighter {
-    /** the row to highlight in view coordinates (?). -1 means all */
+    /** the row to highlight in view coordinates. -1 means all */
     int highlightRow;
     private boolean enableHighlight;
     private static final String ALL = ".*";
     
+    /**
+     * Instantiates a default SearchHighlighter. 
+     * The default colors are Yellow background and null foreground.
+     * The default matching state is 
+     *  Pattern == null, flags = 0, tests all columns and all rows.
+     * 
+     */
     public SearchHighlighter() {
         this(Color.YELLOW.brighter(), null);
     }
     
+    /**
+     * Instantiates a default SearchHighlighter with background/foreground colors.
+     * The default matching state is 
+     *  Pattern == null, flags = 0, tests all columns and all rows.
+     * 
+     * @param background color of hightlight background
+     * @param foreground color of highlight foreground
+     */
     public SearchHighlighter(Color background, Color foreground) {
         super(background, foreground, null, 0, -1);
         setHighlightRow(-1);
     }
 
+    /**
+     * Toggle to enable/disable - if disabled never hightlights.
+     * 
+     * @param enableHighlight
+     */
     public void setEnabled(boolean enableHighlight) {
         this.enableHighlight = enableHighlight;
         fireStateChanged();
@@ -52,23 +89,41 @@ public class SearchHighlighter extends PatternHighlighter {
         if (pattern == null) {
             return false;
         }
+        int columnToTest = testColumn;
         // use one highlighter for all columns
-        int testColumnV = adapter.column;
-        if (testColumn >= 0) {
-            testColumnV = adapter.modelToView(testColumn);
+        if (columnToTest < 0) {
+            columnToTest = adapter.viewToModel(adapter.column);
         }
-        Object  value = adapter.getFilteredValueAt(adapter.row, testColumnV);
+        Object  value = adapter.getFilteredValueAt(adapter.row, columnToTest);
         if (value == null) {
             return false;
         }
         else {
-            // this is a hack to make the Highlighter matching behave
-            // consistently with Table matching: brute force find.
-            // The correct thing to do would be to 
-            // make JXTable respect the pattern.
             boolean matches = pattern.matcher(value.toString()).find();
             return matches;
         }
+    }
+
+    
+    /**
+     * <p>Computes a suitable selected background for the renderer component within the
+     * specified adapter and returns the computed color. 
+     * 
+     * This implementation returns super if != null, 
+     * otherwise returns computeUnselectedBackground. The reason is to always 
+     * show a match marker even if no selection specific colors are set. 
+     * 
+     *  PENDING: move up to ConditionalHighlighter?
+     * 
+     * @param renderer
+     * @param adapter
+     * @return
+     * 
+     */
+    @Override
+    protected Color computeSelectedBackground(Component renderer, ComponentAdapter adapter) {
+        Color color = super.computeSelectedBackground(renderer, adapter);
+        return color != null ? color : computeUnselectedBackground(renderer, adapter);
     }
 
     /** set the row to match in test. 
@@ -90,6 +145,11 @@ public class SearchHighlighter extends PatternHighlighter {
         
     }
 
+    /**
+     * Set's highlightRow to row, test- and highlight column = column
+     * @param row
+     * @param modelColumn
+     */
     public void setHighlightCell(int row, int modelColumn) {
         this.testColumn = modelColumn;
         this.highlightColumn = modelColumn;
