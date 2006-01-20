@@ -9,13 +9,14 @@
 
 package org.jdesktop.swingx.binding;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import org.jdesktop.conversion.ConversionException;
-import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXImagePanel;
 
 /**
@@ -28,8 +29,8 @@ import org.jdesktop.swingx.JXImagePanel;
  *
  * @author Richard
  */
-public class JXImagePanelBinding extends FieldBinding {
-    private BufferedImage oldImage;
+public class JXImagePanelBinding extends SwingColumnBinding {
+    private Image oldImage;
     
     /** Creates a new instance of JXImagePanelBinding */
     public JXImagePanelBinding(JXImagePanel panel) {
@@ -43,7 +44,11 @@ public class JXImagePanelBinding extends FieldBinding {
                 if (src instanceof byte[]) {
                     return ImageIO.read(new ByteArrayInputStream((byte[])src));
                 } else if (src instanceof String) {
-                    return ImageIO.read(new URL((String)src));
+                    try {
+                        return ImageIO.read(new URL((String)src));
+                    } catch (Exception e) {
+                        return ImageIO.read(new FileInputStream((String)src));
+                    }
                 } else if (src instanceof URL) {
                     return ImageIO.read((URL)src);
                 } else if (src instanceof File) {
@@ -71,11 +76,11 @@ public class JXImagePanelBinding extends FieldBinding {
         }
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         oldImage = getComponent().getImage();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setImage(oldImage);
     }
     
@@ -89,5 +94,9 @@ public class JXImagePanelBinding extends FieldBinding {
     
     public JXImagePanel getComponent() {
         return (JXImagePanel)super.getComponent();
+    }
+
+    protected void setComponentEditable(boolean editable) {
+        getComponent().setEditable(editable);
     }
 }

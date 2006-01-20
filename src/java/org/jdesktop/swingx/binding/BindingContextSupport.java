@@ -12,9 +12,11 @@ package org.jdesktop.swingx.binding;
 
 import java.awt.Container;
 import java.awt.Component;
+import java.util.ArrayList;
 import org.jdesktop.binding.impl.AbstractBindingContext;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -29,12 +31,16 @@ import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.text.JTextComponent;
+import org.jdesktop.binding.BindingContext;
 import org.jdesktop.binding.impl.BindingFactory;
 import org.jdesktop.binding.impl.BindingFactoryImpl;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXImagePanel;
+import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXRadioGroup;
+import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTitledPanel;
+import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 
 /**
@@ -42,7 +48,7 @@ import org.jdesktop.swingx.JXTreeTable;
  * @author rbair
  */
 public class BindingContextSupport extends AbstractBindingContext {
-    private static Map<Container, AbstractBindingContext> CONTEXTS = new HashMap<Container, AbstractBindingContext>();
+    private static Map<Container, BindingContext> CONTEXTS = new HashMap<Container, BindingContext>();
     
     static {
         //initalize Swing bindings for the factory
@@ -64,13 +70,24 @@ public class BindingContextSupport extends AbstractBindingContext {
         factory.addMapping(JXDatePicker.class, JXDatePickerBinding.class);
         factory.addMapping(JXImagePanel.class, JXImagePanelBinding.class);
         factory.addMapping(JXRadioGroup.class, JXRadioGroupBinding.class);
+        factory.addMapping(JXTable.class, JXTableBinding.class);
         factory.addMapping(JXTitledPanel.class, JXTitledPanelBinding.class);
+        factory.addMapping(JXTree.class, JXTreeBinding.class);
         factory.addMapping(JXTreeTable.class, JXTreeTableBinding.class);
+        factory.addMapping(JXList.class, JXListBinding.class);
     }
     
     private Container container;
+    private List<BindingContext> childrenContexts;
     private AbstractBindingContext parentContext;
-    private AbstractBindingContext[] childrenContexts;
+    
+    public Container getContainer() {
+        return container;
+    }
+    
+    public BindingContextSupport() {
+        //TODO remove me
+    }
     
     /**
      * Creates a new instance of BindingContextSupport 
@@ -84,37 +101,41 @@ public class BindingContextSupport extends AbstractBindingContext {
         //children binding context. Note that this is a first and
         //very rash attempt
         Container parent = c.getParent();
-        Component[] children = c.getComponents();
-        
-        parentContext = CONTEXTS.get(parent);
-        if (parentContext == null && parent != null) {
-            parentContext = new BindingContextSupport(parent);
-            CONTEXTS.put(parent, parentContext);
-        }
-
-        int count = 0;
-        for (Component child : children) {
-            if (child instanceof Container) {
-                count++;
-            }
-        }
-
-        childrenContexts = new AbstractBindingContext[count];
-        count = 0;
-        for (Component child : children) {
-            if (child instanceof Container) {
-                childrenContexts[count] = new BindingContextSupport((Container)child);
-                CONTEXTS.put((Container)child, childrenContexts[count]);
-                count++;
-            }
-        }
+        Component[] children = c.getComponents();        
     }
 
     public AbstractBindingContext getParentContext() {
+        //walk up the containment hierarchy looking for an AbstractBindingContext.
+        Container parent = container.getParent();
+        while (parent != null && parentContext == null) {
+            if (CONTEXTS.get(parent) != null) {
+                parentContext = (AbstractBindingContext)CONTEXTS.get(parent);
+            } else {
+                parent = parent.getParent();
+            }
+        }
         return parentContext;
     }
 
-    public AbstractBindingContext[] getChildrenContexts() {
+    public List<BindingContext> getChildrenContexts() {
+        //walk down the containment hierarchy looking for all children
+        //but only the FIRST LEVEL of all children. That is, after finding
+        //a BindingContext child, stop recursing on that child
+        childrenContexts = new ArrayList<BindingContext>();
+        getChildrenContexts(childrenContexts, container);
         return childrenContexts;
+    }
+    
+    private void getChildrenContexts(List<BindingContext> childrenContexts, Container parent) {
+        for (Component child : parent.getComponents()) {
+            if (child instanceof Container) {
+                BindingContext b = CONTEXTS.get((Container)child);
+                if (b == null) {
+                    getChildrenContexts(childrenContexts, (Container)child);
+                } else {
+                    childrenContexts.add(b);
+                }
+            }
+        }
     }
 }

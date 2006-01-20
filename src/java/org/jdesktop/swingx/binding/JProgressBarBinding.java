@@ -9,24 +9,23 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JProgressBar;
-import org.jdesktop.binding.FieldBinding;
 
 /**
  *
  * @author Richard
  */
-public class JProgressBarBinding extends FieldBinding {
+public class JProgressBarBinding extends SwingColumnBinding {
     private int oldValue;
     
     public JProgressBarBinding(JProgressBar pb) {
         super(pb, int.class);
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getValue();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setValue(oldValue);
     }
     

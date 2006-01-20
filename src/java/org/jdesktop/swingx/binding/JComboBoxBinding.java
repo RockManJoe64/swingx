@@ -9,7 +9,6 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JComboBox;
-import org.jdesktop.binding.FieldBinding;
 
 /**
  * This single binding manages binding the list portion of the ComboBox as well
@@ -18,18 +17,18 @@ import org.jdesktop.binding.FieldBinding;
  *
  * @author Richard
  */
-public class JComboBoxBinding extends FieldBinding {
+public class JComboBoxBinding extends SwingColumnBinding {
     private Object oldValue;
     
     public JComboBoxBinding(JComboBox cbox) {
         super(cbox, Object.class);
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getSelectedItem();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setSelectedItem(oldValue);
     }
     
@@ -43,5 +42,9 @@ public class JComboBoxBinding extends FieldBinding {
 
     protected void setComponentValue(Object obj) {
         getComponent().setSelectedItem(obj);
+    }
+
+    protected void setComponentEditable(boolean editable) {
+        getComponent().setEditable(editable);
     }
 }
