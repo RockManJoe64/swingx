@@ -8,25 +8,23 @@
  */
 
 package org.jdesktop.swingx.binding;
-import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXRadioGroup;
-
 /**
  *
  * @author Richard
  */
-public class JXRadioGroupBinding extends FieldBinding {
+public class JXRadioGroupBinding extends SwingColumnBinding {
     private Object oldValue;
     
     public JXRadioGroupBinding(JXRadioGroup group) {
         super(group, Object.class);
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getSelectedValue();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setSelectedValue(oldValue);
     }
     
@@ -40,5 +38,9 @@ public class JXRadioGroupBinding extends FieldBinding {
     
     public JXRadioGroup getComponent() {
         return (JXRadioGroup)super.getComponent();
+    }
+    
+    protected void setComponentEditable(boolean editable) {
+        getComponent().setEnabled(editable);
     }
 }

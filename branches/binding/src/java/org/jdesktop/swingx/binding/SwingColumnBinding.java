@@ -19,22 +19,45 @@ import javax.swing.text.JTextComponent;
 import org.jdesktop.binding.impl.ColumnBinding;
 
 /**
+ * This is the base class for all of the Swing binding implementations that
+ * are associated with a single Column, f.i. JTextComponentBinding or AbstractButtonBinding.
+ * It is meant to be subclassed (hence, it is abstract).
+ *
+ * All subclasses must be intended for use with subclasses of Component. Thus, this
+ * could also be the parent binding for all AWT bindings.
  *
  * @author rbair
  */
 public abstract class SwingColumnBinding extends ColumnBinding {
-    
+    /**
+     * Basic constructor, creates a new SwingColumnBinding
+     * 
+     * @param c the Component that this Binding is for
+     * @param type the class that the bound value should be converted into
+     *             for use with this Binding. For example, the JTextComponentBinding
+     *             specifies that it wants a String. If you don't want automatic
+     *             conversion, then specify Object.class or null.
+     */
     public SwingColumnBinding(Component c, Class type) {
         super(c, type);
     }
 
+    /**
+     * Sets the component to be enabled based on the given param
+     */
     protected void setComponentEnabled(boolean enabled) {
         getComponent().setEnabled(enabled);
     }
     
+    /**
+     * Not all Swing/AWT components have an editable property, so it is unimplemented
+     * by default. Each component should override this method if they want to support
+     * editability changes. JLabel doesn't need this method, JTextField does.
+     */
     protected void setComponentEditable(boolean editable) {
         //no-op
     }
+    
     
     public Component getComponent() {
         return (Component)super.getComponent();
