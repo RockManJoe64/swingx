@@ -9,24 +9,23 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JSpinner;
-import org.jdesktop.binding.FieldBinding;
 
 /**
  *
  * @author Richard
  */
-public class JSpinnerBinding extends FieldBinding {
+public class JSpinnerBinding extends SwingColumnBinding {
     private Object oldValue;
     
     public JSpinnerBinding(JSpinner cbox) {
         super(cbox, Object.class);
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getValue();
     }
 
-    public void release() {
+    public void doRelease() {
         if (oldValue != null) {
             getComponent().setValue(oldValue);
         }
@@ -42,5 +41,9 @@ public class JSpinnerBinding extends FieldBinding {
     
     public JSpinner getComponent() {
         return (JSpinner)super.getComponent();
+    }
+
+    protected void setComponentEditable(boolean editable) {
+        getComponent().setEnabled(editable);
     }
 }

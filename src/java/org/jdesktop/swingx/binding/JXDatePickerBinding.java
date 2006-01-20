@@ -42,4 +42,8 @@ public class JXDatePickerBinding extends SwingColumnBinding {
     public JXDatePicker getComponent() {
         return (JXDatePicker)super.getComponent();
     }
+
+    protected void setComponentEditable(boolean editable) {
+        getComponent().setEditable(editable);
+    }
 }

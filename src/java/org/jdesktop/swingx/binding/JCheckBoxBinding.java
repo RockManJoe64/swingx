@@ -10,13 +10,12 @@
 package org.jdesktop.swingx.binding;
 
 import javax.swing.JCheckBox;
-import org.jdesktop.binding.FieldBinding;
 
 /**
  *
  * @author Richard
  */
-public class JCheckBoxBinding extends FieldBinding {
+public class JCheckBoxBinding extends SwingColumnBinding {
     private boolean oldValue;
     
     /** Creates a new instance of JCheckBoxBinding */
@@ -24,11 +23,11 @@ public class JCheckBoxBinding extends FieldBinding {
         super(cbox, Boolean.class);
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().isSelected();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setSelected(oldValue);
     }
     
@@ -42,5 +41,9 @@ public class JCheckBoxBinding extends FieldBinding {
     
     public JCheckBox getComponent() {
         return (JCheckBox)super.getComponent();
+    }
+
+    protected void setComponentEditable(boolean editable) {
+        getComponent().setEnabled(editable);
     }
 }
