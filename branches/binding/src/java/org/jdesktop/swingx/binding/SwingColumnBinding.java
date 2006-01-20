@@ -24,13 +24,6 @@ import org.jdesktop.binding.impl.ColumnBinding;
  */
 public abstract class SwingColumnBinding extends ColumnBinding {
     
-    /** Creates a new instance of SwingFieldBinding 
-         TODO TO DELETE
-     */
-    public SwingColumnBinding(Component c, String fieldName, Class type) {
-        super(c, type);//, fieldName);
-    }
-    
     public SwingColumnBinding(Component c, Class type) {
         super(c, type);
     }

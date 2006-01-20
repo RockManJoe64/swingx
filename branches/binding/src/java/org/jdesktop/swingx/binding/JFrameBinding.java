@@ -10,30 +10,23 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JFrame;
-import org.jdesktop.binding.FieldBinding;
-
-
 
 /**
  *
  * @author Richard
  */
-public class JFrameBinding extends FieldBinding {
+public class JFrameBinding extends SwingColumnBinding {
     private String oldValue;
     
     public JFrameBinding(JFrame frm) {
         super(frm, String.class);
     }
     
-    public JFrameBinding(JFrame frm, String fieldName) {
-        super(frm, fieldName, String.class);
-    }
-
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getTitle();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setTitle(oldValue);
     }
 

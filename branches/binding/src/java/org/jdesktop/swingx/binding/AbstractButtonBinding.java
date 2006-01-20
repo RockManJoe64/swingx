@@ -10,7 +10,6 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.AbstractButton;
-import org.jdesktop.binding.FieldBinding;
 
 
 /**
@@ -22,22 +21,18 @@ import org.jdesktop.binding.FieldBinding;
  *
  * @author Richard
  */
-public class AbstractButtonBinding extends FieldBinding {
+public class AbstractButtonBinding extends SwingColumnBinding {
     private String oldValue;
     
     public AbstractButtonBinding(AbstractButton button) {
         super(button, String.class);
     }
     
-    public AbstractButtonBinding(AbstractButton button, String fieldName) {
-        super(button, fieldName, String.class);
-    }
-
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getText();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setText(oldValue);
     }
 
