@@ -21,12 +21,9 @@
 
 package org.jdesktop.swingx;
 
-import java.awt.Component;
+import com.jgoodies.validation.ValidationResult;
 import java.util.List;
-
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
-import javax.swing.JRootPane;
 import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
 import org.jdesktop.binding.DataModel;
@@ -238,5 +235,9 @@ public class JXInternalFrame extends JInternalFrame implements BindingContext, D
 
     public void removeBindingContextListener(BindingContextListener listener) {
         ctxSupport.removeBindingContextListener(listener);
+    }
+
+    public void handleValidationResult(ValidationResult result) {
+        ctxSupport.handleValidationResult(result);
     }
 }
