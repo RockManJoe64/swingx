@@ -9,7 +9,10 @@
  */
 
 package org.jdesktop.swingx.binding;
+import com.jgoodies.validation.Severity;
+import com.jgoodies.validation.ValidationResult;
 import com.jgoodies.validation.view.ValidationComponentUtils;
+import java.awt.Color;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -24,6 +27,7 @@ public class JTextComponentBinding extends SwingColumnBinding {
     private String oldValue;
     private DocumentChangeListener listener;
     private String cachedValue;
+    private Color preValidationBackgroundColor;
     
     public JTextComponentBinding(JTextComponent comp) {
         super(comp, String.class);
@@ -59,6 +63,25 @@ public class JTextComponentBinding extends SwingColumnBinding {
 
     protected void setComponentEditable(boolean editable) {
         getComponent().setEditable(editable);
+    }
+
+    protected void doValidationResult(ValidationResult result) {
+        JTextComponent c = getComponent();
+        if (result.getSeverity() == Severity.ERROR) {
+            if (preValidationBackgroundColor == null) {
+                preValidationBackgroundColor = c.getBackground();
+            }
+            ValidationComponentUtils.setErrorBackground(c);
+        } else if (result.getSeverity() == Severity.WARNING) {
+            if (preValidationBackgroundColor == null) {
+                preValidationBackgroundColor = c.getBackground();
+            }
+            ValidationComponentUtils.setWarningBackground(c);
+        } else {
+            if (preValidationBackgroundColor != null) {
+                c.setBackground(preValidationBackgroundColor);
+            }
+        }
     }
 
     /**
