@@ -3,6 +3,20 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.plaf;
 
@@ -43,12 +57,23 @@ import org.jdesktop.swingx.util.OS;
  * {@link #setAddon(String)}method. For example, to install the
  * Windows addons, add the following statement
  * <code>LookAndFeelAddons.setAddon("org.jdesktop.swingx.plaf.windows.WindowsLookAndFeelAddons");</code>.
+ * 
+ * @author <a href="mailto:fred@L2FProd.com">Frederic Lavigne</a> 
  */
 public class LookAndFeelAddons {
 
   private static List<ComponentAddon> contributedComponents =
     new ArrayList<ComponentAddon>();
 
+  /**
+   * Key used to ensure the current UIManager has been populated by the
+   * LookAndFeelAddons.
+   */
+  private static final Object APPCONTEXT_INITIALIZED = new Object();
+
+  private static boolean trackingChanges = false;
+  private static PropertyChangeListener changeListener;    
+  
   static {
     // load the default addon
     String addonClassname = getBestMatchAddonClassName();
@@ -60,15 +85,22 @@ public class LookAndFeelAddons {
 
     try {
       setAddon(addonClassname);
-      setTrackingLookAndFeelChanges(true);
-      addDefaultResourceBundle();
-    } catch (InstantiationException e) {
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      // PENDING(fred) do we want to log an error and continue with a default
+      // addon class or do we just fail?
+      throw new ExceptionInInitializerError(e);
     }
+    
+    setTrackingLookAndFeelChanges(true);
+      
+    // this addon ensure resource bundle gets added to lookandfeel defaults
+    // and re-added by #maybeInitialize if needed      
+    contribute(new AbstractComponentAddon("MinimumAddon") {
+      @Override
+      protected void addBasicDefaults(LookAndFeelAddons addon, List<Object> defaults) {
+        addResource(defaults, "org.jdesktop.swingx.plaf.resources.swingx");
+      }
+    });
   }
 
   private static LookAndFeelAddons currentAddon;
@@ -79,13 +111,6 @@ public class LookAndFeelAddons {
       ComponentAddon addon = iter.next();
       addon.initialize(this);
     }
-  }
-
-  private static void addDefaultResourceBundle() {
-//    ResourceBundle bundle = ResourceBundle.getBundle(LookAndFeelAddons.class.getPackage().getName() + "/resources/swingx");
-//    System.out.println(bundle.getObject("JXTable.column.horizontalScroll"));
-    UIManager.getDefaults().addResourceBundle(LookAndFeelAddons.class.getPackage().getName() + "/resources/swingx");
-    
   }
 
   public void uninitialize() {
@@ -103,13 +128,13 @@ public class LookAndFeelAddons {
    */
   public void loadDefaults(Object[] keysAndValues) {
     for (int i = 0, c = keysAndValues.length; i < c; i = i + 2) {
-      UIManager.put(keysAndValues[i], keysAndValues[i + 1]);
+      UIManager.getLookAndFeelDefaults().put(keysAndValues[i], keysAndValues[i + 1]);
     }
   }
 
   public void unloadDefaults(Object[] keysAndValues) {
     for (int i = 0, c = keysAndValues.length; i < c; i = i + 2) {
-      UIManager.put(keysAndValues[i], null);
+      UIManager.getLookAndFeelDefaults().put(keysAndValues[i], null);
     }
   }
 
@@ -131,7 +156,8 @@ public class LookAndFeelAddons {
     }
 
     addon.initialize();
-    currentAddon = addon;
+    currentAddon = addon;    
+    UIManager.put(APPCONTEXT_INITIALIZED, Boolean.TRUE);
   }
 
   public static LookAndFeelAddons getAddon() {
@@ -224,22 +250,34 @@ public class LookAndFeelAddons {
   }
 
   /**
-   * Workaround for IDE mixing up with classloaders (like netbeans).
-   * Consider this method as API private. It must not be called
-   * directly.
+   * Workaround for IDE mixing up with classloaders and Applets environments.
+   * Consider this method as API private. It must not be called directly.
    * 
-   * @param p_Component
-   * @return an instance of p_ExpectedUIClass 
+   * @param component
+   * @param expectedUIClass
+   * @return an instance of expectedUIClass 
    */
-  public static ComponentUI getUI(JComponent p_Component,
-    Class p_ExpectedUIClass, ComponentUI p_CandidateUI) {
-    if (p_ExpectedUIClass.isInstance(p_CandidateUI)) {
-      return p_CandidateUI;
+  public static ComponentUI getUI(JComponent component, Class expectedUIClass) {
+    maybeInitialize();
+
+    // solve issue with ClassLoader not able to find classes
+    String uiClassname = (String)UIManager.get(component.getUIClassID());
+    try {
+      Class uiClass = Class.forName(uiClassname);
+      UIManager.put(uiClassname, uiClass);
+    } catch (ClassNotFoundException e) {
+      // we ignore the ClassNotFoundException
+    }
+    
+    ComponentUI ui = UIManager.getUI(component);
+    
+    if (expectedUIClass.isInstance(ui)) {
+      return ui;
     } else {
-      String realUI = p_CandidateUI.getClass().getName();
+      String realUI = ui.getClass().getName();
       Class realUIClass;
       try {
-        realUIClass = p_ExpectedUIClass.getClassLoader()
+        realUIClass = expectedUIClass.getClassLoader()
         .loadClass(realUI);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException("Failed to load class " + realUI, e);
@@ -251,9 +289,32 @@ public class LookAndFeelAddons {
         throw new RuntimeException("Class " + realUI + " has no method createUI(JComponent)");
       }
       try {
-        return (ComponentUI)createUIMethod.invoke(null, new Object[]{p_Component});
+        return (ComponentUI)createUIMethod.invoke(null, new Object[]{component});
       } catch (Exception e2) {
         throw new RuntimeException("Failed to invoke " + realUI + "#createUI(JComponent)");
+      }
+    }
+  }
+  
+  /**
+   * With applets, if you reload the current applet, the UIManager will be
+   * reinitialized (entries previously added by LookAndFeelAddons will be
+   * removed) but the addon will not reinitialize because addon initialize
+   * itself through the static block in components and the classes do not get
+   * reloaded. This means component.updateUI will fail because it will not find
+   * its UI.
+   * 
+   * This method ensures LookAndFeelAddons get re-initialized if needed. It must
+   * be called in every component updateUI methods.
+   */
+  private static synchronized void maybeInitialize() {
+    if (currentAddon != null) {
+      // this is to ensure "UIManager#maybeInitialize" gets called and the
+      // LAFState initialized
+      UIManager.getLookAndFeelDefaults();
+      
+      if (!UIManager.getBoolean(APPCONTEXT_INITIALIZED)) {
+        setAddon(currentAddon);
       }
     }
   }
@@ -261,9 +322,6 @@ public class LookAndFeelAddons {
   //
   // TRACKING OF THE CURRENT LOOK AND FEEL
   //
-  private static boolean trackingChanges = false;
-  private static PropertyChangeListener changeListener;    
-
   private static class UpdateAddon implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
       try {

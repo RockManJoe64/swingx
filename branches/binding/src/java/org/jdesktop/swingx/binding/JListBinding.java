@@ -10,26 +10,31 @@
 
 package org.jdesktop.swingx.binding;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
 import org.jdesktop.binding.SelectionModel;
+import org.jdesktop.binding.event.DataModelListener;
+import org.jdesktop.binding.event.ModelChangedEvent;
+import org.jdesktop.binding.event.ValuesChangedEvent;
 import org.jdesktop.binding.impl.DefaultSelectionModel;
 
 /**
  *
  * @author rbair
  */
-public class JListBinding extends Binding {
+public class JListBinding extends SwingModelBinding {
     private ListModel oldModel;
     private ListSelectionListener selectionListener;
     private DataModelToListModelAdapter model;
     private String displayName;
-    private SelectionModel listSelectionModel;
+    private DefaultSelectionModel listSelectionModel;
+    private List<SelectionModel> selectionModels;
     
     /** Creates a new instance of JListBinding */
     public JListBinding(JList list) {
@@ -40,6 +45,8 @@ public class JListBinding extends Binding {
         super(list);
         this.displayName = displayName;
         listSelectionModel = new DefaultSelectionModel();
+        selectionModels = new ArrayList<SelectionModel>(1);
+        selectionModels.add(listSelectionModel);
     }
     
     public void setDisplayName(String name) {
@@ -54,7 +61,15 @@ public class JListBinding extends Binding {
         return listSelectionModel;
     }
     
-    protected void initialize() {
+    public List<SelectionModel> getSelectionModels() {
+        return selectionModels;
+    }
+    
+    protected void setSelectionModelName(String name) {
+        listSelectionModel.setName(name);
+    }
+    
+    protected void doInitialize() {
         JList list = (JList)super.getComponent();
         oldModel = list.getModel();
         model = new DataModelToListModelAdapter(getDataModel());
@@ -65,7 +80,11 @@ public class JListBinding extends Binding {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int[] indices = ((JList)getComponent()).getSelectedIndices();
-                    listSelectionModel.setSelectionIndices(indices);
+                    List<DataModel.Row> rows = new ArrayList<DataModel.Row>(indices.length);
+                    for (int i=0; i<indices.length; i++) {
+                        rows.add(getDataModel().getRow(indices[i]));
+                    }
+                    listSelectionModel.setSelection(rows);
                 }
             }
         };
@@ -73,18 +92,16 @@ public class JListBinding extends Binding {
 //        new ListSelectionBinding(sm, list.getSelectionModel());
     }
 
-    public void release() {
+    protected void doRelease() {
         JList list = (JList)super.getComponent();
         list.setModel(oldModel);
         list.removeListSelectionListener(selectionListener);
     }
 
-    public boolean loadComponentFromDataModel() {
-        return true;
+    public void doSave() {
     }
     
-    public boolean loadDataModelFromComponent() {
-        return true;
+    public void doLoad() {
     }
     
     public final class DataModelToListModelAdapter extends AbstractListModel {
@@ -97,6 +114,16 @@ public class JListBinding extends Binding {
         }
 
 	protected void installDataModelListener() {
+            tabModel.addDataModelListener(new DataModelListener() {
+                public void modelChanged(ModelChangedEvent mce) {
+                    JList list = (JList)getComponent();
+                    list.firePropertyChange("fixedCellHeight", -20, list.getFixedCellHeight());
+                }
+                public void valuesChanged(ValuesChangedEvent evt) {
+                    JList list = (JList)getComponent();
+                    list.firePropertyChange("fixedCellHeight", -20, list.getFixedCellHeight());
+                }
+            });
 //        tabModel.addTableDataListener(new TableDataListener() {
 //            /**
 //             * <p>Process an event indicating that the DataModel has changed in
@@ -140,14 +167,14 @@ public class JListBinding extends Binding {
 	}
 	
         public void fireDataChanged() {
-            fireContentsChanged(this, 0, tabModel.getRecordCount() - 1);
+            fireContentsChanged(this, 0, tabModel.getRowCount() - 1);
         }
         
 	/* (non-Javadoc)
 	 * @see javax.swing.ListModel#getSize()
 	 */
 	public int getSize() {
-            return tabModel.getRecordCount();
+            return tabModel.getRowCount();
 	}
 
 	/* (non-Javadoc)
@@ -155,9 +182,9 @@ public class JListBinding extends Binding {
 	 */
 	public Object getElementAt(int index) {
             if (displayName == null) {
-                return tabModel.getRowData(index);
+                return tabModel.getRow(index).getDomainData();
             } else {
-                return tabModel.getValue(index, displayName);
+                return tabModel.getRow(index).getValue(displayName);
             }
 	}
     }

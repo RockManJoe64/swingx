@@ -1,5 +1,5 @@
 /*
- * JLabelBinding.java
+ * JTextComponentBinding.java
  *
  * Created on August 24, 2005, 5:14 PM
  *

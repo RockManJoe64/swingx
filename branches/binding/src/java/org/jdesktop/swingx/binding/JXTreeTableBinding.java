@@ -12,18 +12,16 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.tree.TreeNode;
-import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.tree.TreeNodeExt;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
-
 /**
  * Essentially the same as the tree binding, only also supports columns
  * @author Richard
  */
-public class JXTreeTableBinding extends Binding {
+public class JXTreeTableBinding extends SwingModelBinding {
     private TreeTableModel oldModel;
     private String childName; //name of the child datamodel to recurse on when constructing the tree (should be array??)
     private String[] fieldNames;
@@ -64,24 +62,22 @@ public class JXTreeTableBinding extends Binding {
         this.fieldNames = fieldNames;
     }
 
-    protected void initialize() {
+    protected void doInitialize() {
         JXTreeTable tree = getComponent();
         oldModel = tree.getTreeTableModel();
         TreeTableModel model = new RecursiveTreeTableModel(getDataModel());
         tree.setTreeTableModel(model);
     }
 
-    public void release() {
+    protected void doRelease() {
         JXTreeTable tree = getComponent();
         tree.setTreeTableModel(oldModel);
     }
 
-    public boolean loadComponentFromDataModel() {
-        return true;
+    public void doLoad() {
     }
 
-    public boolean loadDataModelFromComponent() {
-        return false; //shouldn't be called!
+    public void doSave() {
     }
     
     private final class RecursiveTreeTableModel extends DefaultTreeTableModel {
@@ -96,7 +92,7 @@ public class JXTreeTableBinding extends Binding {
 
         public Object getValueAt(Object node, int column) {
             DataModelTreeNode n = (DataModelTreeNode)node;
-            return n.model.getValue(n.index, fieldNames[column]);
+            return n.model.getRow(n.index).getValue(fieldNames[column]);
         }
 
         public String getColumnName(int column) {
@@ -119,7 +115,7 @@ public class JXTreeTableBinding extends Binding {
         public DataModelTreeNode(DataModel dm, int index) {
             this.model = dm;
             this.index = index;
-            child = dm.getChild(childName, index);
+            child = dm.getRow(index).getChildModel(childName);
         }
         
         protected DataModelTreeNode(DataModel dm, int index, TreeNode parent) {
@@ -138,7 +134,7 @@ public class JXTreeTableBinding extends Binding {
         }
 
         public int getChildCount() {
-            return child.getRecordCount();
+            return child.getRowCount();
         }
 
         public TreeNode getParent() {
@@ -151,7 +147,7 @@ public class JXTreeTableBinding extends Binding {
         }
 
         public boolean getAllowsChildren() {
-            return (Boolean)model.getValue(index, "directory");
+            return (Boolean)model.getRow(index).getValue("directory");
         }
 
         public boolean isLeaf() {
@@ -171,12 +167,12 @@ public class JXTreeTableBinding extends Binding {
         }
         
         public String toString() {
-            Object obj = model.getValue(index, displayName);
+            Object obj = model.getRow(index).getValue(displayName);
             return obj == null ? "" : obj.toString();
         }
         
         public Object getData() {
-            return model.getRowData(index);
+            return model.getRow(index).getDomainData();
         }
     }
     

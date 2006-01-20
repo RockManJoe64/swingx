@@ -9,171 +9,287 @@
  */
 
 package org.jdesktop.swingx.binding;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.DataModel;
-import org.jdesktop.binding.metadata.MetaData;
+import org.jdesktop.binding.DisplayHints;
+import org.jdesktop.binding.SelectionModel;
+import org.jdesktop.binding.impl.DefaultSelectionModel;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 
 /**
  * A binding implementation that binds a JTable to a DataModel.
  *
  * @author rbair
  */
-public class JTableBinding extends Binding {
+public class JTableBinding extends SwingModelBinding {
+    private static final Logger LOG = Logger.getLogger(JTableBinding.class.getName());
     private TableModel oldModel;
+    private TableColumnModel oldColModel;
+    
     private ListSelectionListener selectionListener;
     private AbstractTableModel model;
-    private String[] columnNames;
+    private DefaultSelectionModel tableSelectionModel;
+    private List<SelectionModel> selectionModels;
     
     /** Creates a new instance of JTableBinding */
     public JTableBinding(JTable table) {
         super(table);
+        tableSelectionModel = new DefaultSelectionModel();
+        tableSelectionModel.setName("selected");
+        selectionModels = new ArrayList<SelectionModel>(1);
+        selectionModels.add(tableSelectionModel);
     }
     
-    public JTableBinding(JTable table, String[] colNames) {
-        super(table);
-        this.columnNames = colNames;
+    public SelectionModel getTableSelectionModel() {
+        return tableSelectionModel;
+    }
+    
+    public List<SelectionModel> getSelectionModels() {
+        return selectionModels;
     }
 
-    public void setColumnNames(String[] names) {
-        this.columnNames = names;
+    protected void setSelectionModelName(String name) {
+        tableSelectionModel.setName(name);
     }
     
-    public String[] getColumnNames() {
-        return columnNames;
-    }
-    
-    protected void initialize() {
+    protected void doInitialize() {
         JTable table = (JTable)super.getComponent();
         oldModel = table.getModel();
-        model = new DataModelToTableModelAdapter(getDataModel());
-        table.setModel(model);
+        oldColModel = copyTableColumnModel(table.getColumnModel());
+        
         //create the column model adapter
-        table.setColumnModel(new TableColumnModelAdapter(getDataModel(), columnNames));
+        TableColumnModelAdapter colModel = new TableColumnModelAdapter(getDataModel(), oldColModel);
+        
+        model = new DataModelToTableModelAdapter(getDataModel(), colModel);
+        table.setModel(model);
+        table.setColumnModel(colModel); //the column model MUST be specified after
+                                        //the model or else the JTable will throw
+                                        //away the model and create a new one
+                                        //based on the TableModel
+
         //create a selection binding
         selectionListener = new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    int index = ((JTable)getComponent()).getSelectionModel().getMinSelectionIndex(); //TODO doesn't do multi selection!!
-//                    getDataModel().getSelectionModel().setSelectionIndices(new int[]{index});
+                    int[] indices = ((JTable)getComponent()).getSelectedRows();
+                    List<DataModel.Row> rows = new ArrayList<DataModel.Row>();
+                    for (int i=0; i<indices.length; i++) {
+                        rows.add(getDataModel().getRow(indices[i]));
+                    }
+                    tableSelectionModel.setSelection(rows);
                 }
             }
         };
         table.getSelectionModel().addListSelectionListener(selectionListener);
     }
     
-    public void release() {
+    public void doRelease() {
         JTable table = (JTable)super.getComponent();
         if (oldModel != null) {
             table.setModel(oldModel);
         }
-//        if (oldColumnModel != null) {
-//            table.setColumnModel(oldColumnModel);
-//        }
+        if (oldColModel != null) {
+            table.setColumnModel(oldColModel);
+        }
         table.getSelectionModel().removeListSelectionListener(selectionListener);
     }
 
-    public boolean loadDataModelFromComponent() {
-        return true;
+    public void doSave() {
     }
 
-    public boolean loadComponentFromDataModel() {
+    public void doLoad() {
         model.fireTableDataChanged();
-        return true;
     }
 
     private static final class TableColumnModelAdapter extends DefaultTableColumnModelExt {
-        public TableColumnModelAdapter(DataModel dm, String[] fieldNames) {
-            if (fieldNames == null) {
-                fieldNames = dm.getFieldNames();
-            }
-            String[] dmFieldNames = dm.getFieldNames();
-            for (String fieldName : fieldNames) {
-                int index = 0;
-                for (int i=0; i<dmFieldNames.length; i++) {
-                    if (dmFieldNames[i].equals(fieldName)) {
-                        index = i;
-                        break;
+        /**
+         * Uses the given ColumnModel as the basis for the new column model. If
+         * the oldColModel is null, or has no columns, then the dm is used as the
+         * basis for the column model. Otherwise, the given column model is used
+         * as the basis for the new column model. Any fields that are in the
+         * table column model but NOT in the data model are still included.
+         *
+         * The column identifier is used to match against the column names in the
+         * DataModel.
+         */
+        public TableColumnModelAdapter(DataModel dm, TableColumnModel colModel) {
+            if (colModel != null && colModel.getColumnCount() > 0) {
+                //grab and store the data model Column names. We'll be iterating
+                //over these to discover which columns in the colModel need to
+                //be included and bound in the new column model
+                String[] dmColNames = dm.getColumnNames();
+                for (int i=0; i<colModel.getColumnCount(); i++) {
+                    TableColumn c = colModel.getColumn(i);
+                    
+                    //look for the column in the DataModel that matches the
+                    //identifier of the TableColumn c. If one is found, then
+                    //bind that column in the new TableColumnModel. If one is
+                    //not found (denoted by index == -1), still include it,
+                    //but it won't be "bound" to anything in the DataModel
+                    int index = -1;
+                    //the column name in the DataModel that this TableColumn is
+                    //based on
+                    String dmColName = null;
+                    for (int j=0; j<dmColNames.length; j++) {
+                        Object id = c.getIdentifier();
+                        if (id != null && dmColNames[j].equals(id.toString())) {
+                            index = j;
+                            dmColName = id.toString();
+                            break;
+                        }
                     }
+                    
+                    TableColumnExt newColumn = new TableColumnExt(i);
+                    
+                    //grab the display hints for this column in the DataModel
+                    Map<Object,Object> displayHints = dm.getDisplayHints(dmColName);
+
+                    //first, get the width. If the width is
+                    //still the default size of 75 OR its pref width,
+                    //then fetch the display hints
+                    //don't change the width if it has been set by the user
+                    //(that is, it isn't 75 or its prefWidth)
+                    int width = c.getWidth();
+                    int prefWidth = c.getPreferredWidth();
+                    if (width == 75 || prefWidth == width && index >= 0) {
+                        Object hint = displayHints.get(DisplayHints.DISPLAY_WIDTH);
+                        width = hint instanceof Number ? ((Number)hint).intValue() : width;
+                        prefWidth = width;
+                    }
+
+                    //copy attributes (such as the editor and renderer) over
+                    //from the old column model to the new one
+                    newColumn.setWidth(width);
+                    newColumn.setCellRenderer(c.getCellRenderer());
+                    newColumn.setCellEditor(c.getCellEditor());
+                    newColumn.setPreferredWidth(prefWidth);
+                    newColumn.setResizable(c.getResizable());
+                    newColumn.setMinWidth(c.getMinWidth());
+                    newColumn.setMaxWidth(c.getMaxWidth());
+                    newColumn.setHeaderRenderer(c.getHeaderRenderer());
+                    for (PropertyChangeListener l : c.getPropertyChangeListeners()) {
+                        newColumn.addPropertyChangeListener(l);
+                    }
+
+                    Object headerValue = c.getHeaderValue();
+                    //only replace the header value if the header value is null
+                    //(and then attempt to use a display hint)
+                    if (headerValue == null && index >= 0) {
+                        Object hint = displayHints.get(DisplayHints.LABEL);
+                        hint = hint == null ? dmColName : hint;
+                    }
+                    newColumn.setHeaderValue(headerValue);
+                    newColumn.setIdentifier(c.getIdentifier());
+                    //TODO if the newColumn is a TableColumnExt then this
+                    //info needs to be carried over. Also, need to resolve
+                    //against the rendering hint about editability...
+//                    newColumn.setEditable();
+                    super.addColumn(newColumn);
                 }
-                MetaData md = dm.getMetaData(fieldName);
-                if (md != null) {
-                    TableColumnExt tc = new TableColumnExt(index, md.getDisplayWidth());
-                    tc.setHeaderValue(md.getLabel());
-                    tc.setIdentifier(md.getName());
-                    tc.setTitle(md.getLabel());
-                    tc.setEditable(!md.isReadOnly());
-                    super.addColumn(tc);
-                } else {
-                    //TODO need a debug log statement
-                    System.err.println("Couldn't get meta data for field named " + fieldName);
+            } else {
+                //generate the column model based entirely on the DataModel
+                String[] dmColNames = dm.getColumnNames();
+                for (int i=0; i<dmColNames.length; i++) {
+                    //grab the display hints for this column in the DataModel
+                    Map<Object,Object> displayHints = dm.getDisplayHints(dmColNames[i]);
+
+                    Object hint = displayHints.get(DisplayHints.DISPLAY_WIDTH);
+                    int width = hint instanceof Number ? ((Number)hint).intValue() : 75;
+
+                    TableColumnExt newColumn = new TableColumnExt(i, width);
+                    newColumn.setPreferredWidth(width);
+                    //TODO get from hints...?
+//                    newColumn.setResizable(true);
+//                    newColumn.setMinWidth(c.getMinWidth());
+//                    newColumn.setMaxWidth(c.getMaxWidth());
+
+                    hint = displayHints.get(DisplayHints.LABEL);
+                    hint = hint == null ? dmColNames[i] : hint;
+                    newColumn.setHeaderValue(hint);
+                    newColumn.setIdentifier(dmColNames[i]);
+                    //TODO...
+//                        newColumn.setEditable();
+                    super.addColumn(newColumn);
                 }
             }
         }
     }
 
-    public static final class DataModelToTableModelAdapter extends AbstractTableModel 
-        /*implements MetaDataModel*/ {
-
+    public static final class DataModelToTableModelAdapter extends AbstractTableModel {
         protected DataModel dm;
+        protected TableColumnModelAdapter columnModel;
+        /**
+         * A cache of the columnNames, according to model indices
+         */
+        protected String[] columnNames;
 
-        public DataModelToTableModelAdapter(DataModel dm) {
-            this(dm, null);
-        }
-
-        public DataModelToTableModelAdapter(DataModel dm, String[] visibleFieldNames) {
+        public DataModelToTableModelAdapter(DataModel dm, TableColumnModelAdapter columnModel) {
             this.dm = dm;
+            this.columnModel = columnModel;
+            columnNames = new String[columnModel.getColumnCount()];
+            for (int i=0; i<columnModel.getColumnCount(); i++) {
+                int modelIndex = columnModel.getColumn(i).getModelIndex();
+                Object id = columnModel.getColumn(i).getIdentifier();
+                columnNames[modelIndex] = id.toString();
+            }
             installDataModelListener();
         }
 
         public Class getColumnClass(int columnIndex) {
-            return getMetaData(columnIndex).getElementClass();
+            return dm.getType(getColumnName(columnIndex));
         }
 
-        public String getColumnName(int column) {
-            //its possible that the meta data hasn't shown up yet. In this
-            //case, use the field name until the meta data arrives
-            // JW: when would that be the case?
-    //        MetaData md = dm.getMetaData(fieldNames[column]);
-    //        return md == null ? fieldNames[column] : md.getLabel();
-            MetaData md = getMetaData(column);
-            return md.getLabel();
+        public String getColumnName(int columnIndex) {
+            return columnNames[columnIndex];
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            MetaData md = getMetaData(columnIndex);
-            return !md.isReadOnly();
+            return !dm.getRow(rowIndex).isReadOnly(getColumnName(columnIndex));
         }
 
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            dm.setValue(rowIndex, getMetaData(columnIndex).getName(), aValue);
+            dm.getRow(rowIndex).setValue(getColumnName(columnIndex), aValue);
         }
 
         /* (non-Javadoc)
          * @see javax.swing.table.TableModel#getRowCount()
          */
         public int getRowCount() {
-            return dm.getRecordCount();
+            return dm.getRowCount();
         }
 
         /* (non-Javadoc)
          * @see javax.swing.table.TableModel#getColumnCount()
          */
         public int getColumnCount() {
-            return dm.getMetaData().length;
+            return columnModel.getColumnCount();
         }
 
         /* (non-Javadoc)
          * @see javax.swing.table.TableModel#getValueAt(int, int)
          */
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return dm.getValue(rowIndex, getMetaData(columnIndex).getName());
+            try {
+                return dm.getRow(rowIndex).getValue(getColumnName(columnIndex));
+            } catch (Throwable th) {
+                //hmmm log and return null
+//                LOG.log(Level.WARNING, "Failed to get data from a bound column", th);
+                return null;
+            }
         }
 
         // --------------------------- init listener
@@ -221,9 +337,44 @@ public class JTableBinding extends Binding {
 //                };
 //                dm.addTabularValueChangeListener(l);
         }
+    }
+    
+    private TableColumnModel copyTableColumnModel(TableColumnModel colModel) {
+        TableColumnModelExt newModel = new DefaultTableColumnModelExt();
+        for (int i=0; i<colModel.getColumnCount(); i++) {
+            TableColumn c = colModel.getColumn(i);
 
-        private MetaData getMetaData(int index) {
-            return dm.getMetaData()[index];
+            TableColumnExt newColumn = new TableColumnExt(i);
+
+            //copy attributes (such as the editor and renderer) over
+            //from the old column model to the new one
+            newColumn.setWidth(c.getWidth());
+            newColumn.setCellRenderer(c.getCellRenderer());
+            newColumn.setCellEditor(c.getCellEditor());
+            newColumn.setPreferredWidth(c.getPreferredWidth());
+            newColumn.setResizable(c.getResizable());
+            newColumn.setMinWidth(c.getMinWidth());
+            newColumn.setMaxWidth(c.getMaxWidth());
+            newColumn.setHeaderRenderer(c.getHeaderRenderer());
+            for (PropertyChangeListener l : c.getPropertyChangeListeners()) {
+                newColumn.addPropertyChangeListener(l);
+            }
+
+            newColumn.setHeaderValue(c.getHeaderValue());
+            newColumn.setIdentifier(c.getIdentifier());
+            //TODO if the newColumn is a TableColumnExt then this
+            //info needs to be carried over. Also, need to resolve
+            //against the rendering hint about editability...
+//                    newColumn.setEditable();
+            
+            if (c instanceof TableColumnExt) {
+                newColumn.setVisible(((TableColumnExt)c).isVisible());
+                newColumn.setEditable(((TableColumnExt)c).isEditable());
+                newColumn.setPrototypeValue(((TableColumnExt)c).getPrototypeValue());
+                newColumn.setSorterClass(((TableColumnExt)c).getSorterClass());
+            }
+            newModel.addColumn(newColumn);
         }
+        return newModel;
     }
 }

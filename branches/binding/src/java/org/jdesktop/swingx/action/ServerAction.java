@@ -3,69 +3,41 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
- */
-
-/**
- * Copyright 2004 Sun Microsystems, Inc. All Rights Reserved.
  *
- * Redistribution and use in source and binary forms, with or
- * without modification, are permitted provided that the following
- * conditions are met:
- *
- * - Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *
- * - Redistribution in binary form must reproduce the above
- * copyright notice, this list of conditions and the following
- * disclaimer in the documentation and/or other materials
- * provided with the distribution.
- *
- * Neither the name of Sun Microsystems, Inc. or the names of
- * contributors may be used to endorse or promote products derived
- * from this software without specific prior written permission.
- *
- * This software is provided "AS IS," without a warranty of any
- * kind. ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND
- * WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE HEREBY
- * EXCLUDED. SUN AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY
- * DAMAGES OR LIABILITIES SUFFERED BY LICENSEE AS A RESULT OF OR
- * RELATING TO USE, MODIFICATION OR DISTRIBUTION OF THIS SOFTWARE OR
- * ITS DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE
- * FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT,
- * SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER
- * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF
- * THE USE OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF SUN HAS
- * BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- * You acknowledge that this software is not designed, licensed or
- * intended for use in the design, construction, operation or
- * maintenance of any nuclear facility.
- *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.jdesktop.swingx.action;
 
 import java.awt.event.ActionEvent;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-
-import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
-import java.net.UnknownHostException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
+import java.net.UnknownHostException;
 import java.security.AccessControlException;
-
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -81,7 +53,8 @@ import javax.swing.Icon;
  */
 public class ServerAction extends AbstractAction {
     // Server action support
-
+    private static final Logger LOG = Logger.getLogger(ServerAction.class
+            .getName());
     private static final String PARAMS = "action-params";
     private static final String HEADERS = "action-headers";
     private static final String URL = "action-url";
@@ -184,7 +157,7 @@ public class ServerAction extends AbstractAction {
      */
     public void addHeader(String name, String value) {
 	Map map = getHeaders();
-	if (map != null) {
+	if (map == null) {
 	    map = new HashMap();
 	    setHeaders(map);
 	}
@@ -218,8 +191,6 @@ public class ServerAction extends AbstractAction {
 		if (url.startsWith("http")) {
 		    execURL = new URL(url);
 		} else {
-		    // Create the URL based on the enclosing applet.
-//		    execURL = Application.getURL(url, this);
 		}
 		if (execURL == null) {
 		    // XXX TODO: send a message
@@ -229,13 +200,8 @@ public class ServerAction extends AbstractAction {
 		    putValue(URL_CACHE, execURL);
 		}
 
-		/*
-		if (Debug.debug) {
-		    System.out.println("ServerAction: URL created: " + execURL.toString());
-		}
-		*/
 	    } catch (MalformedURLException ex) {
-		ex.printStackTrace();
+		LOG.log(Level.WARNING, "something went wrong...", ex);
 	    }
 	}
 
@@ -292,23 +258,18 @@ public class ServerAction extends AbstractAction {
             // RG: Fix for J2SE 5.0; Can't cascade append() calls because
             // return type in StringBuffer and AbstractStringBuilder are different
 		    buffer.append(line);
-            buffer.append('\n');
+                    buffer.append('\n');
 		}
-		if (Debug.debug) {
-		    // XXX So now that we have results in the StringBuffer, we should do something
-		    // with it.
-		    System.out.println(buffer.toString());
-		}
+            // JW: this used the Debug - maybe use finest level?    
+            LOG.finer("returned from connection\n" + buffer.toString());    
 	    }
-	} catch (UnknownHostException uhe) {
-	    Debug.printException("UnknownHostException detected. Could it be a proxy issue?\n" +
-				 uhe.getMessage(), uhe);
-	} catch (AccessControlException aex) {
-	    Debug.printException("AccessControlException detected\n" +
-			    aex.getMessage(), aex);
+	} catch (UnknownHostException ex) {
+            LOG.log(Level.WARNING, "UnknownHostException detected. Could it be a proxy issue?", ex);
+            
+	} catch (AccessControlException ex) {
+            LOG.log(Level.WARNING, "AccessControlException detected", ex);
 	} catch (IOException ex) {
-	    Debug.printException("IOException detected\n" +
-				 ex.getMessage(), ex);
+            LOG.log(Level.WARNING, "IOException detected", ex);
 	}
     }
 
@@ -339,26 +300,11 @@ public class ServerAction extends AbstractAction {
 	    // Replace the first & with a ?
 	    postData.setCharAt(0, '?');
 	}
-	if (Debug.debug) {
-	    System.out.println("ServerAction: POST data: " + postData.toString());
-	}
+	
+	LOG.finer("ServerAction: POST data: " + postData.toString());
 	return postData.toString();
     }
 
-    /**
-     * Retrieves the text from the text component.
-     * TODO: should use selection criteria to select text.
-     */
-    private StringBuffer getDataBuffer() throws UnsupportedEncodingException {
-	StringBuffer buffer = new StringBuffer("content=");
-	/*
-	if (listener != null) {
-	    buffer.append(URLEncoder.encode(listener.getText(), "UTF-8"));
-	} else {
-	    buffer.append("ServerAction ERROR: text component has not been set");
-	    }*/
-	return buffer;
-    }
 
     /**
      * Creates a human readable message from the server code and message result.
