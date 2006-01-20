@@ -21,6 +21,7 @@
 
 package org.jdesktop.swingx;
 
+import com.jgoodies.validation.ValidationResult;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
@@ -306,5 +307,9 @@ public class JXDialog extends JDialog implements BindingContext, DataAware {
     
     public void removeBindingContextListener(BindingContextListener listener) {
         ctxSupport.removeBindingContextListener(listener);
+    }
+
+    public void handleValidationResult(ValidationResult result) {
+        ctxSupport.handleValidationResult(result);
     }
 }

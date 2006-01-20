@@ -21,6 +21,7 @@
 
 package org.jdesktop.swingx;
 
+import com.jgoodies.validation.ValidationResult;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -322,5 +323,9 @@ public class JXRootPane extends JRootPane implements BindingContext {
 
     public void removeBindingContextListener(BindingContextListener listener) {
         ctx.removeBindingContextListener(listener);
+    }
+
+    public void handleValidationResult(ValidationResult result) {
+        ctx.handleValidationResult(result);
     }
 }

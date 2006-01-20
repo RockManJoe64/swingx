@@ -21,6 +21,7 @@
 
 package org.jdesktop.swingx;
 
+import com.jgoodies.validation.ValidationResult;
 import java.awt.Component;
 import java.util.List;
 
@@ -237,5 +238,9 @@ public class JXFrame extends JFrame implements BindingContext, DataAware {
 
     public void removeBindingContextListener(BindingContextListener listener) {
         ctxSupport.removeBindingContextListener(listener);
+    }
+
+    public void handleValidationResult(ValidationResult result) {
+        ctxSupport.handleValidationResult(result);
     }
 }
