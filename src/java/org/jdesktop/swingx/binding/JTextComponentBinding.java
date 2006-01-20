@@ -65,7 +65,7 @@ public class JTextComponentBinding extends SwingColumnBinding {
         getComponent().setEditable(editable);
     }
 
-    protected void doValidationResult(ValidationResult result) {
+    public void handleValidationResult(ValidationResult result) {
         JTextComponent c = getComponent();
         if (result.getSeverity() == Severity.ERROR) {
             if (preValidationBackgroundColor == null) {
