@@ -11,29 +11,24 @@
 package org.jdesktop.swingx.binding;
 
 import javax.swing.JLabel;
-import org.jdesktop.binding.FieldBinding;
 
 
 /**
  *
  * @author Richard
  */
-public class JLabelBinding extends FieldBinding {
+public class JLabelBinding extends SwingColumnBinding {
     private String oldValue;
     
     public JLabelBinding(JLabel label) {
         super(label, String.class);
     }
     
-    public JLabelBinding(JLabel label, String fieldName) {
-        super(label, fieldName, String.class);
-    }
-
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getText();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setText(oldValue);
     }
 

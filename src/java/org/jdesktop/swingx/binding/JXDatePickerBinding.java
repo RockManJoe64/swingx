@@ -11,30 +11,23 @@
 package org.jdesktop.swingx.binding;
 
 import java.util.Date;
-import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXDatePicker;
-
-
 /**
  *
  * @author Richard
  */
-public class JXDatePickerBinding extends FieldBinding {
+public class JXDatePickerBinding extends SwingColumnBinding {
     private Date oldValue;
     
     public JXDatePickerBinding(JXDatePicker datePicker) {
         super(datePicker, Date.class);
     }
     
-    public JXDatePickerBinding(JXDatePicker datePicker, String fieldName) {
-        super(datePicker, fieldName, Date.class);
-    }
-
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getDate();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setDate(oldValue);
     }
 

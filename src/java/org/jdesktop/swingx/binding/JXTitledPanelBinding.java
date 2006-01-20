@@ -9,29 +9,23 @@
  */
 
 package org.jdesktop.swingx.binding;
-import org.jdesktop.binding.FieldBinding;
 import org.jdesktop.swingx.JXTitledPanel;
-
 
 /**
  * @author Richard
  */
-public class JXTitledPanelBinding extends FieldBinding {
+public class JXTitledPanelBinding extends SwingColumnBinding {
     private String oldValue;
     
     public JXTitledPanelBinding(JXTitledPanel comp) {
         super(comp, String.class);
     }
     
-    public JXTitledPanelBinding(JXTitledPanel comp, String fieldName) {
-        super(comp, fieldName, String.class);
-    }
-
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getTitle();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setTitle(oldValue);
     }
 

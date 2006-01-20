@@ -10,7 +10,6 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JDialog;
-import org.jdesktop.binding.FieldBinding;
 
 
 
@@ -18,22 +17,18 @@ import org.jdesktop.binding.FieldBinding;
  *
  * @author Richard
  */
-public class JDialogBinding extends FieldBinding {
+public class JDialogBinding extends SwingColumnBinding {
     private String oldValue;
     
     public JDialogBinding(JDialog dlg) {
         super(dlg, String.class);
     }
     
-    public JDialogBinding(JDialog dlg, String fieldName) {
-        super(dlg, fieldName, String.class);
-    }
-
-    protected void initialize() {
+    protected void doInitialize() {
         oldValue = getComponent().getTitle();
     }
 
-    public void release() {
+    public void doRelease() {
         getComponent().setTitle(oldValue);
     }
 
