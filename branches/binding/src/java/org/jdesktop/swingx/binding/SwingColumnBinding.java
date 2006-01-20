@@ -103,14 +103,6 @@ public abstract class SwingColumnBinding extends ColumnBinding {
                 result = newResults;
             }
         }
-        doValidationResult(result);
         return result;
-    }
-    
-    /**
-     * Modifies the UI component in some way to indicate the results of Validation
-     */
-    protected void doValidationResult(ValidationResult result) {
-        //TODO
     }
 }
