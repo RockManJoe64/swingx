@@ -33,17 +33,9 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
-import org.jdesktop.binding.Binding;
-import org.jdesktop.binding.BindingContext;
-import org.jdesktop.binding.DataModel;
-import org.jdesktop.binding.SelectionModel;
-import org.jdesktop.binding.event.BindingContextListener;
-import org.jdesktop.swingx.binding.BindingContextSupport;
-import org.jdesktop.validation.ValidationListener;
 
 /**
  * A simple JPanel extension that adds translucency support.
