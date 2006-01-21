@@ -427,10 +427,10 @@ public class JXErrorDialog extends JXDialog {
 
         Window window = WindowUtils.findWindow(owner);
 
-        if (owner instanceof Dialog) {
-            dlg = new JXErrorDialog((Dialog)owner);
+        if (window instanceof Dialog) {
+            dlg = new JXErrorDialog((Dialog)window);
         } else {
-            dlg = new JXErrorDialog((Frame)owner);
+            dlg = new JXErrorDialog((Frame)window);
         }
         dlg.setTitle(info.getHeader());
         dlg.setErrorMessage(info.getBasicErrorMessage());
