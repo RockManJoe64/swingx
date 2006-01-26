@@ -51,7 +51,7 @@ import java.util.TimeZone;
  *
  * @author Joshua Outwater
  */
-public class JXDatePicker extends JComponent {
+public class JXDatePicker extends JComponent implements DataAware {
 
     static {
       LookAndFeelAddons.contribute(new JXDatePickerAddon());
