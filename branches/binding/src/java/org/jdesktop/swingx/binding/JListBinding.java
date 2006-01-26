@@ -65,7 +65,7 @@ public class JListBinding extends SwingModelBinding {
         return selectionModels;
     }
     
-    protected void setSelectionModelName(String name) {
+    public void setSelectionModelName(String name) {
         listSelectionModel.setName(name);
     }
     
