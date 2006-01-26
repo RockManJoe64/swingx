@@ -36,7 +36,7 @@ public class JCheckBoxBinding extends SwingColumnBinding {
     }
 
     protected void setComponentValue(Object obj) {
-        getComponent().setSelected((Boolean)obj);
+        getComponent().setSelected(obj == null ? false : (Boolean)obj);
     }
     
     public JCheckBox getComponent() {
