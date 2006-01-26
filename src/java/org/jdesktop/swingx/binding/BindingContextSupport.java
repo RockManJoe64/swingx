@@ -86,7 +86,6 @@ public class BindingContextSupport extends AbstractBindingContext {
     }
     
     public BindingContextSupport() {
-        //TODO remove me
     }
     
     /**
@@ -105,6 +104,9 @@ public class BindingContextSupport extends AbstractBindingContext {
     }
 
     public AbstractBindingContext getParentContext() {
+        if (container == null) {
+            return null;
+        }
         //walk up the containment hierarchy looking for an AbstractBindingContext.
         Container parent = container.getParent();
         while (parent != null && parentContext == null) {
@@ -127,13 +129,15 @@ public class BindingContextSupport extends AbstractBindingContext {
     }
     
     private void getChildrenContexts(List<BindingContext> childrenContexts, Container parent) {
-        for (Component child : parent.getComponents()) {
-            if (child instanceof Container) {
-                BindingContext b = CONTEXTS.get((Container)child);
-                if (b == null) {
-                    getChildrenContexts(childrenContexts, (Container)child);
-                } else {
-                    childrenContexts.add(b);
+        if (parent != null) {
+            for (Component child : parent.getComponents()) {
+                if (child instanceof Container) {
+                    BindingContext b = CONTEXTS.get((Container)child);
+                    if (b == null) {
+                        getChildrenContexts(childrenContexts, (Container)child);
+                    } else {
+                        childrenContexts.add(b);
+                    }
                 }
             }
         }
