@@ -164,8 +164,16 @@ public class JXFrame extends JFrame implements BindingContext, DataAware {
         return ctxSupport.removeDomainData(name);
     }
 
-    public Binding bind(Object target, String path, Object... params) {
-        return ctxSupport.bind(target, path, params);
+    public Binding bind(Object target, String path) {
+        return ctxSupport.bind(target, path);
+    }
+
+    public Binding bind(Object component, String propertyName, String path) {
+        return ctxSupport.bind(component, propertyName, path);
+    }
+
+    public void unbind(Object component, String propertyName) {
+        ctxSupport.unbind(component, propertyName);
     }
 
     public Object getDomainData(String name) {

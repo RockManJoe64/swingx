@@ -154,7 +154,7 @@ public class JTreeBinding extends SwingModelBinding {
                         treeSelectionModel.setSelected(node.row, e.isAddedPath(path));
                     }
                 }
-                treeSelectionModel.fireSelectionChangedEvent(this);
+                treeSelectionModel.fireSelectionChangedEvent(treeSelectionModel);
             }
         };
         selectionModels.add(treeSelectionModel);
