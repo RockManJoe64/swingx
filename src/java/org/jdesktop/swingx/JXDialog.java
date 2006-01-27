@@ -233,20 +233,28 @@ public class JXDialog extends JDialog implements BindingContext, DataAware {
         return ctxSupport.removeDomainData(name);
     }
     
-    public Binding bind(Object target, String path, Object... params) {
-        return ctxSupport.bind(target, path, params);
+    public Binding bind(Object target, String path) {
+        return ctxSupport.bind(target, path);
     }
     
+    public void unbind(Object target) {
+        ctxSupport.unbind(target);
+    }
+    
+    public Binding bind(Object component, String propertyName, String path) {
+        return ctxSupport.bind(component, propertyName, path);
+    }
+
+    public void unbind(Object component, String propertyName) {
+        ctxSupport.unbind(component, propertyName);
+    }
+
     public void addDomainData(String name, Object dataSource) {
         ctxSupport.addDomainData(name, dataSource);
     }
     
     public Object getDomainData(String name) {
         return ctxSupport.getDomainData(name);
-    }
-    
-    public void unbind(Object target) {
-        ctxSupport.unbind(target);
     }
     
     public List<BindingContext> getChildrenContexts() {
