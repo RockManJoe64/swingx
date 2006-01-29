@@ -11,9 +11,8 @@ package org.jdesktop.swingx.binding;
 import javax.swing.JComboBox;
 
 /**
- * This single binding manages binding the list portion of the ComboBox as well
- * as the editable portion. Two data models may be required to achieve this,
- * which will result in...
+ * Binds the "value" of the JComboBox to some domain data. This is a read/write
+ * binding.
  *
  * @author Richard
  */
