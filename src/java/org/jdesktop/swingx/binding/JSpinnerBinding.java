@@ -52,10 +52,10 @@ public class JSpinnerBinding extends SwingColumnBinding {
      * @inheritDoc
      */
     public void doRelease() {
+        getComponent().removeChangeListener(listener);
         if (oldValue != null) {
             getComponent().setValue(oldValue);
         }
-        getComponent().removeChangeListener(listener);
     }
     
     /**
