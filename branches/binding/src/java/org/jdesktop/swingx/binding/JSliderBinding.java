@@ -63,8 +63,8 @@ public class JSliderBinding extends SwingColumnBinding {
      * @inheritDoc
      */
     public void doRelease() {
-        getComponent().setValue(oldValue);
         getComponent().removeChangeListener(listener);
+        getComponent().setValue(oldValue);
     }
     
     /**

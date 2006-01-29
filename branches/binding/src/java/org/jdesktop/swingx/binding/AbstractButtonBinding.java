@@ -46,8 +46,8 @@ public class AbstractButtonBinding extends SwingColumnBinding {
      * @inheritDoc
      */
     public void doRelease() {
-        getComponent().setSelected(oldValue);
         getComponent().removeItemListener(stateListener);
+        getComponent().setSelected(oldValue);
     }
 
     /**
