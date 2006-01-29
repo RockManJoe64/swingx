@@ -13,40 +13,52 @@ import javax.swing.AbstractButton;
 
 
 /**
- * You may specify two field names for this binding, one for the name and
- * one for the selection state...<br>
- * PENDING/TODO: The current ScalarBinding architecture is adapted for a single
- * field on the master, but this is bogus for this component, which wants potentially
- * two different field values specified
+ * Basic binding for subclasses of AbstractButton. This Binding is concerned
+ * with the selected state of the AbstractButton.
  *
  * @author Richard
  */
 public class AbstractButtonBinding extends SwingColumnBinding {
-    private String oldValue;
+    private boolean oldValue;
     
+    /**
+     * Creates a new AbstractButtonBinding to bind to the given button.
+     */
     public AbstractButtonBinding(AbstractButton button) {
-        super(button, String.class);
+        super(button, Boolean.class);
     }
     
+    /**
+     * @inheritDoc
+     */
     protected void doInitialize() {
-        oldValue = getComponent().getText();
+        oldValue = getComponent().isSelected();
     }
 
+    /**
+     * @inheritDoc
+     */
     public void doRelease() {
-        getComponent().setText(oldValue);
+        getComponent().setSelected(oldValue);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected void setComponentValue(Object value) {
-        getComponent().setText(value == null ? "" : (String)value);
+        getComponent().setSelected(value == null ? Boolean.FALSE : (Boolean)value);
     }
     
-    protected String getComponentValue() {
-        //in reality, this should never be called since
-        //label components are always read only!!!
-        assert false : "getComponentValue was called although the AbstractButtonBinding is read only";
-        return null;
+    /**
+     * @inheritDoc
+     */
+    protected Boolean getComponentValue() {
+        return getComponent().isSelected();
     }
-    
+ 
+    /**
+     * @inheritDoc
+     */
     public AbstractButton getComponent() {
         return (AbstractButton)super.getComponent();
     }
