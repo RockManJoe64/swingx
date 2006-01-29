@@ -31,7 +31,7 @@ public class JSpinnerBinding extends SwingColumnBinding {
      * The value in the model -- used to calculate whether the state has changed
      * for the JSlider
      */
-    private int modelValue;
+    private Object modelValue;
     
     /**
      */
