@@ -54,7 +54,6 @@ public class BindingContextSupport extends AbstractBindingContext {
         //initalize Swing bindings for the factory
         BindingFactoryImpl factory = (BindingFactoryImpl)BindingFactory.getInstance();
         factory.addMapping(AbstractButton.class, AbstractButtonBinding.class);
-        factory.addMapping(JCheckBox.class, JCheckBoxBinding.class);
         factory.addMapping(JComboBox.class, JComboBoxBinding.class);
         factory.addMapping(DefaultComboBoxModel.class, JComboBoxListBinding.class);
         factory.addMapping(JDialog.class, JDialogBinding.class);

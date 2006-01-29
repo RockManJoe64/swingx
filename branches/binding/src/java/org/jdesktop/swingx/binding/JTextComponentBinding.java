@@ -29,6 +29,8 @@ public class JTextComponentBinding extends SwingColumnBinding {
     private String cachedValue;
     private Color preValidationBackgroundColor;
     
+    private boolean autoCommit = true;
+    
     public JTextComponentBinding(JTextComponent comp) {
         super(comp, String.class);
         listener = new DocumentChangeListener();
@@ -93,7 +95,11 @@ public class JTextComponentBinding extends SwingColumnBinding {
                 }
 
                 //TODO should only do this if the policy is to validate on edit
-                validate();
+                if (autoCommit) {
+                    save();
+                } else {
+                    validate();
+                }
             }
         }
     }

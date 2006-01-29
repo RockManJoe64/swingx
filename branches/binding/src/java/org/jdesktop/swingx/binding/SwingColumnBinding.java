@@ -11,7 +11,8 @@ package org.jdesktop.swingx.binding;
 import com.jgoodies.validation.ValidationResult;
 import com.jgoodies.validation.view.ValidationComponentUtils;
 import javax.swing.JComponent;
-import org.jdesktop.binding.impl.ColumnBinding;
+import org.jdesktop.swingx.validation.ValidationDecorator;
+import org.jdesktop.swingx.validation.ValidationDecoratorFactory;
 
 /**
  * This is the base class for all of the Swing binding implementations that
@@ -23,12 +24,11 @@ import org.jdesktop.binding.impl.ColumnBinding;
  * @author rbair
  */
 public abstract class SwingColumnBinding extends AWTColumnBinding { 
-//    /**
-//     * The ValidationDecorator is an instance of ValidationComponentUtils.Visitor
-//     * which knows how to decorate the UI component in response to validation events.
-//     * Can be null.
-//     */
-//    private ValidationComponentUtils.Visitor validationDecorator = ValidationComponentUtils.;
+    /**
+     * The ValidationDecorator knows how to decorate the UI component in response to validation events.
+     * Can be null.
+     */
+    private ValidationDecorator validationDecorator = ValidationDecoratorFactory.getSeverityBackgroundTooltipDecorator();
     
     /**
      * Basic constructor, creates a new SwingColumnBinding
@@ -58,28 +58,27 @@ public abstract class SwingColumnBinding extends AWTColumnBinding {
      */
     protected void doValidationResult(ValidationResult result) {
         JComponent c = getComponent();
-        ValidationComponentUtils.setSeverity(c, result.getSeverity());
-        ValidationComponentUtils.setMessageKey(c, getValidationKey() ==  null ? this : getValidationKey());
-//        ValidationComponentUtils.setInputHint()
-        ValidationComponentUtils.updateComponentTreeSeverity(c, result);
+        if (validationDecorator != null) {
+            validationDecorator.decorate(c, result);
+        }
     }
     
     
-//    /**
-//     * Sets the ValidationComponentUtils.Visitor to use to decorate the UI component
-//     * when validation events occur. If null, then no visual clue will be given
-//     * to the user via this Binding tha a validation error has occured
-//     */
-//    public void setValidationDecorator(ValidationComponentUtils.Visitor decorator) {
-//        ValidationComponentUtils.Visitor old = this.validationDecorator;
-//        this.validationDecorator = decorator;
-//        pcs.firePropertyChange("validationDecorator", old, decorator);
-//    }
-//    
-//    /**
-//     * @return the validation decorator
-//     */
-//    public ValidationComponentUtils.Visitor getValidationDecorator() {
-//        return this.validationDecorator;
-//    }
+    /**
+     * Sets the ValidationDecorator to use to decorate the UI component
+     * when validation events occur. If null, then no visual clue will be given
+     * to the user via this Binding tha a validation error has occured
+     */
+    public void setValidationDecorator(ValidationDecorator decorator) {
+        ValidationDecorator old = this.validationDecorator;
+        this.validationDecorator = decorator;
+        pcs.firePropertyChange("validationDecorator", old, decorator);
+    }
+    
+    /**
+     * @return the validation decorator
+     */
+    public ValidationDecorator getValidationDecorator() {
+        return this.validationDecorator;
+    }
 }
