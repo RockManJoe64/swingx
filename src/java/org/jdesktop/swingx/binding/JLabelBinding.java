@@ -14,35 +14,50 @@ import javax.swing.JLabel;
 
 
 /**
+ * Basic binding implementation for JLabel and subclasses of JLabel
  *
  * @author Richard
  */
 public class JLabelBinding extends SwingColumnBinding {
     private String oldValue;
-    
+
+    /**
+     */
     public JLabelBinding(JLabel label) {
         super(label, String.class);
     }
     
+    /**
+     * @inheritDoc
+     */
     protected void doInitialize() {
         oldValue = getComponent().getText();
     }
 
+    /**
+     * @inheritDoc
+     */
     public void doRelease() {
         getComponent().setText(oldValue);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected void setComponentValue(Object value) {
         getComponent().setText(value == null ? "" : (String)value);
     }
     
+    /**
+     * @inheritDoc
+     */
     protected String getComponentValue() {
-        //in reality, this should never be called since
-        //label components are always read only!!!
-        assert false : "getComponentValue was called although the JLabelBinding is read only";
-        return null;
+        throw new AssertionError("This method should never be called because the title is readonly");
     }
-    
+
+    /**
+     * @inheritDoc
+     */
     public JLabel getComponent() {
         return (JLabel)super.getComponent();
     }
