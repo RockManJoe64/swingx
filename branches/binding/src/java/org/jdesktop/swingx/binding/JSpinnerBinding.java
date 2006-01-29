@@ -9,41 +9,90 @@
 
 package org.jdesktop.swingx.binding;
 import javax.swing.JSpinner;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.jdesktop.swingx.binding.AWTColumnBinding.AutoCommit;
 
 /**
  *
  * @author Richard
  */
 public class JSpinnerBinding extends SwingColumnBinding {
+    /**
+     * The original value (prior to binding)
+     */
     private Object oldValue;
+    /**
+     * Listens for changes in the value of the JSlider, and updates the
+     * edited state accordingly.
+     */
+    private ValueListener listener;
+    /**
+     * The value in the model -- used to calculate whether the state has changed
+     * for the JSlider
+     */
+    private int modelValue;
     
+    /**
+     */
     public JSpinnerBinding(JSpinner cbox) {
         super(cbox, Object.class);
+        listener = new ValueListener();
     }
 
+    /**
+     * @inheritDoc
+     */
     protected void doInitialize() {
         oldValue = getComponent().getValue();
+        getComponent().addChangeListener(listener);
     }
 
+    /**
+     * @inheritDoc
+     */
     public void doRelease() {
         if (oldValue != null) {
             getComponent().setValue(oldValue);
         }
+        getComponent().removeChangeListener(listener);
     }
     
+    /**
+     * @inheritDoc
+     */
     protected Object getComponentValue() {
         return getComponent().getValue();
     }
 
+    /**
+     * @inheritDoc
+     */
     protected void setComponentValue(Object obj) {
+        modelValue = (Integer)obj;
+        listener.ignoreEvent = true;
         getComponent().setValue(obj);
+        listener.ignoreEvent = false;
     }
     
+    /**
+     * @inheritDoc
+     */
     public JSpinner getComponent() {
         return (JSpinner)super.getComponent();
     }
 
-    protected void setComponentEditable(boolean editable) {
-        getComponent().setEnabled(editable);
+    /**
+     */
+    private class ValueListener implements ChangeListener {
+        private boolean ignoreEvent = false;
+        public void stateChanged(ChangeEvent e) {
+            if (!ignoreEvent) {
+                setEdited(!getComponent().getValue().equals(modelValue));
+                if (getAutoCommit() == AutoCommit.ON_CHANGE) {
+                    save();
+                }
+            }
+        }
     }
 }
