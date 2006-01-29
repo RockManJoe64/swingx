@@ -32,7 +32,6 @@ public class AbstractButtonBinding extends SwingColumnBinding {
     public AbstractButtonBinding(AbstractButton button) {
         super(button, Boolean.class);
         stateListener = new ButtonStateListener();
-        button.addItemListener(stateListener);
     }
     
     /**
@@ -40,6 +39,7 @@ public class AbstractButtonBinding extends SwingColumnBinding {
      */
     protected void doInitialize() {
         oldValue = getComponent().isSelected();
+        getComponent().addItemListener(stateListener);
     }
 
     /**
@@ -47,6 +47,7 @@ public class AbstractButtonBinding extends SwingColumnBinding {
      */
     public void doRelease() {
         getComponent().setSelected(oldValue);
+        getComponent().removeItemListener(stateListener);
     }
 
     /**
