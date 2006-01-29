@@ -20,6 +20,7 @@
  */
 package org.jdesktop.swingx;
 
+import java.beans.PropertyChangeListener;
 import org.jdesktop.binding.BindingContext;
 import org.jdesktop.swingx.action.LinkAction;
 import org.jdesktop.swingx.calendar.DateSpan;
@@ -153,7 +154,31 @@ public class JXDatePicker extends JComponent implements DataAware {
     public String getUIClassID() {
         return uiClassID;
     }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        _dateField.addPropertyChangeListener(listener);
+    }
+    
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        _dateField.addPropertyChangeListener(propertyName, listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        _dateField.removePropertyChangeListener(listener);
+    }
 
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        _dateField.removePropertyChangeListener(propertyName, listener);
+    }
+    
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return _dateField.getPropertyChangeListeners();
+    }
+    
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return _dateField.getPropertyChangeListeners(propertyName);
+    }
+    
     /**
      * Replaces the currently installed formatter and factory used by the
      * editor.  These string formats are defined by the
