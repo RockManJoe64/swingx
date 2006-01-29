@@ -9,62 +9,80 @@
  */
 
 package org.jdesktop.swingx.binding;
-import com.jgoodies.validation.Severity;
-import com.jgoodies.validation.ValidationResult;
-import com.jgoodies.validation.view.ValidationComponentUtils;
-import java.awt.Color;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.jdesktop.swingx.binding.AWTColumnBinding.AutoCommit;
 
 
 /**
- * Base class for all Swing Binding implementations that extends JTextComponent
+ * Base class for all Swing Binding implementations that extend JTextComponent,
+ * including JTextField, JTextArea, JEditorPane, etc.
+ *
  * @author Richard
  */
 public class JTextComponentBinding extends SwingColumnBinding {
+    /**
+     * The original value (prior to binding)
+     */
     private String oldValue;
+    /**
+     * Listens for changes in the value of the Document for this JTextComponent,
+     * and updates the edited state accordingly.
+     */
     private DocumentChangeListener listener;
-    private String cachedValue;
-    private Color preValidationBackgroundColor;
-    
-    private boolean autoCommit = true;
-    
+    /**
+     * The value in the data model -- used to calculate whether the state has changed
+     * for the JTextComponent
+     */
+    private String modelValue;
+
+    /**
+     */
     public JTextComponentBinding(JTextComponent comp) {
         super(comp, String.class);
         listener = new DocumentChangeListener();
     }
-    
+
+    /**
+     * @inheritDoc
+     */
     protected void doInitialize() {
         oldValue = getComponent().getText();
         getComponent().getDocument().addDocumentListener(listener);
-        ValidationComponentUtils.setMessageKey(getComponent(), "KEY");
     }
 
+    /**
+     * @inheritDoc
+     */
     public void doRelease() {
         getComponent().getDocument().removeDocumentListener(listener);
         getComponent().setText(oldValue);
-        ValidationComponentUtils.setMessageKey(getComponent(), null);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected void setComponentValue(Object value) {
-        listener.updatingTextField = true;
-        getComponent().setText(value == null ? "" : (String)value);
-        cachedValue = getComponent().getText();
-        listener.updatingTextField = false;
+        modelValue = (String)value;
+        listener.ignoreEvent = true;
+        getComponent().setText(value == null ? "" : modelValue);
+        listener.ignoreEvent = false;
     }
     
+    /**
+     * @inheritDoc
+     */
     protected String getComponentValue() {
         return getComponent().getText();
     }
     
+    /**
+     * @inheritDoc
+     */
     public JTextComponent getComponent() {
         return (JTextComponent)super.getComponent();
-    }
-
-    protected void setComponentEditable(boolean editable) {
-        getComponent().setEditable(editable);
     }
 
     /**
@@ -72,7 +90,7 @@ public class JTextComponentBinding extends SwingColumnBinding {
      * this binding accordingly
      */
     private final class DocumentChangeListener implements DocumentListener {
-        private boolean updatingTextField = false;
+        private boolean ignoreEvent = false;
         public void changedUpdate(DocumentEvent e) {
             handleChange(e);
         }
@@ -83,19 +101,18 @@ public class JTextComponentBinding extends SwingColumnBinding {
             handleChange(e);
         }
         private void handleChange(DocumentEvent e) {
-            if (!updatingTextField) {
-                if (e.getDocument() != null && cachedValue !=  null) {
+            if (!ignoreEvent) {
+                if (e.getDocument() != null && modelValue !=  null) {
                     try {
-                        setEdited(e.getDocument().getLength() != cachedValue.length()
-                            || !e.getDocument().getText(0, e.getDocument().getLength()).equals(cachedValue));
+                        setEdited(e.getDocument().getLength() != modelValue.length()
+                            || !e.getDocument().getText(0, e.getDocument().getLength()).equals(modelValue));
                     } catch (BadLocationException ex) {
                         ex.printStackTrace();
                         setEdited(true);
                     }
                 }
 
-                //TODO should only do this if the policy is to validate on edit
-                if (autoCommit) {
+                if (getAutoCommit() == AutoCommit.ON_CHANGE) {
                     save();
                 } else {
                     validate();
