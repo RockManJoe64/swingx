@@ -9,8 +9,11 @@
  */
 
 package org.jdesktop.swingx.binding;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.AbstractButton;
-
+import org.jdesktop.binding.BindingException;
+import org.jdesktop.swingx.binding.AWTColumnBinding.AutoCommit;
 
 /**
  * Basic binding for subclasses of AbstractButton. This Binding is concerned
@@ -20,12 +23,16 @@ import javax.swing.AbstractButton;
  */
 public class AbstractButtonBinding extends SwingColumnBinding {
     private boolean oldValue;
+    private boolean modelValue;
+    private ButtonStateListener stateListener;
     
     /**
      * Creates a new AbstractButtonBinding to bind to the given button.
      */
     public AbstractButtonBinding(AbstractButton button) {
         super(button, Boolean.class);
+        stateListener = new ButtonStateListener();
+        button.addItemListener(stateListener);
     }
     
     /**
@@ -46,7 +53,10 @@ public class AbstractButtonBinding extends SwingColumnBinding {
      * @inheritDoc
      */
     protected void setComponentValue(Object value) {
-        getComponent().setSelected(value == null ? Boolean.FALSE : (Boolean)value);
+        modelValue = (Boolean)value;
+        stateListener.ignoreEvent = true;
+        getComponent().setSelected(value == null ? Boolean.FALSE : modelValue);
+        stateListener.ignoreEvent = false;
     }
     
     /**
@@ -61,5 +71,19 @@ public class AbstractButtonBinding extends SwingColumnBinding {
      */
     public AbstractButton getComponent() {
         return (AbstractButton)super.getComponent();
+    }
+
+    private final class ButtonStateListener implements ItemListener {
+        private boolean ignoreEvent = false;
+        
+        public void itemStateChanged(ItemEvent e) {
+            if (!ignoreEvent) {
+                //update the edited state
+                setEdited(!getComponentValue().equals(modelValue));
+                if (getAutoCommit() == AutoCommit.ON_CHANGE) {
+                    save();
+                }
+            }
+        }
     }
 }
