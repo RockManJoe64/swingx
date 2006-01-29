@@ -69,7 +69,7 @@ public class JSpinnerBinding extends SwingColumnBinding {
      * @inheritDoc
      */
     protected void setComponentValue(Object obj) {
-        modelValue = (Integer)obj;
+        modelValue = obj;
         listener.ignoreEvent = true;
         getComponent().setValue(obj);
         listener.ignoreEvent = false;
