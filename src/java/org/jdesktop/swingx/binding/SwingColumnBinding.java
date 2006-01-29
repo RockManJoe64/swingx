@@ -9,7 +9,6 @@
 
 package org.jdesktop.swingx.binding;
 import com.jgoodies.validation.ValidationResult;
-import com.jgoodies.validation.view.ValidationComponentUtils;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.validation.ValidationDecorator;
 import org.jdesktop.swingx.validation.ValidationDecoratorFactory;
@@ -80,5 +79,5 @@ public abstract class SwingColumnBinding extends AWTColumnBinding {
      */
     public ValidationDecorator getValidationDecorator() {
         return this.validationDecorator;
-    }
+    }    
 }
