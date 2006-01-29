@@ -12,32 +12,61 @@ package org.jdesktop.swingx.binding;
 import org.jdesktop.swingx.JXTitledPanel;
 
 /**
+ * Read only binding -- just modifies the title of a JXTitledPanel
+ *
  * @author Richard
  */
 public class JXTitledPanelBinding extends SwingColumnBinding {
+    /**
+     * The original value prior to binding
+     */
     private String oldValue;
     
+    /**
+     */
     public JXTitledPanelBinding(JXTitledPanel comp) {
         super(comp, String.class);
     }
     
+    /**
+     * @inheritDoc
+     */
     protected void doInitialize() {
         oldValue = getComponent().getTitle();
     }
 
+    /**
+     * @inheritDoc
+     */
     public void doRelease() {
         getComponent().setTitle(oldValue);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected void setComponentValue(Object value) {
         getComponent().setTitle(value == null ? "" : (String)value);
     }
     
+    /**
+     * @inheritDoc
+     */
     protected String getComponentValue() {
-        return getComponent().getTitle();
+        throw new AssertionError("never called because this binding is read only");
     }
     
+    /**
+     * @inheritDoc
+     */
     public JXTitledPanel getComponent() {
         return (JXTitledPanel)super.getComponent();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public boolean isReadOnly() {
+        return true;
     }
 }
