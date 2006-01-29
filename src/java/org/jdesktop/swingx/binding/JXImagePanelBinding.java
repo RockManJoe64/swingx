@@ -20,12 +20,21 @@ import org.jdesktop.conversion.ConversionException;
 import org.jdesktop.swingx.JXImagePanel;
 
 /**
- * Hmmmm....
- * The problem here is that the data in the image panel could be bits, image url,
+ * A binding for the JXImagePanel component.
+ * The data in the image panel could be bits, image url,
  * etc. In fact, there isn't just one data type that I want to support, but a few
  * of them. That is, if I get a String, then it is a URL of some kind. If I get
- * an ImageIcon, us that, a BufferedImage, use that, a set of bytes, then use
+ * an ImageIcon, use that, a BufferedImage, use that, a set of bytes, then use
  * that.
+ *
+ * TODO JXImagePanel, if it will indeed support editability, must be refactored.
+ * The problem is that the image to view can be specified by URL, or by actually
+ * passing in the Image. If editable, then the URL specifies what the image is
+ * (otherwise how could I save what the user's image choice was?). This gets
+ * weird quick.
+ *
+ * <strong>This Binding should be considered HIGHLY EXPERIMENTAL and not
+ * used in a production application</strong>
  *
  * @author Richard
  */
@@ -37,6 +46,11 @@ public class JXImagePanelBinding extends SwingColumnBinding {
         super(panel, BufferedImage.class);
     }
 
+    /**
+     * @inheritDoc
+     * 
+     * This method is overridden to perform a custom conversion. I could.. ya, will.
+     */
     protected Object convert(Object src, Class dstType) throws ConversionException {
         if (dstType == BufferedImage.class) {
             try {
