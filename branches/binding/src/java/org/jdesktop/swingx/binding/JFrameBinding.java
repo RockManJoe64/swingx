@@ -55,6 +55,13 @@ public class JFrameBinding extends AWTColumnBinding {
     /**
      * @inheritDoc
      */
+    public boolean isReadOnly() {
+        return true;
+    }
+    
+    /**
+     * @inheritDoc
+     */
     public JFrame getComponent() {
         return (JFrame)super.getComponent();
     }

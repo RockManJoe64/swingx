@@ -56,6 +56,13 @@ public class JProgressBarBinding extends SwingColumnBinding {
     /**
      * @inheritDoc
      */
+    public boolean isReadOnly() {
+        return true;
+    }
+    
+    /**
+     * @inheritDoc
+     */
     public JProgressBar getComponent() {
         return (JProgressBar)super.getComponent();
     }
