@@ -251,4 +251,8 @@ public class JXFrame extends JFrame implements BindingContext, DataAware {
     public void handleValidationResult(ValidationResult result) {
         ctxSupport.handleValidationResult(result);
     }
+
+    public void setValidationGroup(Object component, String group) {
+        ctxSupport.setValidationGroup(component, group);
+    }
 }
