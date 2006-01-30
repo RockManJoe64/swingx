@@ -54,9 +54,9 @@ public class AbstractButtonBinding extends SwingColumnBinding {
      * @inheritDoc
      */
     protected void setComponentValue(Object value) {
-        modelValue = (Boolean)value;
+        modelValue = value == null ? Boolean.FALSE : (Boolean)value;
         stateListener.ignoreEvent = true;
-        getComponent().setSelected(value == null ? Boolean.FALSE : modelValue);
+        getComponent().setSelected(modelValue);
         stateListener.ignoreEvent = false;
     }
     
