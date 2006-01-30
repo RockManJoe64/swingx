@@ -66,16 +66,27 @@ public class JTextComponentBinding extends SwingColumnBinding {
      */
     protected void setComponentValue(Object value) {
         modelValue = (String)value;
-        listener.ignoreEvent = true;
-        getComponent().setText(value == null ? "" : modelValue);
-        listener.ignoreEvent = false;
+        //AbstractDocument doesn't let me mutate the value if it was in
+        //the middle of an event notification. I'm not sure of a way around
+        //this at present. I'm going to simply punt and not update the
+        //value if readers are in the process of firing. Note, this situation
+        //occurs when autocommit save occurs (because save causes an implicit
+        //load). This will probably not affect to many people, but it is still
+        //not right. Humph.
+        if (!listener.eventInProgress) {
+            listener.ignoreEvent = true;
+            getComponent().setText(value == null ? "" : modelValue);
+            listener.ignoreEvent = false;
+        }
     }
     
     /**
      * @inheritDoc
      */
     protected String getComponentValue() {
-        return getComponent().getText();
+        String s = getComponent().getText();
+        System.out.println("getComponentValue=" + s);
+        return s;
     }
     
     /**
@@ -91,6 +102,7 @@ public class JTextComponentBinding extends SwingColumnBinding {
      */
     private final class DocumentChangeListener implements DocumentListener {
         private boolean ignoreEvent = false;
+        private boolean eventInProgress = false;
         public void changedUpdate(DocumentEvent e) {
             handleChange(e);
         }
@@ -101,6 +113,11 @@ public class JTextComponentBinding extends SwingColumnBinding {
             handleChange(e);
         }
         private void handleChange(DocumentEvent e) {
+            try {
+            System.out.println("Event = " + e.getDocument().getText(0, e.getDocument().getLength()));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             if (!ignoreEvent) {
                 if (e.getDocument() != null && modelValue !=  null) {
                     try {
@@ -115,7 +132,9 @@ public class JTextComponentBinding extends SwingColumnBinding {
                 }
 
                 if (getAutoCommit() == AutoCommit.ON_CHANGE) {
+                    eventInProgress = true;
                     save();
+                    eventInProgress = false;
                 } else {
                     validate();
                 }
