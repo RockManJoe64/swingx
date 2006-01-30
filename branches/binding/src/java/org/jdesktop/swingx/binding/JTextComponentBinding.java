@@ -110,6 +110,8 @@ public class JTextComponentBinding extends SwingColumnBinding {
                         ex.printStackTrace();
                         setEdited(true);
                     }
+                } else if (modelValue == null) {
+                    setEdited(e.getDocument() != null);
                 }
 
                 if (getAutoCommit() == AutoCommit.ON_CHANGE) {
