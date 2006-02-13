@@ -66,7 +66,11 @@ public class JXTextField extends JTextField implements DataAware/*, DesignMode*/
             String oldPath = this.dataPath;
             this.dataPath = path;
             if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
+                if (ctx != null) {
+                    ctx.bind(this, this.dataPath);
+                } else {
+                    ctx = ctx == null ? DataBoundUtils.bind(this, this.dataPath) : ctx;
+                }
             }
             firePropertyChange("dataPath", oldPath, this.dataPath);
         }
