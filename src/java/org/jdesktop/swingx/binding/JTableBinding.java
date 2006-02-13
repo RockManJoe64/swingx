@@ -194,10 +194,19 @@ public class JTableBinding extends SwingModelBinding {
                     }
                     newColumn.setHeaderValue(headerValue);
                     newColumn.setIdentifier(c.getIdentifier());
-                    //TODO if the newColumn is a TableColumnExt then this
-                    //info needs to be carried over. Also, need to resolve
-                    //against the rendering hint about editability...
-//                    newColumn.setEditable();
+                    
+                    //map over TableColumnExt properties
+                    if (c instanceof TableColumnExt) {
+                        TableColumnExt oldColumn = (TableColumnExt)c;
+                        newColumn.setColumnClass(oldColumn.getColumnClass());
+                        //TODO Also, need to resolve
+                        //against the rendering hint about editability...
+                        newColumn.setEditable(oldColumn.isEditable());
+                        newColumn.setPrototypeValue(oldColumn.getPrototypeValue());
+                        newColumn.setSorterClass(oldColumn.getSorterClass());
+                        newColumn.setVisible(oldColumn.isVisible());
+                    }
+                    
                     super.addColumn(newColumn);
                 }
             } else {
@@ -250,7 +259,7 @@ public class JTableBinding extends SwingModelBinding {
         }
 
         public Class getColumnClass(int columnIndex) {
-            return dm.getType(getColumnName(columnIndex));
+            return ((TableColumnExt)columnModel.getColumn(columnIndex)).getColumnClass();
         }
 
         public String getColumnName(int columnIndex) {
