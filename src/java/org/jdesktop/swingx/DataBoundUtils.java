@@ -10,6 +10,7 @@
 
 package org.jdesktop.swingx;
 import java.awt.Component;
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
 
 /**
@@ -62,6 +63,20 @@ public class DataBoundUtils {
     public static void unbind(Component target, BindingContext ctx) {
         if (ctx != null) {
             ctx.unbind(target);
+        }
+    }
+    
+    public static Binding bind(BindingContext ctx, Component c, String path) {
+        if (ctx != null && path != null && !path.trim().equals("")) {
+            return ctx.bind(c, path);
+        } else {
+            return null;
+        }
+    }
+    
+    public static void unbind(BindingContext ctx, Component c) {
+        if (ctx != null) {
+            ctx.unbind(c);
         }
     }
     
