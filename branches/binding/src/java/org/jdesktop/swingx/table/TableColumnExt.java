@@ -3,18 +3,32 @@
  *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx.table;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.lang.reflect.Constructor;
-
 import java.util.Comparator;
 import java.util.Hashtable;
+
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+
 import org.jdesktop.swingx.decorator.Sorter;
 
 /**
@@ -51,6 +65,15 @@ public class TableColumnExt extends javax.swing.table.TableColumn
         }
         defaultSorterConstructor = constructor;
     }
+    
+    /**
+     * The class of data within the column. The default value comes from the
+     * TableModel. This is stored here so that developers can specify the column
+     * class when using databinding (since databinding takes care of generating
+     * the TableModel, and it may not know what the column class is (or finding
+     * out may be too expensive), and devs need some way of specifying it)
+     */
+    private Class columnClass = Object.class;
 
     /**
      * Creates new table view column with a model index = 0.
@@ -312,6 +335,16 @@ public class TableColumnExt extends javax.swing.table.TableColumn
         return clientProperties;
     }
 
+    public Class getColumnClass() {
+        return columnClass;
+    }
+    
+    public void setColumnClass(Class columnClass) {
+        Class old = this.columnClass;
+        this.columnClass = columnClass;
+        firePropertyChange("columnClass", old, columnClass);
+    }
+    
     /**
       * Returns a clone of this TableColumn. Some implementations of TableColumn
       * may assume that all TableColumnModels are unique, therefore it is
