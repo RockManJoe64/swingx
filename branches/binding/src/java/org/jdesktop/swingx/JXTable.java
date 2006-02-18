@@ -29,7 +29,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -84,8 +83,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.AbstractSearchable.SearchResult;
 
 import org.jdesktop.swingx.action.BoundAction;
+import org.jdesktop.swingx.binding.JXTableBinding;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.jdesktop.swingx.decorator.Highlighter;
@@ -97,7 +98,6 @@ import org.jdesktop.swingx.decorator.SearchHighlighter;
 import org.jdesktop.swingx.decorator.SelectionMapper;
 import org.jdesktop.swingx.decorator.SizeSequenceMapper;
 import org.jdesktop.swingx.decorator.Sorter;
-import org.jdesktop.swingx.decorator.AlternateRowHighlighter.UIAlternateRowHighlighter;
 import org.jdesktop.swingx.icon.ColumnControlIcon;
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
 import org.jdesktop.swingx.table.ColumnControlButton;
@@ -2561,7 +2561,9 @@ public class JXTable extends JTable implements DataAware {
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    private JXTableBinding binding;
     private String selectionModelName = "tableSelection";
+    private Object validationKey = null;
     
     /**
      * @param path
@@ -2569,17 +2571,11 @@ public class JXTable extends JTable implements DataAware {
     public void setDataPath(String path) {
         path = path == null ? "" : path;
         if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
             String oldPath = this.dataPath;
             this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                if (ctx == null) {
-                    ctx = DataBoundUtils.bind(this, this.dataPath);
-                } else {
-                    ctx.bind(this, this.dataPath);
-                }
-            }
             firePropertyChange("dataPath", oldPath, this.dataPath);
+            DataBoundUtils.unbind(ctx, this);
+            bind();
         }
     }
     
@@ -2588,19 +2584,51 @@ public class JXTable extends JTable implements DataAware {
     }
 
     public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
+        if (this.ctx != ctx) {
+            BindingContext old = this.ctx;
+            this.ctx = ctx;
+            firePropertyChange("bindingContext", old, ctx);
+            DataBoundUtils.unbind(old, this);
+            bind();
         }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
+    }
+    
+    private void bind() {
+        binding = (JXTableBinding)DataBoundUtils.bind(ctx, this, dataPath);
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+            binding.setValidationKey(validationKey);
         }
     }
 
     public BindingContext getBindingContext() {
         return ctx;
+    }
+    
+    public String getValidationKey() {
+        return (String)validationKey;
+    }
+    
+    public void setValidationKey(String validationKey) {
+        Object old = this.validationKey;
+        this.validationKey = validationKey;
+        if (binding != null) {
+            binding.setValidationKey(validationKey);
+        }
+        firePropertyChange("validationKey", old, validationKey);
+    }
+    
+    public String getSelectionModelName() {
+        return selectionModelName;
+    }
+
+    public void setSelectionModelName(String selectionModelName) {
+        String old = this.selectionModelName;
+        this.selectionModelName = selectionModelName;
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+        }
+        firePropertyChange("selectionModelName", old, selectionModelName);
     }
     
     //PENDING
@@ -2638,12 +2666,4 @@ public class JXTable extends JTable implements DataAware {
 //            g.drawImage(ii.getImage(), getWidth() - ii.getIconWidth(), 0, ii.getIconWidth(), ii.getIconHeight(), ii.getImageObserver());
 //        }
 //    }
-    
-    public String getSelectionModelName() {
-        return selectionModelName;
-    }
-
-    public void setSelectionModelName(String selectionModelName) {
-        this.selectionModelName = selectionModelName;
-    }
 }

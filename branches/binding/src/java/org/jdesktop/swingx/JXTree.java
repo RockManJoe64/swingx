@@ -50,6 +50,8 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.AbstractSearchable.SearchResult;
+import org.jdesktop.swingx.binding.JXTreeBinding;
 import org.jdesktop.swingx.binding.NodeDescriptor;
 
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -845,32 +847,9 @@ public class JXTree extends JTree {
     private String dataPath = "";
     private BindingContext ctx = null;
     private NodeDescriptor descriptor;
-    private String selectionModelName = "tableSelection";
-    
-    public String getSelectionModelName() {
-        return selectionModelName;
-    }
-
-    public void setSelectionModelName(String selectionModelName) {
-        selectionModelName = selectionModelName == null ? "tableSelection" : selectionModelName;
-        if (selectionModelName.equals(this.selectionModelName)) {
-            Object oldValue = this.selectionModelName;
-            this.selectionModelName = selectionModelName;
-            firePropertyChange("selectionModelName", oldValue, selectionModelName);
-        }
-    }
-    
-    public NodeDescriptor getNodeDescriptor() {
-        return descriptor;
-    }
-    
-    public void setNodeDescriptor(NodeDescriptor descriptor) {
-        if (this.descriptor != descriptor) {
-            Object oldVal = this.descriptor;
-            this.descriptor = descriptor;
-            firePropertyChange("nodeDescriptor", oldVal, descriptor);
-        }
-    }
+    private JXTreeBinding binding;
+    private String selectionModelName = "treeSelection";
+    private Object validationKey = null;
     
     /**
      * @param path
@@ -878,13 +857,11 @@ public class JXTree extends JTree {
     public void setDataPath(String path) {
         path = path == null ? "" : path;
         if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
             String oldPath = this.dataPath;
             this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
             firePropertyChange("dataPath", oldPath, this.dataPath);
+            DataBoundUtils.unbind(ctx, this);
+            bind();
         }
     }
     
@@ -893,19 +870,61 @@ public class JXTree extends JTree {
     }
 
     public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
+        if (this.ctx != ctx) {
+            BindingContext old = this.ctx;
+            this.ctx = ctx;
+            firePropertyChange("bindingContext", old, ctx);
+            DataBoundUtils.unbind(old, this);
+            bind();
         }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
+    }
+    
+    private void bind() {
+        binding = (JXTreeBinding)DataBoundUtils.bind(ctx, this, dataPath);
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+            binding.setValidationKey(validationKey);
         }
     }
 
     public BindingContext getBindingContext() {
         return ctx;
+    }
+    
+    public String getValidationKey() {
+        return (String)validationKey;
+    }
+    
+    public void setValidationKey(String validationKey) {
+        Object old = this.validationKey;
+        this.validationKey = validationKey;
+        if (binding != null) {
+            binding.setValidationKey(validationKey);
+        }
+        firePropertyChange("validationKey", old, validationKey);
+    }
+    
+    public String getSelectionModelName() {
+        return selectionModelName;
+    }
+
+    public void setSelectionModelName(String selectionModelName) {
+        String old = this.selectionModelName;
+        this.selectionModelName = selectionModelName;
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+        }
+        firePropertyChange("selectionModelName", old, selectionModelName);
+    }
+    
+    public NodeDescriptor getDescriptor() {
+        return descriptor;
+    }
+
+    public void setDescriptor(NodeDescriptor descriptor) {
+        Object old = this.descriptor;
+        this.descriptor = descriptor;
+        firePropertyChange("descriptor", old, this.descriptor);
     }
     
     //PENDING
