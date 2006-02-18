@@ -160,7 +160,7 @@ public class JTreeBinding extends SwingModelBinding {
         selectionModels.add(treeSelectionModel);
     }
     
-    protected void setSelectionModelName(String name) {
+    public void setSelectionModelName(String name) {
         treeSelectionModel.setName(name);
     }
     

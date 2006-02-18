@@ -24,12 +24,12 @@ public class JXTreeBinding extends JTreeBinding {
     public JXTreeBinding(JXTree tree) {
         super(tree);
         setSelectionModelName(tree.getSelectionModelName());
-        super.setNodeDescriptor(tree.getNodeDescriptor());
+        super.setNodeDescriptor(tree.getDescriptor());
         tree.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals("selectionModelName")) {
                     setSelectionModelName((String)evt.getNewValue());
-                } else if (evt.getPropertyName().equals("nodeDescriptor")) {
+                } else if (evt.getPropertyName().equals("descriptor")) {
                     setNodeDescriptor((NodeDescriptor)evt.getNewValue());
                 }
             }
