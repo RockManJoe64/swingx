@@ -62,7 +62,7 @@ public class JTableBinding extends SwingModelBinding {
         return selectionModels;
     }
 
-    protected void setSelectionModelName(String name) {
+    public void setSelectionModelName(String name) {
         tableSelectionModel.setName(name);
     }
     
@@ -115,7 +115,7 @@ public class JTableBinding extends SwingModelBinding {
         model.fireTableDataChanged();
     }
 
-    private static final class TableColumnModelAdapter extends DefaultTableColumnModelExt {
+    static final class TableColumnModelAdapter extends DefaultTableColumnModelExt {
         /**
          * Uses the given ColumnModel as the basis for the new column model. If
          * the oldColModel is null, or has no columns, then the dm is used as the
@@ -348,7 +348,7 @@ public class JTableBinding extends SwingModelBinding {
         }
     }
     
-    private TableColumnModel copyTableColumnModel(TableColumnModel colModel) {
+    static TableColumnModel copyTableColumnModel(TableColumnModel colModel) {
         TableColumnModelExt newModel = new DefaultTableColumnModelExt();
         for (int i=0; i<colModel.getColumnCount(); i++) {
             TableColumn c = colModel.getColumn(i);
