@@ -29,10 +29,18 @@ import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.binding.impl.ColumnBinding;
+import org.jdesktop.binding.impl.ManyToOneStrategy;
+import org.jdesktop.conversion.Converter;
+import org.jdesktop.swingx.binding.AWTColumnBinding;
+import org.jdesktop.swingx.binding.JXTitledPanelBinding;
 
 import org.jdesktop.swingx.plaf.JXTitledPanelAddon;
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
 import org.jdesktop.swingx.plaf.TitledPanelUI;
+import org.jdesktop.swingx.validation.ValidationDecorator;
+import org.jdesktop.swingx.validation.ValidationDecoratorFactory;
+import org.jdesktop.validation.Validator;
 
 /**
  * A special type of Panel that has a Title section and a Content section.<br>
@@ -277,6 +285,14 @@ public class JXTitledPanel extends JXPanel implements DataAware {
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    private JXTitledPanelBinding binding;
+    private AWTColumnBinding.AutoCommit autoCommit = AWTColumnBinding.AutoCommit.NEVER;
+    private Object conversionFormat = null;
+    private Converter converter = null;
+    private ManyToOneStrategy manyToOneStrategy = new ColumnBinding.CommonValueStrategy();
+    private ValidationDecorator validationDecorator = ValidationDecoratorFactory.getSeverityBackgroundTooltipDecorator();
+    private Object validationKey = null;
+    private Validator validator = null;
     
     /**
      * @param path
@@ -284,13 +300,11 @@ public class JXTitledPanel extends JXPanel implements DataAware {
     public void setDataPath(String path) {
         path = path == null ? "" : path;
         if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
             String oldPath = this.dataPath;
             this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
             firePropertyChange("dataPath", oldPath, this.dataPath);
+            DataBoundUtils.unbind(ctx, this);
+            bind();
         }
     }
     
@@ -299,19 +313,121 @@ public class JXTitledPanel extends JXPanel implements DataAware {
     }
 
     public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
+        if (this.ctx != ctx) {
+            BindingContext old = this.ctx;
+            this.ctx = ctx;
+            firePropertyChange("bindingContext", old, ctx);
+            DataBoundUtils.unbind(old, this);
+            bind();
         }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
+    }
+    
+    private void bind() {
+        binding = (JXTitledPanelBinding)DataBoundUtils.bind(ctx, this, dataPath);
+        if (binding != null) {
+            binding.setAutoCommit(autoCommit);
+            binding.setConversionFormat(conversionFormat);
+            binding.setConverter(converter);
+            binding.setManyToOneStrategy(manyToOneStrategy);
+            binding.setValidationDecorator(validationDecorator);
+            binding.setValidationKey(validationKey);
+            binding.setValidator(validator);
         }
     }
 
     public BindingContext getBindingContext() {
         return ctx;
+    }
+    
+    public AWTColumnBinding.AutoCommit getAutoCommit() {
+        return autoCommit;
+    }
+    
+    public void setAutoCommit(AWTColumnBinding.AutoCommit autoCommit) {
+        Object old = this.autoCommit;
+        this.autoCommit = autoCommit;
+        if (binding != null) {
+            binding.setAutoCommit(autoCommit);
+        }
+        firePropertyChange("autoCommit", old, autoCommit);
+    }
+    
+    public Object getConversionFormat() {
+        return conversionFormat;
+    }
+    
+    public void setConversionFormat(Object conversionFormat) {
+        Object old = this.conversionFormat;
+        this.conversionFormat = conversionFormat;
+        if (binding != null) {
+            binding.setConversionFormat(conversionFormat);
+        }
+        firePropertyChange("conversionFormat", old, conversionFormat);
+    }
+    
+    public Converter getConverter() {
+        return converter;
+    }
+    
+    public void setConverter(Converter converter) {
+        Object old = this.converter;
+        this.converter = converter;
+        if (binding != null) {
+            binding.setConverter(converter);
+        }
+        firePropertyChange("converter", old, converter);
+    }
+    
+    public ManyToOneStrategy getManyToOneStrategy() {
+        return manyToOneStrategy;
+    }
+    
+    public void setManyToOneStrategy(ManyToOneStrategy manyToOneStrategy) {
+        Object old = this.manyToOneStrategy;
+        this.manyToOneStrategy = manyToOneStrategy;
+        if (binding != null) {
+            binding.setManyToOneStrategy(manyToOneStrategy);
+        }
+        firePropertyChange("manyToOneStrategy", old, manyToOneStrategy);
+    }
+    
+    public ValidationDecorator getValidationDecorator() {
+        return validationDecorator;
+    }
+    
+    public void setValidationDecorator(ValidationDecorator validationDecorator) {
+        Object old = this.validationDecorator;
+        this.validationDecorator = validationDecorator;
+        if (binding != null) {
+            binding.setValidationDecorator(validationDecorator);
+        }
+        firePropertyChange("validationDecorator", old, validationDecorator);
+    }
+    
+    public String getValidationKey() {
+        return (String)validationKey;
+    }
+    
+    public void setValidationKey(String validationKey) {
+        Object old = this.validationKey;
+        this.validationKey = validationKey;
+        if (binding != null) {
+            binding.setValidationKey(validationKey);
+        }
+        firePropertyChange("validationKey", old, validationKey);
+    }
+    
+    public Validator getValidator() {
+        return validator;
+    }
+    
+    public void setValidator(Validator validator) {
+        Object old = this.validator;
+        this.validator = validator;
+        if (binding != null) {
+            binding.setValidator(validator);
+        }
+        firePropertyChange("validator", old, validator);
     }
     
     //PENDING

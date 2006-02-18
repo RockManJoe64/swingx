@@ -26,7 +26,6 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Vector;
@@ -49,6 +48,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.jdesktop.binding.BindingContext;
 import org.jdesktop.swingx.AbstractSearchable.SearchResult;
+import org.jdesktop.swingx.binding.JXListBinding;
 
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
@@ -964,8 +964,10 @@ public class JXList extends JList implements DataAware {
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    private JXListBinding binding;
     private String displayName;
     private String selectionModelName = "listSelection";
+    private Object validationKey = null;
     
     /**
      * @param path
@@ -973,13 +975,11 @@ public class JXList extends JList implements DataAware {
     public void setDataPath(String path) {
         path = path == null ? "" : path;
         if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
             String oldPath = this.dataPath;
             this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
             firePropertyChange("dataPath", oldPath, this.dataPath);
+            DataBoundUtils.unbind(ctx, this);
+            bind();
         }
     }
     
@@ -988,14 +988,21 @@ public class JXList extends JList implements DataAware {
     }
 
     public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
+        if (this.ctx != ctx) {
+            BindingContext old = this.ctx;
+            this.ctx = ctx;
+            firePropertyChange("bindingContext", old, ctx);
+            DataBoundUtils.unbind(old, this);
+            bind();
         }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
+    }
+    
+    private void bind() {
+        binding = (JXListBinding)DataBoundUtils.bind(ctx, this, dataPath);
+        if (binding != null) {
+            binding.setDisplayName(displayName);
+            binding.setSelectionModelName(selectionModelName);
+            binding.setValidationKey(validationKey);
         }
     }
 
@@ -1004,11 +1011,42 @@ public class JXList extends JList implements DataAware {
     }
     
     public void setDisplayName(String name) {
+        String old = displayName;
         displayName = name;
+        if (binding != null) {
+            binding.setDisplayName(displayName);
+        }
+        firePropertyChange("displayName", old, displayName);
     }
     
     public String getDisplayName() {
         return displayName;
+    }
+    
+    public String getValidationKey() {
+        return (String)validationKey;
+    }
+    
+    public void setValidationKey(String validationKey) {
+        Object old = this.validationKey;
+        this.validationKey = validationKey;
+        if (binding != null) {
+            binding.setValidationKey(validationKey);
+        }
+        firePropertyChange("validationKey", old, validationKey);
+    }
+    
+    public String getSelectionModelName() {
+        return selectionModelName;
+    }
+
+    public void setSelectionModelName(String selectionModelName) {
+        String old = this.selectionModelName;
+        this.selectionModelName = selectionModelName;
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+        }
+        firePropertyChange("selectionModelName", old, selectionModelName);
     }
     
     //PENDING
@@ -1046,12 +1084,4 @@ public class JXList extends JList implements DataAware {
 //            g.drawImage(ii.getImage(), getWidth() - ii.getIconWidth(), 0, ii.getIconWidth(), ii.getIconHeight(), ii.getImageObserver());
 //        }
 //    }
-
-    public String getSelectionModelName() {
-        return selectionModelName;
-    }
-
-    public void setSelectionModelName(String selectionModelName) {
-        this.selectionModelName = selectionModelName;
-    }
 }

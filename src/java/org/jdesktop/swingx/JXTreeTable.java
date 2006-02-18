@@ -60,6 +60,8 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.jdesktop.binding.BindingContext;
+import org.jdesktop.swingx.binding.JXTreeTableBinding;
+import org.jdesktop.swingx.binding.NodeDescriptor;
 
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
@@ -1678,6 +1680,10 @@ public class JXTreeTable extends JXTable implements DataAware {
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    private NodeDescriptor descriptor;
+    private JXTreeTableBinding binding;
+    private String selectionModelName = "treeTableSelection";
+    private Object validationKey = null;
     
     /**
      * @param path
@@ -1685,13 +1691,11 @@ public class JXTreeTable extends JXTable implements DataAware {
     public void setDataPath(String path) {
         path = path == null ? "" : path;
         if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
             String oldPath = this.dataPath;
             this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
             firePropertyChange("dataPath", oldPath, this.dataPath);
+            DataBoundUtils.unbind(ctx, this);
+            bind();
         }
     }
     
@@ -1700,19 +1704,61 @@ public class JXTreeTable extends JXTable implements DataAware {
     }
 
     public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
+        if (this.ctx != ctx) {
+            BindingContext old = this.ctx;
+            this.ctx = ctx;
+            firePropertyChange("bindingContext", old, ctx);
+            DataBoundUtils.unbind(old, this);
+            bind();
         }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
+    }
+    
+    private void bind() {
+        binding = (JXTreeTableBinding)DataBoundUtils.bind(ctx, this, dataPath);
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+            binding.setValidationKey(validationKey);
         }
     }
 
     public BindingContext getBindingContext() {
         return ctx;
+    }
+    
+    public String getValidationKey() {
+        return (String)validationKey;
+    }
+    
+    public void setValidationKey(String validationKey) {
+        Object old = this.validationKey;
+        this.validationKey = validationKey;
+        if (binding != null) {
+            binding.setValidationKey(validationKey);
+        }
+        firePropertyChange("validationKey", old, validationKey);
+    }
+    
+    public String getSelectionModelName() {
+        return selectionModelName;
+    }
+
+    public void setSelectionModelName(String selectionModelName) {
+        String old = this.selectionModelName;
+        this.selectionModelName = selectionModelName;
+        if (binding != null) {
+            binding.setSelectionModelName(selectionModelName);
+        }
+        firePropertyChange("selectionModelName", old, selectionModelName);
+    }
+    
+    public NodeDescriptor getDescriptor() {
+        return descriptor;
+    }
+
+    public void setDescriptor(NodeDescriptor descriptor) {
+        Object old = this.descriptor;
+        this.descriptor = descriptor;
+        firePropertyChange("descriptor", old, this.descriptor);
     }
     
     //PENDING
