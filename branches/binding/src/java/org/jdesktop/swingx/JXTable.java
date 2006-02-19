@@ -2646,6 +2646,7 @@ public class JXTable extends JTable implements DataAware {
         //if I had a ctx, blow it away
         if (ctx != null) {
             DataBoundUtils.unbind(this, ctx);
+            ctx = null;
         }
         super.removeNotify();
     }
