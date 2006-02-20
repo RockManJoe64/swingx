@@ -26,6 +26,7 @@ import org.jdesktop.binding.DataModel;
 import org.jdesktop.binding.DisplayHints;
 import org.jdesktop.binding.SelectionModel;
 import org.jdesktop.binding.impl.DefaultSelectionModel;
+import org.jdesktop.dataset.DataRow;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
@@ -345,6 +346,14 @@ public class JTableBinding extends SwingModelBinding {
 //                    }
 //                };
 //                dm.addTabularValueChangeListener(l);
+        }
+
+        public Object getDomainData() {
+            return dm.getDomainData();
+        }
+        
+        public Object getDomainData(int rowIndex) {
+            return dm.getRow(rowIndex).getDomainData();
         }
     }
     
