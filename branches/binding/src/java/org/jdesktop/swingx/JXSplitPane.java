@@ -9,6 +9,7 @@
 
 package org.jdesktop.swingx;
 
+import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
 import javax.swing.border.Border;
@@ -33,6 +34,40 @@ public class JXSplitPane extends JSplitPane {
     
     /** Creates a new instance of JXSplitPane */
     public JXSplitPane() {
+    }
+    
+    /**
+     * @param newOrientation
+     */
+    public JXSplitPane(int newOrientation) {
+        super(newOrientation);
+    }
+    
+    /**
+     * @param newOrientation
+     * @param newContinuousLayout
+     */
+    public JXSplitPane(int newOrientation, boolean newContinuousLayout) {
+        super(newOrientation, newContinuousLayout);
+    }
+    
+    /**
+     * @param newOrientation
+     * @param newLeftComponent
+     * @param newRightComponent
+     */
+    public JXSplitPane(int newOrientation, Component newLeftComponent, Component newRightComponent) {
+        super(newOrientation, newLeftComponent, newRightComponent);
+    }
+    
+    /**
+     * @param newOrientation
+     * @param newContinuousLayout
+     * @param newLeftComponent
+     * @param newRightComponent
+     */
+    public JXSplitPane(int newOrientation, boolean newContinuousLayout, Component newLeftComponent, Component newRightComponent) {
+        super(newOrientation, newContinuousLayout, newLeftComponent, newRightComponent);
     }
     
     public void setDividerPainted(boolean b) {
