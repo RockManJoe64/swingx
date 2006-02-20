@@ -155,7 +155,7 @@ public class JXInternalFrame extends JInternalFrame implements BindingContext, D
     }
     
     /*************      Data Binding - BindingContext    ****************/
-    private BindingContextSupport ctxSupport = new BindingContextSupport(this);
+    protected BindingContextSupport ctxSupport = new BindingContextSupport(this);
 
     public Object removeDomainData(String name) {
         return ctxSupport.removeDomainData(name);
