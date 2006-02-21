@@ -77,7 +77,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
         path = path == null ? "" : path;
         if (!this.dataPath.equals(path)) {
             String oldPath = this.dataPath;
-            this.dataPath = path;
+            this.listDataPath = path;
             firePropertyChange("listDataPath", oldPath, this.listDataPath);
             DataBoundUtils.unbind(ctx, this);
             bind();
