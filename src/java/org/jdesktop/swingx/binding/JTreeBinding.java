@@ -190,6 +190,19 @@ public class JTreeBinding extends SwingModelBinding {
         tree.setModel(oldModel);
     }
 
+    public void doLoad() {
+//        ((DataModelToListModelAdapter)getComponent().getModel()).fireDataChanged();
+        //OK, I'm dropping the hammer here. I'm not sure how to be gentle about this,
+        //the fact is, the root *may* have changed (or did it? hard to say). So I'm
+        //reloading the whole tree. Ya, like I said, I'm dropping the hammer here
+        TreeModel model = new BoundTreeModel(getDataModel());
+        getComponent().setModel(model);
+    }
+
+    public JTree getComponent() {
+        return (JTree)super.getComponent();
+    }
+    
     /**
      */
     private final class BoundTreeModel extends DefaultTreeModel {
