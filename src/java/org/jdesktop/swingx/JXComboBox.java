@@ -127,7 +127,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
             binding.setValidationKey(validationKey);
             binding.setValidator(validator);
         }
-        listBinding = (JComboBoxListBinding)DataBoundUtils.bind(ctx, this, listDataPath);
+//        listBinding = (JComboBoxListBinding)DataBoundUtils.bind(ctx, this, listDataPath);
     }
 
     public BindingContext getBindingContext() {
