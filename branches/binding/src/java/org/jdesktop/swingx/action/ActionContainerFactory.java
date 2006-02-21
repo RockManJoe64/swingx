@@ -139,28 +139,7 @@ public class ActionContainerFactory {
      */
     public JToolBar createToolBar(List list) {
         JToolBar toolbar = new JToolBar();
-        Iterator iter = list.iterator();
-        while(iter.hasNext()) {
-            Object element = iter.next();
-
-            if (element == null) {
-                toolbar.addSeparator();
-            } else {
-                AbstractButton button = createButton(element, toolbar);
-                // toolbar buttons shouldn't steal focus
-                button.setFocusable(false);
-                /*
-                 * TODO
-                 * The next two lines improve the default look of the buttons.
-                 * This code should be changed to retrieve the default look
-                 * from some UIDefaults object.
-                 */
-                button.setMargin(TOOLBAR_BUTTON_MARGIN);
-                button.setBorderPainted(false);
-                
-                toolbar.add(button);
-            }
-        }
+        configureToolBar(toolbar, list);
         return toolbar;
     }
 
@@ -565,5 +544,30 @@ public class ActionContainerFactory {
         }
         configureToggleMenuItem(mi, a);
         return mi;
+    }
+
+    public void configureToolBar(JToolBar toolbar, List actions) {
+        Iterator iter = actions.iterator();
+        while(iter.hasNext()) {
+            Object element = iter.next();
+
+            if (element == null) {
+                toolbar.addSeparator();
+            } else {
+                AbstractButton button = createButton(element, toolbar);
+                // toolbar buttons shouldn't steal focus
+                button.setFocusable(false);
+                /*
+                 * TODO
+                 * The next two lines improve the default look of the buttons.
+                 * This code should be changed to retrieve the default look
+                 * from some UIDefaults object.
+                 */
+                button.setMargin(TOOLBAR_BUTTON_MARGIN);
+                button.setBorderPainted(false);
+                
+                toolbar.add(button);
+            }
+        }
     }
 }
