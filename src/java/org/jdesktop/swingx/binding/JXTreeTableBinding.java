@@ -30,7 +30,7 @@ import org.jdesktop.swingx.treetable.TreeTableModel;
  * Essentially the same as the tree binding, only also supports columns
  * @author Richard
  */
-public class JXTreeTableBinding extends SwingModelBinding {
+public class JXTreeTableBinding extends JXTableBinding {
     /**
      * The original tree model
      */
@@ -117,7 +117,7 @@ public class JXTreeTableBinding extends SwingModelBinding {
                                         //based on the TableModel
     }
 
-    protected void doRelease() {
+    public void doRelease() {
         JXTreeTable tree = getComponent();
         tree.removeTreeSelectionListener(listener);
         tree.setTreeTableModel(oldModel);

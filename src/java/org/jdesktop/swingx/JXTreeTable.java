@@ -1686,6 +1686,20 @@ public class JXTreeTable extends JXTable implements DataAware {
     private Object validationKey = null;
     
     /**
+     * @inheritDoc
+     */
+    public JXTreeTableBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

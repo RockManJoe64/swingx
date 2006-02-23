@@ -74,6 +74,20 @@ public class JXTextField extends JTextField implements DataAware/*, DesignMode*/
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JTextComponentBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

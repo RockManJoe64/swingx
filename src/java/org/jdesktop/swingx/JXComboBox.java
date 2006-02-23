@@ -71,6 +71,34 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JComboBoxBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public JComboBoxListBinding getListBinding() {
+        return listBinding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getListDomainData() {
+        return listBinding == null ? null : listBinding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setListDataPath(String path) {

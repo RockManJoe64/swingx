@@ -970,6 +970,20 @@ public class JXList extends JList implements DataAware {
     private Object validationKey = null;
     
     /**
+     * @inheritDoc
+     */
+    public JXListBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

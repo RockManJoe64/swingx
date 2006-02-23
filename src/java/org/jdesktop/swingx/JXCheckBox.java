@@ -125,6 +125,20 @@ public class JXCheckBox extends JCheckBox implements DataAware/*implements Desig
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public AbstractButtonBinding getBinding() {
+        return binding;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

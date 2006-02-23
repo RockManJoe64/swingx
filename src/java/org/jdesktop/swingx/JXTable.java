@@ -2566,6 +2566,20 @@ public class JXTable extends JTable implements DataAware {
     private Object validationKey = null;
     
     /**
+     * @inheritDoc
+     */
+    public JXTableBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {
