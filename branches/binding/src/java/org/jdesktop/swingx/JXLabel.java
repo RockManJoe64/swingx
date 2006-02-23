@@ -81,6 +81,20 @@ public class JXLabel extends JLabel implements DataAware/*implements DesignMode*
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JLabelBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

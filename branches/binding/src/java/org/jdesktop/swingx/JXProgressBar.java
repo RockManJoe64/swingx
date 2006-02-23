@@ -75,6 +75,20 @@ public class JXProgressBar extends JProgressBar implements DataAware/*implements
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JProgressBarBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

@@ -86,6 +86,20 @@ public class JXSlider extends JSlider implements DataAware/*implements DesignMod
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JSliderBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

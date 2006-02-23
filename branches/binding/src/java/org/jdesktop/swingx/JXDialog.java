@@ -191,6 +191,20 @@ public class JXDialog extends JDialog implements BindingContext, DataAware {
     private BindingContext ctx = null;
     
     /**
+     * @inheritDoc
+     */
+    public Binding getBinding() {
+        return null;//TODO
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return null;//TODO
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

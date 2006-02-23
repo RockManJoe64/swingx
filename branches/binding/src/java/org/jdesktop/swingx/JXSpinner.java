@@ -54,6 +54,20 @@ public class JXSpinner extends JSpinner implements DataAware/*implements DesignM
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JSpinnerBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

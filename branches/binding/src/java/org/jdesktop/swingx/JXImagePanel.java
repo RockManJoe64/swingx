@@ -38,6 +38,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
 
 
@@ -290,6 +291,20 @@ public class JXImagePanel extends JXPanel implements DataAware {
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    
+    /**
+     * @inheritDoc
+     */
+    public Binding getBinding() {
+        return null; //TODO
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return null; //TODO
+    }
     
     /**
      * @param path

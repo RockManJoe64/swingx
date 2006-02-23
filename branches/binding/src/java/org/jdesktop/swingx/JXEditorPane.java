@@ -76,6 +76,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.jdesktop.swingx.action.ActionManager;
 import org.jdesktop.swingx.action.Targetable;
+import org.jdesktop.swingx.binding.JTextComponentBinding;
 
 
 /**
@@ -713,6 +714,20 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
+    
+    /**
+     * @inheritDoc
+     */
+    public JTextComponentBinding getBinding() {
+        return null; //TODO
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return null;//TODO
+    }
     
     /**
      * @param path

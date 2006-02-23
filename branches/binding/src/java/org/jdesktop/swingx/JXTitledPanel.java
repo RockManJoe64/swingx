@@ -295,6 +295,20 @@ public class JXTitledPanel extends JXPanel implements DataAware {
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JXTitledPanelBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

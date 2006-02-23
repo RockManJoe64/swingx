@@ -514,6 +514,20 @@ public class JXDatePicker extends JComponent implements DataAware {
     private Validator validator = null;
     
     /**
+     * @inheritDoc
+     */
+    public JXDatePickerBinding getBinding() {
+        return binding;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public Object getDomainData() {
+        return binding == null ? null : binding.getDomainData();
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {

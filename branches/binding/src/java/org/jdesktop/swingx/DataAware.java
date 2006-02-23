@@ -9,6 +9,7 @@
 
 package org.jdesktop.swingx;
 
+import org.jdesktop.binding.Binding;
 import org.jdesktop.binding.BindingContext;
 
 /**
@@ -20,4 +21,6 @@ public interface DataAware {
     public String getDataPath();
     public void setBindingContext(BindingContext ctx);
     public BindingContext getBindingContext();
+    public Binding getBinding();
+    public Object getDomainData();
 }
