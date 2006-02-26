@@ -57,7 +57,7 @@ public class JXTextPane extends JTextPane implements DataAware  {
     private AWTColumnBinding.AutoCommit autoCommit = AWTColumnBinding.AutoCommit.NEVER;
     private Object conversionFormat = null;
     private Converter converter = null;
-    private ManyToOneStrategy manyToOneStrategy = new ColumnBinding.CommonValueStrategy();
+    private ManyToOneStrategy manyToOneStrategy = null;
     private ValidationDecorator validationDecorator = ValidationDecoratorFactory.getSeverityBackgroundTooltipDecorator();
     private Object validationKey = null;
     private Validator validator = null;
