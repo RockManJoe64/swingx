@@ -403,7 +403,7 @@ public class BasicDatePickerUI extends DatePickerUI {
             String property = e.getPropertyName();
             if ("enabled".equals(property)) {
                 boolean isEnabled = datePicker.isEnabled();
-                popupButton.setEnabled(isEnabled);
+//                popupButton.setEnabled(isEnabled);
                 datePicker.getEditor().setEnabled(isEnabled);
             } else if ("editable".equals(property)) {
                 boolean isEditable = datePicker.isEditable();
