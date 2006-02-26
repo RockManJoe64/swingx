@@ -2645,25 +2645,19 @@ public class JXTable extends JTable implements DataAware {
         firePropertyChange("selectionModelName", old, selectionModelName);
     }
     
-    //PENDING
-    //addNotify and removeNotify were necessary for java one, not sure if I still
-    //need them or not
+    /**
+     * @inheritDoc
+     * Overridden so that if no binding context has been specified for this
+     * component by this point, then we'll try to locate a BindingContext
+     * somewhere in the containment heirarchy.
+     */
     public void addNotify() {
         super.addNotify();
-        //if ctx does not exist, try to create one
         if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-            ctx = DataBoundUtils.bind(this, dataPath);
+            setBindingContext(DataBoundUtils.findBindingContext(this));
         }
     }
 
-    public void removeNotify() {
-        //if I had a ctx, blow it away
-        if (ctx != null) {
-            DataBoundUtils.unbind(this, ctx);
-            ctx = null;
-        }
-        super.removeNotify();
-    }
 //
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;

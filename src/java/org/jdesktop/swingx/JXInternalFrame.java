@@ -35,7 +35,7 @@ import org.jdesktop.validation.ValidationListener;
 
 /**
  */
-public class JXInternalFrame extends JInternalFrame implements BindingContext, DataAware {
+public class JXInternalFrame extends JInternalFrame implements BindingContext {
 
     /** 
      * Creates a non-resizable, non-closable, non-maximizable,
@@ -114,60 +114,6 @@ public class JXInternalFrame extends JInternalFrame implements BindingContext, D
         super(title, resizable, closable, maximizable, iconifiable);
     }
 
-    /*************      Data Binding  - Data-Aware  ****************/
-    private String dataPath = "";
-    private BindingContext ctx = null;
-    
-    /**
-     * @inheritDoc
-     */
-    public Binding getBinding() {
-        return null; //TODO
-    }
-    
-    /**
-     * @inheritDoc
-     */
-    public Object getDomainData() {
-        return null; //TODO
-    }
-    
-    /**
-     * @param path
-     */
-    public void setDataPath(String path) {
-        path = path == null ? "" : path;
-        if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
-            String oldPath = this.dataPath;
-            this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
-            firePropertyChange("dataPath", oldPath, this.dataPath);
-        }
-    }
-    
-    public String getDataPath() {
-        return dataPath;
-    }
-
-    public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
-        }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
-        }
-    }
-
-    public BindingContext getBindingContext() {
-        return ctx;
-    }
-    
     /*************      Data Binding - BindingContext    ****************/
     protected BindingContextSupport ctxSupport = new BindingContextSupport(this);
 

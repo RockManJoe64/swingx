@@ -223,23 +223,17 @@ public class JXTextField extends JTextField implements DataAware/*, DesignMode*/
         firePropertyChange("validator", old, validator);
     }
         
-    //PENDING
-    //addNotify and removeNotify were necessary for java one, not sure if I still
-    //need them or not
+    /**
+     * @inheritDoc
+     * Overridden so that if no binding context has been specified for this
+     * component by this point, then we'll try to locate a BindingContext
+     * somewhere in the containment heirarchy.
+     */
     public void addNotify() {
         super.addNotify();
-        BindingContext parent = DataBoundUtils.findBindingContext(getParent());
-        if (ctx == null && parent != null) {
-            setBindingContext(parent);
+        if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
+            setBindingContext(DataBoundUtils.findBindingContext(this));
         }
-    }
-
-    public void removeNotify() {
-        BindingContext parent = DataBoundUtils.findBindingContext(getParent());
-        if (ctx == parent && parent != null) {
-            setBindingContext(null);
-        }
-        super.removeNotify();
     }
     
 //

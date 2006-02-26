@@ -19,6 +19,7 @@ import org.jdesktop.conversion.Converter;
 import org.jdesktop.swingx.binding.AWTColumnBinding;
 import org.jdesktop.swingx.binding.JComboBoxBinding;
 import org.jdesktop.swingx.binding.JComboBoxListBinding;
+import org.jdesktop.swingx.binding.JXComboBoxListBinding;
 import org.jdesktop.swingx.validation.ValidationDecorator;
 import org.jdesktop.swingx.validation.ValidationDecoratorFactory;
 import org.jdesktop.validation.Validator;
@@ -61,7 +62,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
     private String listDataPath = "";
     private BindingContext ctx = null;
     private JComboBoxBinding binding;
-    private JComboBoxListBinding listBinding;
+    private JXComboBoxListBinding listBinding;
     private AWTColumnBinding.AutoCommit autoCommit = AWTColumnBinding.AutoCommit.NEVER;
     private Object conversionFormat = null;
     private Converter converter = null;
@@ -69,6 +70,20 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
     private ValidationDecorator validationDecorator = ValidationDecoratorFactory.getSeverityBackgroundTooltipDecorator();
     private Object validationKey = null;
     private Validator validator = null;
+    private JXComboBoxList comboList = new JXComboBoxList(this); //an endpoint for binding the list. Major hack, but works
+    
+    /**
+     * public only because it has to be, don't extend or depend on this in any way
+     */
+    public static final class JXComboBoxList {
+        private JXComboBox box;
+        private JXComboBoxList(JXComboBox cb) {
+            this.box = cb;
+        }
+        public JXComboBox getComboBox() {
+            return box;
+        }
+    }
     
     /**
      * @inheritDoc
@@ -87,7 +102,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
     /**
      * @inheritDoc
      */
-    public JComboBoxListBinding getListBinding() {
+    public JXComboBoxListBinding getListBinding() {
         return listBinding;
     }
     
@@ -108,6 +123,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
             this.listDataPath = path;
             firePropertyChange("listDataPath", oldPath, this.listDataPath);
             DataBoundUtils.unbind(ctx, this);
+            DataBoundUtils.unbind(ctx, comboList);
             bind();
         }
     }
@@ -126,6 +142,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
             this.dataPath = path;
             firePropertyChange("dataPath", oldPath, this.dataPath);
             DataBoundUtils.unbind(ctx, this);
+            DataBoundUtils.unbind(ctx, comboList);
             bind();
         }
     }
@@ -140,7 +157,8 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
             this.ctx = ctx;
             firePropertyChange("bindingContext", old, ctx);
             DataBoundUtils.unbind(old, this);
-            bind();
+            DataBoundUtils.unbind(old, comboList);
+           bind();
         }
     }
     
@@ -155,7 +173,7 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
             binding.setValidationKey(validationKey);
             binding.setValidator(validator);
         }
-//        listBinding = (JComboBoxListBinding)DataBoundUtils.bind(ctx, this, listDataPath);
+        listBinding = (JXComboBoxListBinding)DataBoundUtils.bind(ctx, comboList, listDataPath);
     }
 
     public BindingContext getBindingContext() {
@@ -253,24 +271,19 @@ public class JXComboBox extends JComboBox implements DataAware/*implements Desig
         firePropertyChange("validator", old, validator);
     }
     
-    //PENDING
-    //addNotify and removeNotify were necessary for java one, not sure if I still
-    //need them or not
+    /**
+     * @inheritDoc
+     * Overridden so that if no binding context has been specified for this
+     * component by this point, then we'll try to locate a BindingContext
+     * somewhere in the containment heirarchy.
+     */
     public void addNotify() {
         super.addNotify();
-        //if ctx does not exist, try to create one
         if (ctx == null && DataBoundUtils.isValidPath(dataPath)) {
-            ctx = DataBoundUtils.bind(this, dataPath);
+            setBindingContext(DataBoundUtils.findBindingContext(this));
         }
     }
 
-    public void removeNotify() {
-        //if I had a ctx, blow it away
-        if (ctx != null) {
-            DataBoundUtils.unbind(this, ctx);
-        }
-        super.removeNotify();
-    }
 //
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;

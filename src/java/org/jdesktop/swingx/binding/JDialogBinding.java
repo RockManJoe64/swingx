@@ -61,13 +61,6 @@ public class JDialogBinding extends AWTColumnBinding {
     /**
      * @inheritDoc
      */
-    public boolean isReadOnly() {
-        return true;
-    }
-    
-    /**
-     * @inheritDoc
-     */
     public JDialog getComponent() {
         return (JDialog)super.getComponent();
     }

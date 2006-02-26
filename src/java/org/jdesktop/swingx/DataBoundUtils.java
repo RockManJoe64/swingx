@@ -1,11 +1,22 @@
 /*
- * DataBoundUtils.java
+ * $Id$
  *
- * Created on May 9, 2005, 1:09 PM
+ * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
+ * Santa Clara, California 95054, U.S.A. All rights reserved.
  *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
@@ -38,35 +49,7 @@ public class DataBoundUtils {
        return ctx;
     }
     
-    public static BindingContext bind(Component target, String path) {
-        BindingContext ctx = findBindingContext(target);
-        if (ctx != null) {
-            ctx.bind(target, path);
-        }
-        return ctx;
-    }
-    
-    public static BindingContext bind(Component comp, Object target, String path) {
-        BindingContext ctx = findBindingContext(comp);
-        if (ctx != null) {
-            ctx.bind(target, path);
-        }
-        return ctx;
-    }
-    
-    public static void bind(Component target, String path, BindingContext ctx) {
-        if (ctx != null) {
-            ctx.bind(target, path);
-        }
-    }
-    
-    public static void unbind(Component target, BindingContext ctx) {
-        if (ctx != null) {
-            ctx.unbind(target);
-        }
-    }
-    
-    public static Binding bind(BindingContext ctx, Component c, String path) {
+    public static Binding bind(BindingContext ctx, Object c, String path) {
         if (ctx != null && path != null && !path.trim().equals("")) {
             return ctx.bind(c, path);
         } else {
@@ -74,15 +57,9 @@ public class DataBoundUtils {
         }
     }
     
-    public static void unbind(BindingContext ctx, Component c) {
+    public static void unbind(BindingContext ctx, Object c) {
         if (ctx != null) {
             ctx.unbind(c);
-        }
-    }
-    
-    public static void unbind(Object target, BindingContext ctx) {
-        if (ctx != null) {
-            ctx.unbind(target);
         }
     }
     

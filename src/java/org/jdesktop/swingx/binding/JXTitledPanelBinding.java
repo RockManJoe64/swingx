@@ -63,10 +63,4 @@ public class JXTitledPanelBinding extends SwingColumnBinding {
         return (JXTitledPanel)super.getComponent();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public boolean isReadOnly() {
-        return true;
-    }
 }
