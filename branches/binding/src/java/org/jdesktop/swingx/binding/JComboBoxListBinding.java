@@ -16,7 +16,6 @@ import org.jdesktop.binding.event.ValuesChangedEvent;
 import org.jdesktop.binding.event.DataModelListener;
 import org.jdesktop.binding.event.ModelChangedEvent;
 
-
 /**
  *
  * @author rbair

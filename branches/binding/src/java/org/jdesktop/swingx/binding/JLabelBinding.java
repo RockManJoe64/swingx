@@ -58,13 +58,6 @@ public class JLabelBinding extends SwingColumnBinding {
     /**
      * @inheritDoc
      */
-    public boolean isReadOnly() {
-        return true;
-    }
-    
-    /**
-     * @inheritDoc
-     */
     public JLabel getComponent() {
         return (JLabel)super.getComponent();
     }

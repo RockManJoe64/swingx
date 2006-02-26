@@ -1,22 +1,34 @@
 /*
- * JXSlider.java
+ * $Id$
  *
- * Created on May 9, 2005, 3:23 PM
+ * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
+ * Santa Clara, California 95054, U.S.A. All rights reserved.
  *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.jdesktop.swingx;
-import javax.swing.BoundedRangeModel;
-import javax.swing.JSlider;
+
+import javax.swing.JTextPane;
+import javax.swing.text.StyledDocument;
 import org.jdesktop.binding.BindingContext;
 import org.jdesktop.binding.impl.ColumnBinding;
 import org.jdesktop.binding.impl.ManyToOneStrategy;
 import org.jdesktop.conversion.Converter;
 import org.jdesktop.swingx.binding.AWTColumnBinding;
-import org.jdesktop.swingx.binding.JSliderBinding;
+import org.jdesktop.swingx.binding.JTextComponentBinding;
 import org.jdesktop.swingx.validation.ValidationDecorator;
 import org.jdesktop.swingx.validation.ValidationDecoratorFactory;
 import org.jdesktop.validation.Validator;
@@ -25,58 +37,23 @@ import org.jdesktop.validation.Validator;
  *
  * @author rbair
  */
-public class JXSlider extends JSlider implements DataAware/*implements DesignMode*/ {
-    /**
-     * @inheritDoc
-     */
-    public JXSlider() {
-        super();
+public class JXTextPane extends JTextPane implements DataAware  {
+    
+    /** Creates a new instance of JXTextPane */
+    public JXTextPane() {
     }
 
-
     /**
      * @inheritDoc
      */
-    public JXSlider(int orientation) {
-        super(orientation);
-    }
-
-
-    /**
-     * @inheritDoc
-     */
-    public JXSlider(int min, int max) {
-        super(min, max);
-    }
-
-
-    /**
-     * @inheritDoc
-     */
-    public JXSlider(int min, int max, int value) {
-        super(min, max, value);
-    }
-
-
-    /**
-     * @inheritDoc
-     */
-    public JXSlider(int orientation, int min, int max, int value) {
-        super(orientation, min, max, value);
-    }
-
-
-    /**
-     * @inheritDoc
-     */
-    public JXSlider(BoundedRangeModel brm) {
-        super(brm);
+    public JXTextPane(StyledDocument doc) {
+        super(doc);
     }
     
     /*************      Data Binding    ****************/
     private String dataPath = "";
     private BindingContext ctx = null;
-    private JSliderBinding binding;
+    private JTextComponentBinding binding;
     private AWTColumnBinding.AutoCommit autoCommit = AWTColumnBinding.AutoCommit.NEVER;
     private Object conversionFormat = null;
     private Converter converter = null;
@@ -88,7 +65,7 @@ public class JXSlider extends JSlider implements DataAware/*implements DesignMod
     /**
      * @inheritDoc
      */
-    public JSliderBinding getBinding() {
+    public JTextComponentBinding getBinding() {
         return binding;
     }
     
@@ -128,7 +105,7 @@ public class JXSlider extends JSlider implements DataAware/*implements DesignMod
     }
     
     private void bind() {
-        binding = (JSliderBinding)DataBoundUtils.bind(ctx, this, dataPath);
+        binding = (JTextComponentBinding)DataBoundUtils.bind(ctx, this, dataPath);
         if (binding != null) {
             binding.setAutoCommit(autoCommit);
             binding.setConversionFormat(conversionFormat);
@@ -247,7 +224,8 @@ public class JXSlider extends JSlider implements DataAware/*implements DesignMod
             setBindingContext(DataBoundUtils.findBindingContext(this));
         }
     }
-
+    
+//
 //    //BEANS SPECIFIC CODE:
 //    private boolean designTime = false;
 //    public void setDesignTime(boolean designTime) {

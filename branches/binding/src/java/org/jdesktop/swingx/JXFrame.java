@@ -40,7 +40,7 @@ import org.jdesktop.validation.ValidationListener;
  * A smarter JFrame specifically used for top level frames for Applications.
  * This frame uses a JXRootPane.
  */
-public class JXFrame extends JFrame implements BindingContext, DataAware {
+public class JXFrame extends JFrame implements BindingContext {
 
     public JXFrame() {
         this(null, false);
@@ -117,60 +117,6 @@ public class JXFrame extends JFrame implements BindingContext, DataAware {
 //        super.setVisible(visible);
 //    }
 
-    /*************      Data Binding  - Data-Aware  ****************/
-    private String dataPath = "";
-    private BindingContext ctx = null;
-    
-    /**
-     * @inheritDoc
-     */
-    public Binding getBinding() {
-        return null; //TODO
-    }
-    
-    /**
-     * @inheritDoc
-     */
-    public Object getDomainData() {
-        return null; //TODO
-    }
-    
-    /**
-     * @param path
-     */
-    public void setDataPath(String path) {
-        path = path == null ? "" : path;
-        if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
-            String oldPath = this.dataPath;
-            this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
-            firePropertyChange("dataPath", oldPath, this.dataPath);
-        }
-    }
-    
-    public String getDataPath() {
-        return dataPath;
-    }
-
-    public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
-        }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
-        }
-    }
-
-    public BindingContext getBindingContext() {
-        return ctx;
-    }
-    
     /*************      Data Binding - BindingContext    ****************/
     private BindingContextSupport ctxSupport = new BindingContextSupport(this);
 

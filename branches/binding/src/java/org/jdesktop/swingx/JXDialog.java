@@ -56,7 +56,7 @@ import org.jdesktop.validation.ValidationListener;
  *
  * @author Jeanette Winzenburg
  */
-public class JXDialog extends JDialog implements BindingContext, DataAware {
+public class JXDialog extends JDialog implements BindingContext {
     public static final String EXECUTE_ACTION_COMMAND = "execute";
     public static final String CLOSE_ACTION_COMMAND = "close";
     public static final String UIPREFIX = "XDialog.";
@@ -184,60 +184,6 @@ public class JXDialog extends JDialog implements BindingContext, DataAware {
      */
     public JXDialog(Dialog owner, boolean modal) throws HeadlessException {
         super(owner, modal);
-    }
-    
-    /*************      Data Binding  - Data-Aware  ****************/
-    private String dataPath = "";
-    private BindingContext ctx = null;
-    
-    /**
-     * @inheritDoc
-     */
-    public Binding getBinding() {
-        return null;//TODO
-    }
-    
-    /**
-     * @inheritDoc
-     */
-    public Object getDomainData() {
-        return null;//TODO
-    }
-    
-    /**
-     * @param path
-     */
-    public void setDataPath(String path) {
-        path = path == null ? "" : path;
-        if (!this.dataPath.equals(path)) {
-            DataBoundUtils.unbind(this, ctx);
-            String oldPath = this.dataPath;
-            this.dataPath = path;
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx = DataBoundUtils.bind(this, this.dataPath);
-            }
-            firePropertyChange("dataPath", oldPath, this.dataPath);
-        }
-    }
-    
-    public String getDataPath() {
-        return dataPath;
-    }
-    
-    public void setBindingContext(BindingContext ctx) {
-        if (this.ctx != null) {
-            DataBoundUtils.unbind(this, this.ctx);
-        }
-        this.ctx = ctx;
-        if (this.ctx != null) {
-            if (DataBoundUtils.isValidPath(this.dataPath)) {
-                ctx.bind(this, this.dataPath);
-            }
-        }
-    }
-    
-    public BindingContext getBindingContext() {
-        return ctx;
     }
     
     /*************      Data Binding - BindingContext    ****************/

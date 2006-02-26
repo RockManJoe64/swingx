@@ -52,6 +52,9 @@ public class JXImagePanelBinding extends SwingColumnBinding {
      * This method is overridden to perform a custom conversion. I could.. ya, will.
      */
     protected Object convert(Object src, Class dstType) throws ConversionException {
+        if (src == null) {
+            return null;
+        }
         if (dstType == BufferedImage.class) {
             try {
                 //converting to BufferedImage:
