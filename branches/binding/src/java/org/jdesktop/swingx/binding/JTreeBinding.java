@@ -297,7 +297,7 @@ public class JTreeBinding extends SwingModelBinding {
         private void initChildren() {
             if (children == null) {
                 children = new ArrayList<DataModelRowTreeNode>();
-                for (String col : row.getDataModel().getColumnNames()) {
+                for (String col : row.getColumnNames()) {
                     if (row.hasChildModel(col) &&
                             (descriptor !=  null && descriptor.include(row.getValue(col)))) {
                         DataModel child = row.getChildModel(col);
