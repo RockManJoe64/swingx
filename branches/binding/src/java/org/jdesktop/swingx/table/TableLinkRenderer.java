@@ -101,11 +101,15 @@ public class TableLinkRenderer extends JXHyperlink implements TableCellRenderer 
         int colX = table.columnAtPoint(p);
         int rowY = table.rowAtPoint(p);
         if (/*hasFocus || */(p != null && (p.x >= 0) && (colX == column) && (rowY == row))) {
-            table.setCursor(handCursor);
             getModel().setRollover(true);
         } else {
-            table.setCursor(defaultCursor);
             getModel().setRollover(false);
+        }
+        TableCellRenderer renderer = table.getCellRenderer(rowY, colX);
+        if (renderer instanceof TableLinkRenderer) {
+            table.setCursor(handCursor);
+        } else {
+            table.setCursor(defaultCursor);
         }
         updateSelectionColors(table, isSelected);
 //        updateFocusBorder(cellHasFocus);
@@ -141,27 +145,27 @@ public class TableLinkRenderer extends JXHyperlink implements TableCellRenderer 
         setAction(linkAction);
     }
 
-        private final class LinkListener extends MouseInputAdapter {
-            /* (non-Javadoc)
-             * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
-             */
-            public void mouseMoved(MouseEvent e) {
-                lastMousePoint = e.getPoint();
-            }
+    private final class LinkListener extends MouseInputAdapter {
+        /* (non-Javadoc)
+         * @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent)
+         */
+        public void mouseMoved(MouseEvent e) {
+            lastMousePoint = e.getPoint();
+        }
 
-            /* (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-             */
-            public void mouseClicked(MouseEvent e) {
-                lastMousePoint = e.getPoint();
-                int clickedIndex = table.columnAtPoint(lastMousePoint);
-                TableColumn clickedCol = table.getColumn(identifier);
-                if (clickedCol != null && clickedCol.getModelIndex() == clickedIndex) {
-                    ActionEvent ae = new ActionEvent(table, lastMousePoint.y / table.getRowHeight(), "hyperlink clicked");
-                    if (linkAction != null) {
-                        linkAction.actionPerformed(ae);
-                    }
+        /* (non-Javadoc)
+         * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+         */
+        public void mouseClicked(MouseEvent e) {
+            lastMousePoint = e.getPoint();
+            int clickedIndex = table.columnAtPoint(lastMousePoint);
+            TableColumn clickedCol = table.getColumn(identifier);
+            if (clickedCol != null && clickedCol.getModelIndex() == clickedIndex) {
+                ActionEvent ae = new ActionEvent(table, lastMousePoint.y / table.getRowHeight(), "hyperlink clicked");
+                if (linkAction != null) {
+                    linkAction.actionPerformed(ae);
                 }
             }
         }
+    }
 }
