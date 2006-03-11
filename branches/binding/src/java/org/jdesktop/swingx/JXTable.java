@@ -2580,6 +2580,13 @@ public class JXTable extends JTable implements DataAware {
     }
     
     /**
+     * @return the DomainData at the given row index within the table
+     */
+    public Object getDomainData(int rowIndex) {
+        return binding == null ? null : binding.getDomainData(rowIndex);
+    }
+    
+    /**
      * @param path
      */
     public void setDataPath(String path) {
