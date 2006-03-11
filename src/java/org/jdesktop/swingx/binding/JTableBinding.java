@@ -42,8 +42,8 @@ public class JTableBinding extends SwingModelBinding {
     private TableColumnModel oldColModel;
     
     private ListSelectionListener selectionListener;
-    private AbstractTableModel model;
-    private DefaultSelectionModel tableSelectionModel;
+    private DataModelToTableModelAdapter model;
+    protected DefaultSelectionModel tableSelectionModel;
     private List<SelectionModel> selectionModels;
     
     /** Creates a new instance of JTableBinding */
@@ -83,7 +83,12 @@ public class JTableBinding extends SwingModelBinding {
                                         //based on the TableModel
 
         //create a selection binding
-        selectionListener = new ListSelectionListener() {
+        selectionListener = createSelectionListener();
+        table.getSelectionModel().addListSelectionListener(selectionListener);
+    }
+    
+    protected ListSelectionListener createSelectionListener() {
+        return new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int[] indices = ((JTable)getComponent()).getSelectedRows();
@@ -95,7 +100,6 @@ public class JTableBinding extends SwingModelBinding {
                 }
             }
         };
-        table.getSelectionModel().addListSelectionListener(selectionListener);
     }
     
     public void doRelease() {
@@ -116,6 +120,10 @@ public class JTableBinding extends SwingModelBinding {
         model.fireTableDataChanged();
     }
 
+    public Object getDomainData(int rowIndex) {
+        return model.getDomainData(rowIndex);
+    }
+    
     static final class TableColumnModelAdapter extends DefaultTableColumnModelExt {
         /**
          * Uses the given ColumnModel as the basis for the new column model. If

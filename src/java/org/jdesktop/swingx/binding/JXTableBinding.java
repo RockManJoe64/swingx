@@ -9,6 +9,11 @@
  */
 
 package org.jdesktop.swingx.binding;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.jdesktop.binding.DataModel;
 import org.jdesktop.swingx.JXTable;
 /**
  * A binding implementation that binds a JTable to a DataModel.
@@ -25,5 +30,21 @@ public class JXTableBinding extends JTableBinding {
     protected void doInitialize() {
         JXTable table = (JXTable)super.getComponent();
         super.doInitialize();
+    }
+
+    protected ListSelectionListener createSelectionListener() {
+        return new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int[] indices = ((JXTable)getComponent()).getSelectedRows();
+                    List<DataModel.Row> rows = new ArrayList<DataModel.Row>();
+                    for (int i=0; i<indices.length; i++) {
+                        int modelIndex = ((JXTable)getComponent()).convertRowIndexToModel(indices[i]);
+                        rows.add(getDataModel().getRow(modelIndex));
+                    }
+                    tableSelectionModel.setSelection(rows);
+                }
+            }
+        };
     }
 }
