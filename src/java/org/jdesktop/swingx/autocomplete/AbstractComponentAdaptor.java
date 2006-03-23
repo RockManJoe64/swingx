@@ -23,7 +23,7 @@ package org.jdesktop.swingx.autocomplete;
 import javax.swing.text.JTextComponent;
 
 /**
- * This is the interface that binds the mechanism for automatic completion to
+ * This is the interface that binds the mechanism for automtic completion to
  * a data model, a selection model (e.g. those used by JList, JComboBox and JTable)
  * and the JTextComponent for which the automatic completion should happen.
  * It is used to search and select a matching item and to mark the completed text
@@ -35,7 +35,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Thomas Bierhance
  */
-public abstract class AbstractAutoCompleteAdaptor {
+public abstract class AbstractComponentAdaptor {
     /**
      * Returns the currently selected item.
      * @return the selected item
