@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.swingx.action.EditorPaneLinkAction;
 
 import org.jdesktop.swingx.action.LinkAction;
 import org.jdesktop.swingx.decorator.Highlighter;
@@ -58,14 +59,14 @@ public class JXHyperlinkTest extends InteractiveTestCase {
     
  
     public void interactiveTestLink() throws Exception {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        LinkModel link = new LinkModel("Click me!", null, JXEditorPaneTest.class.getResource("resources/test.html"));
+        JXEditorPane editor = new JXEditorPane();
+        EditorPaneLinkAction linkAction = new EditorPaneLinkAction(editor);
+        linkAction.setName("Click me!");
+        linkAction.setURL(JXEditorPaneTest.class.getResource("resources/test.html"));
 
-        LinkAction linkAction = new LinkAction(link);
-        linkAction.setVisitingDelegate(visitor);
         JXHyperlink hyperlink = new JXHyperlink(linkAction);
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(visitor.getOutputComponent()));
+        panel.add(new JScrollPane(editor));
         panel.add(hyperlink, BorderLayout.SOUTH);
         JFrame frame = wrapInFrame(panel, "simple hyperlink");
         frame.setSize(200, 200);
@@ -75,103 +76,96 @@ public class JXHyperlinkTest extends InteractiveTestCase {
 
   
     public void interactiveTestTableLinkRenderer() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXTable table = new JXTable(createModelWithLinks());
-        table.setDefaultLinkVisitor(visitor);
-        JFrame frame = wrapWithScrollingInFrame(table, visitor.getOutputComponent(), "show link renderer in table");
+        JXEditorPane editor = new JXEditorPane();
+        JXTable table = new JXTable(createModelWithLinks(editor));
+        JFrame frame = wrapWithScrollingInFrame(table, editor, "show link renderer in table");
         frame.setVisible(true);
 
     }
     
     public void interactiveTestTableLinkRendererEmptyHighlighterPipeline() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXTable table = new JXTable(createModelWithLinks());
-        table.setDefaultLinkVisitor(visitor);
+        JXEditorPane editor = new JXEditorPane();
+        JXTable table = new JXTable(createModelWithLinks(editor));
         table.setHighlighters(new HighlighterPipeline(new Highlighter[] { }));
-        JFrame frame = wrapWithScrollingInFrame(table, visitor.getOutputComponent(), 
+        JFrame frame = wrapWithScrollingInFrame(table, editor, 
                 "show link renderer in table with empty highlighterPipeline");
         frame.setVisible(true);
 
     }
 
     public void interactiveTestTableLinkRendererNullHighlighter() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXTable table = new JXTable(createModelWithLinks());
-        table.setDefaultLinkVisitor(visitor);
+        JXEditorPane editor = new JXEditorPane();
+        JXTable table = new JXTable(createModelWithLinks(editor));
         table.setHighlighters(new HighlighterPipeline(new Highlighter[] {new Highlighter() }));
-        JFrame frame = wrapWithScrollingInFrame(table, visitor.getOutputComponent(), 
+        JFrame frame = wrapWithScrollingInFrame(table, editor, 
                 "show link renderer in table with null highlighter");
         frame.setVisible(true);
 
     }
 
     public void interactiveTestTableLinkRendererLFStripingHighlighter() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXTable table = new JXTable(createModelWithLinks());
-        table.setDefaultLinkVisitor(visitor);
+        JXEditorPane editor = new JXEditorPane();
+        JXTable table = new JXTable(createModelWithLinks(editor));
         table.setHighlighters(new HighlighterPipeline(new Highlighter[] { 
                 new UIAlternateRowHighlighter()}));
-        JFrame frame = wrapWithScrollingInFrame(table, visitor.getOutputComponent(), 
+        JFrame frame = wrapWithScrollingInFrame(table, editor, 
                 "show link renderer in table with LF striping highlighter");
         frame.setVisible(true);
 
     }
     public void interactiveTestListLinkRenderer() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXList list = new JXList(createListModelWithLinks(20));
+        JXEditorPane editor = new JXEditorPane();
+        JXList list = new JXList(createListModelWithLinks(editor, 20));
 //        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        list.setLinkVisitor(visitor);
-        JFrame frame = wrapWithScrollingInFrame(list, visitor.getOutputComponent(), "show link renderer in list");
+        JFrame frame = wrapWithScrollingInFrame(list, editor, "show link renderer in list");
         frame.setVisible(true);
 
     }
     
     public void interactiveTestListLinkRendererLFStripingHighlighter() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXList list = new JXList(createListModelWithLinks(20));
+        JXEditorPane editor = new JXEditorPane();
+        JXList list = new JXList(createListModelWithLinks(editor, 20));
 //        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        list.setLinkVisitor(visitor);
         list.setHighlighters(new HighlighterPipeline(new Highlighter[] {
                 new UIAlternateRowHighlighter()}));
-        JFrame frame = wrapWithScrollingInFrame(list, visitor.getOutputComponent(), 
+        JFrame frame = wrapWithScrollingInFrame(list, editor, 
                 "show link renderer in list with LFStriping highlighter");
         frame.setVisible(true);
 
     }
     
     public void interactiveTestListLinkRendererEmptyHighlighterPipeline() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXList list = new JXList(createListModelWithLinks(20));
+        JXEditorPane editor = new JXEditorPane();
+        JXList list = new JXList(createListModelWithLinks(editor, 20));
 //        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        list.setLinkVisitor(visitor);
         list.setHighlighters(new HighlighterPipeline(new Highlighter[] { }));
-        JFrame frame = wrapWithScrollingInFrame(list, visitor.getOutputComponent(), 
+        JFrame frame = wrapWithScrollingInFrame(list, editor, 
                 "show link renderer in list empty highlighterPipeline");
         frame.setVisible(true);
 
     }
 
     public void interactiveTestListLinkRendererNullHighlighter() {
-        EditorPaneLinkVisitor visitor = new EditorPaneLinkVisitor();
-        JXList list = new JXList(createListModelWithLinks(20));
+        JXEditorPane editor = new JXEditorPane();
+        JXList list = new JXList(createListModelWithLinks(editor, 20));
 //        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        list.setLinkVisitor(visitor);
         list.setHighlighters(new HighlighterPipeline(new Highlighter[] {new Highlighter() }));
-        JFrame frame = wrapWithScrollingInFrame(list, visitor.getOutputComponent(), 
+        JFrame frame = wrapWithScrollingInFrame(list, editor, 
                 "show link renderer in list null highlighter");
         frame.setVisible(true);
 
     }
 
-    private ListModel createListModelWithLinks(int count) {
+    private ListModel createListModelWithLinks(JXEditorPane editor, int count) {
         DefaultListModel model = new DefaultListModel();
         for (int i = 0; i < count; i++) {
             try {
-                LinkModel link = new LinkModel("a link text " + i, null, new URL("http://some.dummy.url" + i));
+                EditorPaneLinkAction link = new EditorPaneLinkAction(editor);
+                link.setName("a link text " + i);
+                link.setURL(new URL("http://some.dummy.url" + i));
                 if (i == 1) {
                     URL url = JXEditorPaneTest.class.getResource("resources/test.html");
-
-                    link = new LinkModel("a link text " + i, null, url);
+                    link.setURL(url);
                 }
                 model.addElement(link);
             } catch (MalformedURLException e) {
@@ -183,7 +177,7 @@ public class JXHyperlinkTest extends InteractiveTestCase {
         return model;
     }
     
-    private TableModel createModelWithLinks() {
+    private TableModel createModelWithLinks(JXEditorPane editor) {
         String[] columnNames = { "text only", "Link editable", "Link not-editable", "Bool editable", "Bool not-editable" };
         
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
@@ -199,11 +193,11 @@ public class JXHyperlinkTest extends InteractiveTestCase {
         };
         for (int i = 0; i < 4; i++) {
             try {
-                LinkModel link = new LinkModel("a link text " + i, null, new URL("http://some.dummy.url" + i));
+                EditorPaneLinkAction link = new EditorPaneLinkAction(editor);
+                link.setName("a link text " + i);
+                link.setURL(new URL("http://some.dummy.url" + i));
                 if (i == 1) {
-                    URL url = JXEditorPaneTest.class.getResource("resources/test.html");
-
-                    link = new LinkModel("a link text " + i, null, url);
+                    link.setURL(JXEditorPaneTest.class.getResource("resources/test.html"));
                 }
                 model.addRow(new Object[] {"text only " + i, link, link, Boolean.TRUE, Boolean.TRUE });
             } catch (MalformedURLException e) {

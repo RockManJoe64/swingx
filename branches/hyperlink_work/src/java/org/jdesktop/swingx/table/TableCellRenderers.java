@@ -27,8 +27,7 @@ import java.util.HashMap;
 import javax.swing.Icon;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-
-import org.jdesktop.swingx.LinkModel;
+import org.jdesktop.swingx.action.LinkAction;
 
 public class TableCellRenderers {
 
@@ -50,7 +49,7 @@ public class TableCellRenderers {
                     "org.jdesktop.swingx.JXTable$IconRenderer");
         typeMap.put(Boolean.class,
             "org.jdesktop.swingx.JXTable$BooleanRenderer");
-        typeMap.put(LinkModel.class,
+        typeMap.put(LinkAction.class,
                     "org.jdesktop.swingx.LinkRenderer");
 
     }

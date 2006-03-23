@@ -60,18 +60,12 @@ public abstract class AbstractActionExt extends AbstractAction
      * Copy constuctor copies the state.
      */
     public AbstractActionExt(AbstractActionExt action) {
-        Object[] keys = action.getKeys();
-        for (int i = 0; i < keys.length; i++) {
-            putValue((String)keys[i], action.getValue((String)keys[i]));
-        }
+        Actions.copy(action, this);
+        //TODO I have to do this part of the copy operation separately
+        //because we don't store the selected state in the property map
+        //for some reason (nor do we for enabled in Swing, but we've taken
+        //care of that in the copy method)
         this.selected = action.selected;
-        this.enabled = action.enabled;
-
-        // Copy change listeners.
-        PropertyChangeListener[] listeners = action.getPropertyChangeListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            addPropertyChangeListener(listeners[i]);
-        }
     }
 
     public AbstractActionExt(String name) {

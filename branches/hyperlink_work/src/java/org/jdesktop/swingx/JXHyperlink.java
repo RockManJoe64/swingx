@@ -21,11 +21,14 @@
 package org.jdesktop.swingx;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.jdesktop.swingx.action.Actions;
+import org.jdesktop.swingx.action.LinkAction;
 
 import org.jdesktop.swingx.plaf.JXHyperlinkAddon;
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
@@ -53,8 +56,6 @@ public class JXHyperlink extends JButton {
     static {
       LookAndFeelAddons.contribute(new JXHyperlinkAddon());
     }
-
-    private boolean hasBeenVisited = false;
 
     /**
      * Color for the hyper link if it has not yet been clicked. This color can
@@ -89,6 +90,21 @@ public class JXHyperlink extends JButton {
     }
 
     /**
+     * Sets the color for the previously visited link. This value will override the one
+     * set by the "JXHyperlink.clickedColor" UIManager property and defaults.
+     *
+     * @param color Color for the hyper link if it has already been clicked.
+     */
+    public void setUnclickedColor(Color color) {
+        Color old = getUnclickedColor();
+        unclickedColor = color;
+        if (!isVisited()) {
+            setForeground(getUnclickedColor());
+        }
+        firePropertyChange("unclickedColor", old, getUnclickedColor());
+    }
+
+    /**
      * @return Color for the hyper link if it has not yet been clicked.
      */
     public Color getUnclickedColor() {
@@ -118,21 +134,6 @@ public class JXHyperlink extends JButton {
     }
 
     /**
-     * Sets the color for the previously visited link. This value will override the one
-     * set by the "JXHyperlink.clickedColor" UIManager property and defaults.
-     *
-     * @param color Color for the hyper link if it has already been clicked.
-     */
-    public void setUnclickedColor(Color color) {
-        Color old = getUnclickedColor();
-        unclickedColor = color;
-        if (!isVisited()) {
-            setForeground(getUnclickedColor());
-        }
-        firePropertyChange("unclickedColor", old, getUnclickedColor());
-    }
-
-    /**
      * Sets if this link has been clicked before. This will luckily affect the way
      * this component is being painted.
      *
@@ -140,16 +141,24 @@ public class JXHyperlink extends JButton {
      */
     protected void setVisited(boolean visited) {
         boolean old = isVisited();
-        hasBeenVisited = visited;
+        LinkAction action = (LinkAction)getAction();
+        if (action != null) {
+            action.setVisited(visited);
+        }
         setForeground(isVisited() ? getClickedColor() : getUnclickedColor());
         firePropertyChange("visited", old, isVisited());
     }
 
     /**
-     * @return <code>true</code> if hyper link has already been clicked.
+     * @return <code>true</code> if hyperlink has already been clicked.
      */
     protected boolean isVisited() {
-        return hasBeenVisited;
+        LinkAction action = (LinkAction)getAction();
+        if (action != null) {
+            return action.isVisited();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -163,32 +172,15 @@ public class JXHyperlink extends JButton {
         // JW: need to do something better - only weak refs allowed!
         // no way to hook into super
         PropertyChangeListener l = new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent evt) {
-                if (LinkModel.VISITED_PROPERTY.equals(evt.getPropertyName())) {
-                    setVisitedFromActionProperty(a);
+                if (LinkAction.VISITED_PROPERTY.equals(evt.getPropertyName())) {
+                    init();
                 } else {
                     superListener.propertyChange(evt);
                 }
-
             }
-
         };
         return l;
-    }
-
-    /**
-     * Read all the essentional properties from the provided <code>Action</code>
-     * and apply it to the <code>JXHyperlink</code>
-     */
-    protected void configurePropertiesFromAction(Action a) {
-        super.configurePropertiesFromAction(a);
-        setVisitedFromActionProperty(a);
-    }
-
-    private void setVisitedFromActionProperty(Action a) {
-        Boolean visited = (Boolean) a.getValue(LinkModel.VISITED_PROPERTY);
-        setVisited(visited != null ? visited.booleanValue() : false);
     }
 
     private void init() {
@@ -201,5 +193,31 @@ public class JXHyperlink extends JButton {
      */
     public String getUIClassID() {
         return uiClassID;
+    }
+
+    /**
+     * Converts the given action into a LinkAction if it is not already one
+     */
+    public void setAction(final Action a) {
+        if (a instanceof LinkAction) {
+            super.setAction(a);
+        } else {
+            LinkAction link = new LinkAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    if (a != null) {
+                        a.actionPerformed(ae);
+                    }
+                }
+            };
+            Actions.copy(a, link);
+            super.setAction(link);
+        }
+        init();
+    }
+    
+    /**
+     */
+    public LinkAction getAction() {
+        return (LinkAction)super.getAction();
     }
 }

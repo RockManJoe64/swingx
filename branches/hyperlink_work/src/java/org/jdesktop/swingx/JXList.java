@@ -96,12 +96,6 @@ public class JXList extends JList {
      */
     private RolloverProducer rolloverProducer;
 
-    /**
-     * RolloverController: listens to cell over events and repaints
-     * entered/exited rows.
-     */
-    private LinkController linkController;
-
     /** A wrapper around the default renderer enabling decoration. */
     private DelegatingRenderer delegatingRenderer;
 
@@ -255,28 +249,13 @@ public class JXList extends JList {
             rolloverProducer = createRolloverProducer();
             addMouseListener(rolloverProducer);
             addMouseMotionListener(rolloverProducer);
-            getLinkController().install(this);
         } else {
             removeMouseListener(rolloverProducer);
             removeMouseMotionListener(rolloverProducer);
             rolloverProducer = null;
-            getLinkController().release();
         }
         firePropertyChange("rolloverEnabled", old, isRolloverEnabled());
     }
-
-    
-    protected LinkController getLinkController() {
-        if (linkController == null) {
-            linkController = createLinkController();
-        }
-        return linkController;
-    }
-
-    protected LinkController createLinkController() {
-        return new LinkController();
-    }
-
 
     /**
      * creates and returns the RolloverProducer to use with this tree.
@@ -311,144 +290,6 @@ public class JXList extends JList {
     public boolean isRolloverEnabled() {
         return rolloverProducer != null;
     }
-
-    public void setLinkVisitor(ActionListener linkVisitor) {
-        if (linkVisitor != null) {
-            setRolloverEnabled(true);
-            getDelegatingRenderer().setLinkVisitor(linkVisitor);
-        } else {
-            // JW: think - need to revert?
-        }
-
-    }
-
-    /**
-     * listens to rollover properties. 
-     * Repaints effected component regions.
-     * Updates link cursor.
-     * 
-     * @author Jeanette Winzenburg
-     */
-    public static class LinkController implements PropertyChangeListener {
-
-        private Cursor oldCursor;
-        private JXList list;
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (RolloverProducer.ROLLOVER_KEY.equals(evt.getPropertyName())) {
-                   rollover((JXList) evt.getSource(), (Point) evt.getOldValue(),
-                            (Point) evt.getOldValue());
-            } else if (RolloverProducer.CLICKED_KEY.equals(evt.getPropertyName())) {
-                    click((JXList) evt.getSource(), (Point) evt.getOldValue(),
-                            (Point) evt.getNewValue());
-            }
-        }
-
-
-        public void install(JXList list) {
-            release();  
-            this.list = list;
-            list.addPropertyChangeListener(this);
-            registerExecuteButtonAction();
-          }
-          
-          public void release() {
-              if (list == null) return;
-              list.removePropertyChangeListener(this);
-              unregisterExecuteButtonAction();
-          }
-
-//    --------------------------------- JList rollover
-        
-        private void rollover(JXList list, Point oldLocation, Point newLocation) {
-            setLinkCursor(list, newLocation);
-            // JW: partial repaints incomplete
-            list.repaint();
-        }
-
-        private void click(JXList list, Point oldLocation, Point newLocation) {
-            if (!isLinkElement(list, newLocation)) return;
-            ListCellRenderer renderer = list.getCellRenderer();
-            // PENDING: JW - don't ask the model, ask the list!
-            Component comp = renderer.getListCellRendererComponent(list, list.getModel().getElementAt(newLocation.y), newLocation.y, false, true);
-            if (comp instanceof AbstractButton) {
-                // this is fishy - needs to be removed as soon as JList is editable
-                ((AbstractButton) comp).doClick();
-                list.repaint();
-            }
-        }
-        
-        /**
-         * something weird: cursor in JList behaves different from JTable?
-         * @param list
-         * @param location
-         */
-        private void setLinkCursor(JXList list, Point location) {
-            if (isLinkElement(list, location)) {
-                    oldCursor = list.getCursor();
-                    list.setCursor(Cursor
-                            .getPredefinedCursor(Cursor.HAND_CURSOR));
-            } else {
-                    list.setCursor(oldCursor);
-                    oldCursor = null;
-            }
-
-        }
-        private boolean isLinkElement(JXList list, Point location) {
-            if (location == null || location.y < 0) return false;
-            // PENDING: JW - don't ask the model, ask the list!
-            return (list.getModel().getElementAt(location.y) instanceof LinkModel);
-        }
-
-        private void unregisterExecuteButtonAction() {
-            list.getActionMap().put(EXECUTE_BUTTON_ACTIONCOMMAND, null);
-            KeyStroke space = KeyStroke.getKeyStroke("released SPACE");
-            list.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(space , null);
-        }
-
-        private void registerExecuteButtonAction() {
-            list.getActionMap().put(EXECUTE_BUTTON_ACTIONCOMMAND, createExecuteButtonAction());
-            KeyStroke space = KeyStroke.getKeyStroke("released SPACE");
-            list.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(space , EXECUTE_BUTTON_ACTIONCOMMAND);
-            
-        }
-
-        private Action createExecuteButtonAction() {
-            Action action = new AbstractAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    AbstractButton button = getClickableRendererComponent();
-                    if (button != null) {
-                        button.doClick();
-                        list.repaint();
-                    }
-                }
-
-                @Override
-                public boolean isEnabled() {
-                    return isClickable();
-                }
-
-                private boolean isClickable() {
-                    return getClickableRendererComponent() != null;
-                }
-                
-                private AbstractButton getClickableRendererComponent() {
-                    if (list == null || !list.isEnabled() || !list.hasFocus()) return null;
-                    int leadRow = list.getLeadSelectionIndex();
-                    if (leadRow < 0 ) return null;
-                    ListCellRenderer renderer = list.getCellRenderer();
-                    Component rendererComp = renderer.getListCellRendererComponent(list, list.getElementAt(leadRow), leadRow, false, true);
-                    return rendererComp instanceof AbstractButton ? (AbstractButton) rendererComp : null;
-                }
-                
-            };
-            return action;
-        }
-
-
-    }
-
    
     // ---------------------------- filters
 
@@ -941,13 +782,9 @@ public class JXList extends JList {
                 int index, boolean isSelected, boolean cellHasFocus) {
             Component comp = null;
 
-            if (value instanceof LinkModel) {
-                comp = getLinkRenderer().getListCellRendererComponent(list,
-                        value, index, isSelected, cellHasFocus);
-            } else {
-                comp = delegateRenderer.getListCellRendererComponent(list,
-                        value, index, isSelected, cellHasFocus);
-            }
+            comp = delegateRenderer.getListCellRendererComponent(list,
+                    value, index, isSelected, cellHasFocus);
+            
             if (highlighters != null) {
                 ComponentAdapter adapter = getComponentAdapter();
                 adapter.column = 0;
@@ -955,18 +792,6 @@ public class JXList extends JList {
                 comp = highlighters.apply(comp, adapter);
             }
             return comp;
-        }
-
-        private LinkRenderer getLinkRenderer() {
-            if (linkRenderer == null) {
-                linkRenderer = new LinkRenderer();
-            }
-            return linkRenderer;
-        }
-
-        public void setLinkVisitor(ActionListener linkVisitor) {
-            getLinkRenderer().setVisitingDelegate(linkVisitor);
-
         }
 
         public void updateUI() {

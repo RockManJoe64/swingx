@@ -10,9 +10,7 @@ package org.jdesktop.swingx;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.Collator;
@@ -37,6 +35,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.swingx.action.DefaultLinkAction;
+import org.jdesktop.swingx.action.LinkAction;
 
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -453,44 +453,12 @@ public class JXTableUnitTest extends InteractiveTestCase {
         LinkRenderer comparison = new LinkRenderer();
         LinkRenderer linkRenderer = new LinkRenderer();
         JXTable table = new JXTable(2, 3);
-        Component comparisonComponent = comparison.getTableCellEditorComponent(table, null, false, 0, 0);
-        Font comparisonFont = comparisonComponent.getFont();
         table.getColumnModel().getColumn(0).setCellRenderer(linkRenderer);
         setSystemLF(!defaultToSystemLF);
-        SwingUtilities.updateComponentTreeUI(comparisonComponent);
-        if (comparisonFont.equals(comparisonComponent.getFont())) {
-            LOG.info("cannot run test - equal font " + comparisonFont);
-            return;
-        }
         SwingUtilities.updateComponentTreeUI(table);
         Component rendererComp = table.prepareRenderer(table.getCellRenderer(0, 0), 0, 0);
-        assertEquals("renderer font must be updated", 
-                comparisonComponent.getFont(), rendererComp.getFont());
-        
-    }
-    /**
-     * test if LinkController/executeButtonAction is properly registered/unregistered on
-     * setRolloverEnabled.
-     *
-     */
-    public void testLinkControllerListening() {
-        JXTable table = new JXTable();
-        table.setRolloverEnabled(true);
-        assertNotNull("LinkController must be listening", getLinkControllerAsPropertyChangeListener(table));
-        assertNotNull("execute button action must be registered", table.getActionMap().get(JXTable.EXECUTE_BUTTON_ACTIONCOMMAND));
-        table.setRolloverEnabled(false);
-        assertNull("LinkController must not be listening", getLinkControllerAsPropertyChangeListener(table));
-        assertNull("execute button action must be de-registered", table.getActionMap().get(JXTable.EXECUTE_BUTTON_ACTIONCOMMAND));
-    }
-    
-    private PropertyChangeListener getLinkControllerAsPropertyChangeListener(JXTable table) {
-        PropertyChangeListener[] listeners = table.getPropertyChangeListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            if (listeners[i] instanceof JXTable.LinkController) {
-                return (JXTable.LinkController) listeners[i];
-            }
-        }
-        return null;
+        //XXX This test appears to be testing nothing at the moment
+        assertTrue(false);
     }
 
     /**
@@ -1689,7 +1657,7 @@ public class JXTableUnitTest extends InteractiveTestCase {
         assertEquals("default Number renderer", JXTable.NumberRenderer.class, table.getDefaultRenderer(Number.class).getClass());
         assertEquals("default Double renderer", JXTable.DoubleRenderer.class, table.getDefaultRenderer(Double.class).getClass());
         assertEquals("default Date renderer", JXTable.DateRenderer.class, table.getDefaultRenderer(Date.class).getClass());
-        assertEquals("default LinkModel renderer", LinkRenderer.class, table.getDefaultRenderer(LinkModel.class).getClass());
+        assertEquals("default LinkModel renderer", LinkRenderer.class, table.getDefaultRenderer(LinkAction.class).getClass());
         assertEquals("default Icon renderer", JXTable.IconRenderer.class, table.getDefaultRenderer(Icon.class).getClass());
     }
 
@@ -1759,7 +1727,8 @@ public class JXTableUnitTest extends InteractiveTestCase {
             columnSamples[3] = Boolean.TRUE;
             columnSamples[4] = new Date(100);
             columnSamples[5] = new Float(1.5);
-            columnSamples[IDX_COL_LINK] = new LinkModel("Sun Micro", "_blank", linkURL);
+            columnSamples[IDX_COL_LINK] = new DefaultLinkAction();
+            ((LinkAction)columnSamples[IDX_COL_LINK]).setName("Sun Micro");
             columnSamples[7] = new Integer(3023);
             columnSamples[8] = "John Doh";
             columnSamples[9] = "23434 Testcase St";
@@ -1773,7 +1742,8 @@ public class JXTableUnitTest extends InteractiveTestCase {
             columnSamples2[3] = Boolean.FALSE;
             columnSamples2[4] = new Date(333);
             columnSamples2[5] = new Float(22.22);
-            columnSamples2[IDX_COL_LINK] = new LinkModel("Sun Web", "new_frame", linkURL);
+            columnSamples2[IDX_COL_LINK] = new DefaultLinkAction();
+            ((LinkAction)columnSamples2[IDX_COL_LINK]).setName("Sun Web");
             columnSamples[7] = new Integer(5503);
             columnSamples[8] = "Jane Smith";
             columnSamples[9] = "2343 Table Blvd.";
