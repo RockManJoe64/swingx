@@ -16,6 +16,8 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
+import org.jdesktop.swingx.action.DefaultLinkAction;
+import org.jdesktop.swingx.action.LinkAction;
 
 /**
  * @author Jeanette Winzenburg
@@ -24,7 +26,7 @@ public class LinkRendererTest extends InteractiveTestCase {
     private static final Logger LOG = Logger.getLogger(LinkRendererTest.class
             .getName());
 
-    private LinkModel link;
+    private LinkAction link;
 
     // flag used in setup to explicitly choose LF
     private boolean defaultToSystemLF;
@@ -99,7 +101,10 @@ public class LinkRendererTest extends InteractiveTestCase {
                 .getTableCellRendererComponent(table, link, false, false, 1, 0);
         assertFalse("renderer must not be rollover", hyperlink.getModel()
                 .isRollover());
-        table.putClientProperty(RolloverProducer.ROLLOVER_KEY, new Point(0, 1));
+        //XXX must replace the following line of code with something equivilent
+        //that will cause the table to fire a mouse motion event
+//        table.putClientProperty(RolloverProducer.ROLLOVER_KEY, new Point(0, 1));
+        assertTrue(false);
         hyperlink = (JXHyperlink) linkRenderer.getTableCellRendererComponent(
                 table, link, false, false, 1, 0);
         assertTrue("renderer must be rollover", hyperlink.getModel()
@@ -146,7 +151,8 @@ public class LinkRendererTest extends InteractiveTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         URL url = getClass().getResource("resources/test.html");
-        link = new LinkModel("a resource", null, url);
+        link = new DefaultLinkAction();
+        link.setName("a resource");
         // make sure we have the same default for each test
         defaultToSystemLF = false;
         setSystemLF(defaultToSystemLF);

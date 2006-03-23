@@ -24,7 +24,8 @@ import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTree;
-import org.jdesktop.swingx.LinkModel;
+import org.jdesktop.swingx.action.DefaultLinkAction;
+import org.jdesktop.swingx.action.LinkAction;
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter.UIAlternateRowHighlighter;
 
 
@@ -187,18 +188,15 @@ public class HighlighterIssues extends HighlighterTest {
             
         };
         for (int i = 0; i < 4; i++) {
-            try {
-                LinkModel link = new LinkModel("a link text " + i, null, new URL("http://some.dummy.url" + i));
-                if (i == 1) {
-                    URL url = JXEditorPaneTest.class.getResource("resources/test.html");
+            LinkAction link = new DefaultLinkAction();
+            link.setName("a link text " + i);
+            if (i == 1) {
+                URL url = JXEditorPaneTest.class.getResource("resources/test.html");
 
-                    link = new LinkModel("a link text " + i, null, url);
-                }
-                model.addRow(new Object[] {"text only " + i, link, link, Boolean.TRUE, Boolean.TRUE });
-            } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                link = new DefaultLinkAction();
+                link.setName("a link text " + i);
             }
+            model.addRow(new Object[] {"text only " + i, link, link, Boolean.TRUE, Boolean.TRUE });
         }
         return model;
     }

@@ -27,7 +27,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,6 +46,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.jdesktop.swingx.JXTableHeader.SortGestureRecognizer;
+import org.jdesktop.swingx.action.DefaultLinkAction;
+import org.jdesktop.swingx.action.LinkAction;
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.ConditionalHighlighter;
@@ -918,8 +919,9 @@ public class JXTableVisualCheck extends JXTableUnitTest {
         columns[3].setPrototypeValue(Boolean.TRUE);
         columns[4].setPrototypeValue(new Date(100));
         columns[5].setPrototypeValue(new Float(1.5));
-        columns[6].setPrototypeValue(new LinkModel("Sun Micro", "_blank",
-                                              tableModel.linkURL));
+        LinkAction linkAction = new DefaultLinkAction();
+        linkAction.setName("Sun Micro");
+        columns[6].setPrototypeValue(linkAction);
         columns[7].setPrototypeValue(new Integer(3023));
         columns[8].setPrototypeValue("John Doh");
         columns[9].setPrototypeValue("23434 Testcase St");

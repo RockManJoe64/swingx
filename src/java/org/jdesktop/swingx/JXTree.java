@@ -81,11 +81,6 @@ public class JXTree extends JTree {
      */
     private RolloverProducer rolloverProducer;
 
-    /**
-     * RolloverController: listens to cell over events and
-     * repaints entered/exited rows.
-     */
-    private LinkController linkController;
     private boolean overwriteIcons;
     private Searchable searchable;
     
@@ -447,14 +442,10 @@ public class JXTree extends JTree {
             rolloverProducer = createRolloverProducer();
             addMouseListener(rolloverProducer);
             addMouseMotionListener(rolloverProducer);
-            linkController = new LinkController();
-            addPropertyChangeListener(linkController);
         } else {
             removeMouseListener(rolloverProducer);
             removeMouseMotionListener(rolloverProducer);
             rolloverProducer = null;
-            removePropertyChangeListener(linkController);
-            linkController = null;
         }
         firePropertyChange("rolloverEnabled", old, isRolloverEnabled());
     }
@@ -527,50 +518,6 @@ public class JXTree extends JTree {
         return rolloverProducer != null;
     }
 
-
-    /**
-     * listens to rollover properties. 
-     * Repaints effected component regions.
-     * Updates link cursor.
-     * 
-     * @author Jeanette Winzenburg
-     */
-    public  class LinkController implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (RolloverProducer.ROLLOVER_KEY.equals(evt.getPropertyName())) {
-                    rollover((JXTree) evt.getSource(), (Point) evt.getOldValue(),
-                            (Point) evt.getOldValue());
-            } 
-        }
-        
-        
-//    -------------------------------------JTree rollover
-        
-        private void rollover(JXTree tree, Point oldLocation, Point newLocation) {
-            //setLinkCursor(list, newLocation);
-            // JW: conditional repaint not working?
-            tree.repaint();
-//            if (oldLocation != null) {
-//                Rectangle r = tree.getRowBounds(oldLocation.y);
-////                r.x = 0;
-////                r.width = table.getWidth();
-//                if (r != null)
-//                tree.repaint(r);
-//            }
-//            if (newLocation != null) {
-//                Rectangle r = tree.getRowBounds(newLocation.y);
-////                r.x = 0;
-////                r.width = table.getWidth();
-//                if (r != null)
-//                tree.repaint(r);
-//            }
-        }
-
-    }
-
-
-    
     private DelegatingRenderer getDelegatingRenderer() {
         if (delegatingRenderer == null) {
             // only called once... to get hold of the default?

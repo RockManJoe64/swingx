@@ -25,6 +25,7 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.swingx.action.EditorPaneLinkAction;
 
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -79,31 +80,6 @@ public class JXListTest extends InteractiveTestCase {
         ListSelectionModel model = new DefaultListSelectionModel();
         table.setSelectionModel(model);
         assertEquals(model, mapper.getViewSelectionModel());
-    }
-
-    /**
-     * test if LinkController/executeButtonAction is properly registered/unregistered on
-     * setRolloverEnabled.
-     *
-     */
-    public void testLinkControllerListening() {
-        JXList table = new JXList();
-        table.setRolloverEnabled(true);
-        assertNotNull("LinkController must be listening", getLinkControllerAsPropertyChangeListener(table));
-        assertNotNull("execute button action must be registered", table.getActionMap().get(JXList.EXECUTE_BUTTON_ACTIONCOMMAND));
-        table.setRolloverEnabled(false);
-        assertNull("LinkController must not be listening", getLinkControllerAsPropertyChangeListener(table));
-        assertNull("execute button action must be de-registered", table.getActionMap().get(JXList.EXECUTE_BUTTON_ACTIONCOMMAND));
-    }
-
-    private PropertyChangeListener getLinkControllerAsPropertyChangeListener(JXList table) {
-        PropertyChangeListener[] listeners = table.getPropertyChangeListeners();
-        for (int i = 0; i < listeners.length; i++) {
-            if (listeners[i] instanceof JXList.LinkController) {
-                return (JXList.LinkController) listeners[i];
-            }
-        }
-        return null;
     }
 
     public void testConvertToModelPreconditions() {
@@ -385,8 +361,8 @@ public class JXListTest extends InteractiveTestCase {
      *
      */
     public void interactiveTestRolloverHighlightAndLink() {
-        JXList list = new JXList(createListModelWithLinks());
-        list.setLinkVisitor(new EditorPaneLinkVisitor());
+        JXEditorPane editor = new JXEditorPane();
+        JXList list = new JXList(createListModelWithLinks(editor));
     //    table.setRolloverEnabled(true);
         Highlighter conditional = new ConditionalHighlighter(
                 new Color(0xF0, 0xF0, 0xE0), null, -1, -1) {
@@ -415,15 +391,16 @@ public class JXListTest extends InteractiveTestCase {
         }
         return l;
     }
-    private DefaultListModel createListModelWithLinks() {
+    private DefaultListModel createListModelWithLinks(JXEditorPane editor) {
         DefaultListModel model = new DefaultListModel();
         for (int i = 0; i < 20; i++) {
             try {
-                LinkModel link = new LinkModel("a link text " + i, null, new URL("http://some.dummy.url" + i));
+                EditorPaneLinkAction link = new EditorPaneLinkAction(editor);
+                link.setName("a link text " + i);
+                link.setURL(new URL("http://some.dummy.url" + i));
                 if (i == 1) {
                     URL url = JXEditorPaneTest.class.getResource("resources/test.html");
-
-                    link = new LinkModel("a resource", null, url);
+                    link.setURL(url);
                 }
                 model.addElement(link);
             } catch (MalformedURLException e) {
