@@ -47,16 +47,16 @@ import javax.swing.text.TextAction;
  * <p>Usage examples:</p>
  * <p><code>
  * JComboBox comboBox = [...];<br/>
- * AutoCompleteDecorator.<b>decorate</b>(comboBox);<br/>
+ * Configurator.<b>enableAutoCompletion</b>(comboBox);<br/>
  * &nbsp;<br/>
  * JList list = [...];<br/>
  * JTextField textField = [...];<br/>
- * AutoCompleteDecorator.<b>decorate</b>(list, textField);
+ * Configurator.<b>enableAutoCompletion</b>(list, textField);
  * </p></code>
  *
  * @author Thomas Bierhance
  */
-public class AutoCompleteDecorator {
+public class Configurator {
     
     /**
      * Enables automatic completion for the given JTextComponent based on the
@@ -67,10 +67,10 @@ public class AutoCompleteDecorator {
      * @param textComponent the text component that will be used for automatic
      * completion.
      */
-    public static void decorate(JList list, JTextComponent textComponent) {
-        AbstractAutoCompleteAdaptor adaptor = new ListAdaptor(list, textComponent);
-        AutoCompleteDocument document = new AutoCompleteDocument(adaptor, true);
-        decorate(textComponent, document, adaptor);
+    public static void enableAutoCompletion(JList list, JTextComponent textComponent) {
+        AbstractComponentAdaptor adaptor = new ListAdaptor(list, textComponent);
+        Document document = new Document(adaptor, true);
+        configureTextComponent(textComponent, document, adaptor);
     }
     
     /**
@@ -79,16 +79,16 @@ public class AutoCompleteDecorator {
      * if the combo box is not editable.
      * @param comboBox a combobox
      */
-    public static void decorate(final JComboBox comboBox) {
+    public static void enableAutoCompletion(final JComboBox comboBox) {
         boolean strictMatching = !comboBox.isEditable();
         // has to be editable
         comboBox.setEditable(true);
         
         // configure the text component=editor component
         JTextComponent editor = (JTextComponent) comboBox.getEditor().getEditorComponent();
-        final AbstractAutoCompleteAdaptor adaptor = new ComboBoxAdaptor(comboBox);
-        final AutoCompleteDocument document = new AutoCompleteDocument(adaptor, strictMatching);
-        decorate(editor, document, adaptor);
+        final AbstractComponentAdaptor adaptor = new ComboBoxAdaptor(comboBox);
+        final Document document = new Document(adaptor, strictMatching);
+        configureTextComponent(editor, document, adaptor);
         
         // show the popup list when the user presses a key
         final KeyListener keyListener = new KeyAdapter() {
@@ -113,7 +113,7 @@ public class AutoCompleteDecorator {
                 if (e.getPropertyName().equals("editor")) {
                     ComboBoxEditor editor = comboBox.getEditor();
                     if (editor!=null && editor.getEditorComponent()!=null) {
-                        decorate((JTextComponent) editor.getEditorComponent(), document, adaptor);
+                        configureTextComponent((JTextComponent) editor.getEditorComponent(), document, adaptor);
                         editor.getEditorComponent().addKeyListener(keyListener);
                     }
                 }
@@ -122,15 +122,13 @@ public class AutoCompleteDecorator {
     }
     
     /**
-     * Decorates a given text component for automatic completion using the
-     * given AutoCompleteDocument and AbstractAutoCompleteAdaptor.
-     * 
-     * 
-     * @param textComponent a text component that should be decorated
-     * @param document the AutoCompleteDocument to be installed on the text component
-     * @param adaptor the AbstractAutoCompleteAdaptor to be used
+     * Configures a given text component for automatic completion using the
+     * given Document and AbstractComponentAdaptor.
+     * @param textComponent a text component that should be configured
+     * @param document the Document to be installed on the text component
+     * @param adaptor the AbstractComponentAdaptor to be used
      */
-    public static void decorate(JTextComponent textComponent, AutoCompleteDocument document, final AbstractAutoCompleteAdaptor adaptor) {
+    public static void configureTextComponent(JTextComponent textComponent, Document document, final AbstractComponentAdaptor adaptor) {
         // install the document on the text component
         textComponent.setDocument(document);
         
@@ -167,9 +165,9 @@ public class AutoCompleteDecorator {
     static class NonStrictBackspaceAction extends TextAction {
         Action backspace;
         Action selectionBackward;
-        AbstractAutoCompleteAdaptor adaptor;
+        AbstractComponentAdaptor adaptor;
         
-        public NonStrictBackspaceAction(Action backspace, Action selectionBackward, AbstractAutoCompleteAdaptor adaptor) {
+        public NonStrictBackspaceAction(Action backspace, Action selectionBackward, AbstractComponentAdaptor adaptor) {
             super("nonstrict-backspace");
             this.backspace = backspace;
             this.selectionBackward = selectionBackward;

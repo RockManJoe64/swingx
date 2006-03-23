@@ -27,11 +27,10 @@ import javax.swing.JComboBox;
 import javax.swing.text.JTextComponent;
 
 /**
- * An implementation of the AbstractAutoCompleteAdaptor that is suitable for JComboBox.
- * 
+ * An implementation of the AbstractComponentAdaptor that is suitable for JComboBox.
  * @author Thomas Bierhance
  */
-public class ComboBoxAdaptor extends AbstractAutoCompleteAdaptor implements ActionListener {
+public class ComboBoxAdaptor extends AbstractComponentAdaptor implements ActionListener {
     
     /** the combobox being adapted */
     private JComboBox comboBox;
