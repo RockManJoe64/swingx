@@ -7,20 +7,26 @@
 
 package org.jdesktop.swingx;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JEditorPane;
+import javax.swing.JToolBar;
 import javax.swing.text.html.HTMLDocument;
 
+import org.jdesktop.swingx.action.AbstractActionExt;
+import org.jdesktop.swingx.action.ActionContainerFactory;
 import org.jdesktop.swingx.action.ActionFactory;
 import org.jdesktop.swingx.action.ActionManager;
-import org.jdesktop.swingx.action.TargetManager;
 
 /**
  * A unit test for the JXEditorPane
@@ -32,82 +38,48 @@ public class JXEditorPaneTest extends InteractiveTestCase {
             .getName());
     private static String testText = "This is an example of some text";
 
-    /**
-     * Issue #289-swingx: JXEditorPane actions should be disabled if not
-     * applicable.
-     * undo is enabled if there is selected text and editor editable
-     * disabled otherwise.
-     * 
-     */
-    public void testXDisabledUndoAction() {
-        JXEditorPane editor = new JXEditorPane();
-        editor.setEditable(false);
-        editor.setText(testText);
-        assertEquals(testText, editor.getText());
-        Action action = editor.getActionMap().get("undo");
-        assertFalse("undo must not be enabled", action.isEnabled());
-    }
+    public static void main(String[] args) throws Exception {
+//      setSystemLF(true);
+      JXEditorPaneTest test = new JXEditorPaneTest();
+      try {
+          test.runInteractiveTests();
+//          test.runInteractiveTests("interactive.*Table.*");
+//          test.runInteractiveTests("interactive.*List.*");
+        } catch (Exception e) {
+            System.err.println("exception when executing interactive tests:");
+            e.printStackTrace();
+        } 
+  }
+
+    private static  boolean DEBUG = false;
 
     /**
      * Issue #289-swingx: JXEditorPane actions should be disabled if not
      * applicable.
-     * cut is enabled if there is selected text and editor editable
-     * disabled otherwise.
+     * Can of worms? super does nothing to enable/disable default actions?
+     * TransferHandler's actions are mixed in?
      * 
      */
-    public void testXDisabledCutActionUnselected() {
+    public void testXDisabledActionsOnNotEditable() {
         JXEditorPane editor = new JXEditorPane();
-        editor.setText("some");
-        editor.setEditable(true);
-        Action action = editor.getActionMap().get("cut");
-        assertFalse("cut of unselected must not be enabled", action.isEnabled());
+        editor.setEditable(false);
+        Action action = editor.getActionMap().get("paste");
+        LOG.info("enabled " + action.isEnabled());
         
     }
     
     /**
      * Issue #289-swingx: JXEditorPane actions should be disabled if not
      * applicable.
-     * cut is enabled if there is selected text and editor editable
-     * disabled otherwise.
-     */
-    public void testXDisabledCutActionOnNotEditable() {
-        JXEditorPane editor = new JXEditorPane();
-        editor.setText("some");
-        editor.selectAll();
-        editor.setEditable(false);
-        Action action = editor.getActionMap().get("cut");
-        assertFalse("cut of uneditable editor must not be enabled", action.isEnabled());
-        
-    }
-    /**
-     * Issue #289-swingx: JXEditorPane actions should be disabled if not
-     * applicable.
-     * 
-    *  paste is enabled if the editor is editable and the clipboard isn't empty,
-    *  disabled otherwise.
+     * Can of worms? super does nothing to enable/disable default actions?
+     * TransferHandler's actions are mixed in?
      * 
      */
-    public void testXDisabledPasteActionOnNotEditable() {
-        JXEditorPane editor = new JXEditorPane();
+    public void testDisabledActionsOnNotEditable() {
+        JEditorPane editor = new JEditorPane();
         editor.setEditable(false);
         Action action = editor.getActionMap().get("paste");
-        assertFalse("paste of uneditable editor must not be enabled", action.isEnabled());
-        
-    }
-    
-    /**
-     * Issue #289-swingx: JXEditorPane actions should be disabled if not
-     * applicable.
-    * 
-    *  paste is enabled if the editor is editable the clipboard isn't empty.
-    *  can't really test ... don't want to clear the clipboard as a test side-effect. 
-     */
-    public void testXDisabledPasteEmptyClipboard() {
-        JXEditorPane editor = new JXEditorPane();
-        editor.setEditable(true);
-        Action action = editor.getActionMap().get("paste");
-        // can't really test - want to erase system clipboard?
-//        assertFalse("paste with empty clipboard must not be enabled", action.isEnabled());
+        LOG.info("enabled " + action.isEnabled());
         
     }
     
@@ -157,10 +129,18 @@ public class JXEditorPaneTest extends InteractiveTestCase {
             return;
         }
 
+        if (DEBUG) {
+            System.out.println("Document: " + editor.getDocument());
+        }
+
         // set selection markers
         editor.select(4, 15);
 
         String selected = editor.getSelectedText();
+        if (DEBUG) {
+            System.out.println("Selected: \"" + selected + "\" length: " + selected.length());
+        }
+
         // get cut and paste actions and execute them simultaniously
 
         ActionMap map = editor.getActionMap();
@@ -172,14 +152,169 @@ public class JXEditorPaneTest extends InteractiveTestCase {
 
         String before = editor.getText();
 
+        if (DEBUG) {
+            System.out.println("Before cut: " + before);
+        }
+
         cut.actionPerformed(new ActionEvent(editor, 0,
                                             (String)cut.getValue(Action.ACTION_COMMAND_KEY)));
+
+        if (DEBUG) {
+            System.out.println("After cut: " + editor.getText());
+        }
 
         // XXX caret position should be moved in the cut operation
         editor.setCaretPosition(4);
 
         paste.actionPerformed(new ActionEvent(editor, 0,
                                               (String)paste.getValue(Action.ACTION_COMMAND_KEY)));
+        if (DEBUG) {
+            System.out.println("After paste: " + editor.getText());
+        }
         assertEquals(before, editor.getText());
+    }
+
+    /**
+     * Issue #289-swingx: JXEditorPane actions should be disabled if not
+     * applicable.
+     * checking action enabled behaviour of core editorpane.
+     * Doing nothing to enable/disable depending on editable state?
+     *
+     */
+    public void interactiveXEditorDefaultActions() {
+        JXEditorPane editor = new JXEditorPane();
+        Action[] actions = editor.getActions();
+        ActionManager manager = ActionManager.getInstance();
+        List actionNames = new ArrayList();
+        StringBuffer buffer = new StringBuffer("No. of default actions: " + actions.length);
+        ActionMap map = editor.getActionMap();
+        Object[] keys = map.keys();
+        int count = keys != null ? keys.length : 0;
+        buffer.append("\n No. of actions in ActionMap: " + count);
+        for (int i = 0; i < actions.length; i++) {
+            Object id = actions[i].getValue(Action.NAME);
+            manager.addAction(id, actions[i]);
+            actionNames.add(id);
+            buffer.append("\n" + actions[i].toString());
+        }
+        
+        
+        editor.setText(buffer.toString());
+        ActionContainerFactory factory = manager.getFactory();
+
+      JToolBar toolbar = factory.createToolBar(actionNames);
+      toolbar.setOrientation(JToolBar.VERTICAL);
+      editor.setEditable(false);
+      editor.setPreferredSize(new Dimension(600, 400));
+
+      JXFrame frame = wrapWithScrollingInFrame(editor, "Looking at swingx editor default actions");
+      frame.getContentPane().add(toolbar, BorderLayout.WEST);
+      frame.setVisible(true);
+    }
+
+    /**
+     * Issue #289-swingx: JXEditorPane actions should be disabled if not
+     * applicable.
+     * checking action enabled behaviour of core editorpane.
+     * Doing nothing to enable/disable depending on editable state?
+     *
+     */
+    public void interactiveEditorDefaultActions() {
+        JEditorPane editor = new JEditorPane();
+        editor.setText(testText);
+        Action[] actions = editor.getActions();
+        ActionManager manager = ActionManager.getInstance();
+        List actionNames = new ArrayList();
+        StringBuffer buffer = new StringBuffer("No. of default actions: " + actions.length);
+        ActionMap map = editor.getActionMap();
+        Object[] keys = map.keys();
+        int count = keys != null ? keys.length : 0;
+        buffer.append("\n No. of actions in ActionMap: " + count);
+        for (int i = 0; i < actions.length; i++) {
+            Object id = actions[i].getValue(Action.NAME);
+            manager.addAction(id, actions[i]);
+            actionNames.add(id);
+            buffer.append("\n" + actions[i].toString());
+        }
+        editor.setText(buffer.toString());
+        ActionContainerFactory factory = manager.getFactory();
+
+      JToolBar toolbar = factory.createToolBar(actionNames);
+      toolbar.setOrientation(JToolBar.VERTICAL);
+      editor.setEditable(false);
+      editor.setPreferredSize(new Dimension(600, 400));
+
+      JXFrame frame = wrapWithScrollingInFrame(editor, "Looking at core default actions");
+      frame.getContentPane().add(toolbar, BorderLayout.WEST);
+      frame.setVisible(true);
+    }
+    /**
+     * JW: this is oold - no idea if that's the way to handle actions!.
+     *
+     */
+    public void interactiveEditorActions() {
+        AbstractActionExt[] actions = new AbstractActionExt[14];
+
+        actions[0] = ActionFactory.createTargetableAction("cut-to-clipboard", "Cut", "C");
+        actions[1] = ActionFactory.createTargetableAction("copy-to-clipboard", "Copy", "P");
+        actions[2] = ActionFactory.createTargetableAction("paste-from-clipboard", "Paste", "T");
+
+        actions[3] = ActionFactory.createTargetableAction("undo", "Undo", "U");
+        actions[4] = ActionFactory.createTargetableAction("redo", "Redo", "R");
+
+        actions[5] = ActionFactory.createTargetableAction("left-justify", "Left", "L", true,
+                                                          "position-group");
+        actions[6] = ActionFactory.createTargetableAction("center-justify", "Center", "C", true,
+                                                          "position-group");
+        actions[7] = ActionFactory.createTargetableAction("right-justify", "Right", "R", true,
+                                                          "position-group");
+
+        actions[8] = ActionFactory.createTargetableAction("font-bold", "Bold", "B", true);
+        actions[9] = ActionFactory.createTargetableAction("font-italic", "Italic", "I", true);
+        actions[10] = ActionFactory.createTargetableAction("font-underline", "Underline", "U", true);
+
+        actions[11] = ActionFactory.createTargetableAction("InsertUnorderedList", "UL", "U", true);
+        actions[12] = ActionFactory.createTargetableAction("InsertOrderedList", "OL", "O", true);
+        actions[13] = ActionFactory.createTargetableAction("InsertHR", "HR", "H");
+
+        // JW: changed on reorg to remove reference to Application 
+     //   Application app = Application.getInstance();
+        ActionManager manager = ActionManager.getInstance();
+        List actionNames = new ArrayList();
+        for (int i = 0; i < actions.length; i++) {
+            manager.addAction(actions[i]);
+            actionNames.add(actions[i].getActionCommand());
+        }
+        
+        // Populate the toolbar. Must use the ActionContainerFactory to ensure
+        // that toggle actions are supported.
+        ActionContainerFactory factory = manager.getFactory();
+
+//        JToolBar toolbar = new JToolBar();
+//        for (int i = 0; i < actions.length; i++) {
+//            manager.addAction(actions[i]);
+//            toolbar.add(factory.createButton(actions[i]));
+//        }
+
+        JToolBar toolbar = factory.createToolBar(actionNames);
+        
+        URL url = JXEditorPaneTest.class.getResource("resources/test.html");
+        JXEditorPane editor = null;
+        try {
+            editor = new JXEditorPane(url);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        editor.setEditable(false);
+        editor.setPreferredSize(new Dimension(600, 400));
+
+//        toolbar.add(editor.getParagraphSelector());
+
+        JXFrame frame = wrapWithScrollingInFrame(editor, "Editor tester");
+        frame.getContentPane().add(toolbar, BorderLayout.NORTH);
+
+        frame.pack();
+        frame.setVisible(true);
     }
 }

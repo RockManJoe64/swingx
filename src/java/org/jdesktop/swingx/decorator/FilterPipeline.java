@@ -204,7 +204,7 @@ public class FilterPipeline {
         /**
          * creates a Sorter initialized with sortKey
          * @param sortKey the properties to use
-         * @return <code>Sorter</code> initialized with the specified <code>sortKey</code>
+         * @return 
          */
         protected Sorter createDefaultSorter(SortKey sortKey) {
             Sorter sorter = createDefaultSorter();
@@ -269,7 +269,7 @@ public class FilterPipeline {
 
      /**
       * 
-      * @return true if an adapter has been assigned, false otherwise
+      * @return
       */
      public boolean isAssigned() {
          return adapter != null;
@@ -371,7 +371,7 @@ public class FilterPipeline {
     /**
      * returns the unfiltered data adapter size or 0 if unassigned.
      * 
-     * @return the unfiltered data adapter size or 0 if unassigned
+     * @return
      */
     public int getInputSize() {
         return isAssigned() ? adapter.getRowCount() : 0;
@@ -379,7 +379,7 @@ public class FilterPipeline {
 
     /**
      * @param filter
-     * @return returns the unfiltered data adapter size or 0 if unassigned.
+     * @return
      */
     int getInputSize(Filter filter) {
         Filter  previous = previous(filter);
@@ -631,7 +631,6 @@ public class FilterPipeline {
             return row;
         }
 
-        @Override
         protected int mapTowardView(int row) {
             return row;
         }

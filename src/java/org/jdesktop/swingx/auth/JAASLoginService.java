@@ -52,13 +52,6 @@ public class JAASLoginService extends LoginService {
 		super(server);
 	}
 	
-        /**
-         * Default JavaBeans constructor
-         */
-        public JAASLoginService() {
-            super();
-        }
-        
 	
 	/**
 	 * @inheritDoc

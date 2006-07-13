@@ -31,11 +31,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.EventObject;
-import java.util.List;
-import java.util.logging.Logger;
 
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -48,7 +45,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeModelEvent;
@@ -66,8 +62,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.jdesktop.swingx.decorator.ComponentAdapter;
-import org.jdesktop.swingx.decorator.FilterPipeline;
-import org.jdesktop.swingx.decorator.SelectionMapper;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
@@ -112,8 +106,7 @@ import org.jdesktop.swingx.treetable.TreeTableModel;
  * @author Ramesh Gupta
  */
 public class JXTreeTable extends JXTable {
-    private static final Logger LOG = Logger.getLogger(JXTreeTable.class
-            .getName());
+
     /**
      * Key for clientProperty to decide whether to apply hack around #168-jdnc.
      */
@@ -124,9 +117,6 @@ public class JXTreeTable extends JXTable {
      *  renderer extends JXTree and implements TableCellRenderer
      */
     private TreeTableCellRenderer renderer;
-
-    private TreeTableHacker treeTableHacker;
-    private boolean consumedOnPress;
 
     /**
      * Constructs a JXTreeTable using a
@@ -152,10 +142,10 @@ public class JXTreeTable extends JXTable {
 
     /**
      * Constructs a <code>JXTreeTable</code> using the specified
-     * {@link org.jdesktop.swingx.treetable.TreeTableModel} and
-     * {@link org.jdesktop.swingx.JXTreeTable.TreeTableCellRenderer}. The renderer
+     * {@link org.jdesktop.swing.treetable.TreeTableModel} and
+     * {@link org.jdesktop.swing.treetable.TreeTableCellRenderer}. The renderer
      * must have been constructed using the same instance of
-     * {@link org.jdesktop.swingx.treetable.TreeTableModel} as passed to this
+     * {@link org.jdesktop.swing.treetable.TreeTableModel} as passed to this
      * constructor.
      *
      * @param treeModel model for the JXTreeTable
@@ -177,11 +167,14 @@ public class JXTreeTable extends JXTable {
             throw new IllegalArgumentException("Mismatched TreeTableModel");
         }
 
-        // renderer-related initialization
+        // renderer-related initialization -- also called from setTreeTableModel()
         init(renderer); // private method
         initActions();
         // disable sorting
         super.setSortable(false);
+        // Install the default editor.
+        setDefaultEditor(AbstractTreeTableModel.hierarchicalColumnClass,
+            new TreeTableCellEditor(renderer));
 
         // No grid.
         setShowGrid(false); // superclass default is "true"
@@ -189,50 +182,14 @@ public class JXTreeTable extends JXTable {
         // Default intercell spacing
         setIntercellSpacing(spacing); // for both row margin and column margin
 
+        // JTable supports row margins and intercell spacing, but JTree doesn't.
+        // We must reconcile the differences in the semantics of rowHeight as
+        // understood by JTable and JTree by overriding both setRowHeight() and
+        // setRowMargin();
+        adminSetRowHeight(getRowHeight());
+        setRowMargin(getRowMargin()); // call overridden setRowMargin()
+
     }
-
-    /**
-     * Initializes this JXTreeTable and permanently binds the specified renderer
-     * to it.
-     *
-     * @param renderer private tree/renderer permanently and exclusively bound
-     * to this JXTreeTable.
-     */
-    private void init(TreeTableCellRenderer renderer) {
-        this.renderer = renderer;
-        // Force the JTable and JTree to share their row selection models.
-        ListToTreeSelectionModelWrapper selectionWrapper =
-            new ListToTreeSelectionModelWrapper();
-
-        // JW: when would that happen?
-        if (renderer != null) {
-            renderer.bind(this); // IMPORTANT: link back!
-            renderer.setSelectionModel(selectionWrapper);
-        }
-        // adjust the tree's rowHeight to this.rowHeight
-        adjustTreeRowHeight(getRowHeight());
-
-        setSelectionModel(selectionWrapper.getListSelectionModel());
-        // install the renderer as default for hierarchicalColumn
-        setDefaultRenderer(AbstractTreeTableModel.hierarchicalColumnClass,
-            renderer);
-        // Install the default editor.
-        setDefaultEditor(AbstractTreeTableModel.hierarchicalColumnClass,
-            new TreeTableCellEditor(renderer));
-        
-        // propagate the lineStyle property to the renderer
-        PropertyChangeListener l = new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                JXTreeTable.this.renderer.putClientProperty(evt.getPropertyName(), evt.getNewValue());
-                
-            }
-            
-        };
-        addPropertyChangeListener("JTree.lineStyle", l);
-        
-    }
-
 
 
     private void initActions() {
@@ -268,21 +225,44 @@ public class JXTreeTable extends JXTable {
      * Sorters/Filters currently don't work properly.
      * 
      */
-    @Override
     public void setSortable(boolean sortable) {
         // no-op
     }
 
-    
-    /** 
-     * overridden to do nothing. 
-     * 
-     * TreeTable is not sortable by default, because 
-     * Sorters/Filters currently don't work properly.
-     * 
+    /**
+     * <p>Sets whether the table draws horizontal lines between cells. It draws
+     * the lines if <code>show</code> is true; otherwise it doesn't. By default,
+     * a table draws the lines.</p>
+     *
+     * <p>If you want the lines to be drawn, make sure that the row margin or
+     * horizontal intercell spacing is greater than zero.</p>
+     *
+     * @param show true, if horizontal lines should be drawn; false, if lines
+     * should not be drawn
+     * @see javax.swing.JTable#getShowHorizontalLines() getShowHorizontalLines
+     * @see #setRowMargin(int) setRowMargin
+     * @see javax.swing.JTable#setIntercellSpacing(java.awt.Dimension) setIntercellSpacing
      */
-    @Override
-    public void setFilters(FilterPipeline pipeline) {
+    public void setShowHorizontalLines(boolean show) {
+        super.setShowHorizontalLines(show);
+    }
+
+    /**
+     * <p>Sets whether the table draws vertical lines between cells. It draws
+     * the lines if <code>show</code> is true; otherwise it doesn't. By default,
+     * a table draws the lines.</p>
+     *
+     * <p>If you want the lines to be drawn, make sure that the column margin or
+     * vertical intercell spacing is greater than zero.</p>
+     *
+     * @param show true, if vertical lines should be drawn; false, if lines
+     * should not be drawn
+     * @see javax.swing.JTable#getShowVerticalLines() getShowVerticalLines
+     * @see #setColumnMargin(int) setColumnMargin
+     * @see javax.swing.JTable#setIntercellSpacing(java.awt.Dimension) setIntercellSpacing
+     */
+    public void setShowVerticalLines(boolean show) {
+        super.setShowVerticalLines(show);
     }
 
     /**
@@ -290,16 +270,12 @@ public class JXTreeTable extends JXTable {
      * the column contains the tree. This is done as the tree editor does
      * not fill the bounds of the cell, we need the renderer to paint
      * the tree in the background, and then draw the editor over it.
-     * You should not need to call this method directly. <p>
-     * 
-     * Additionally, there is tricksery involved to expand/collapse
-     * the nodes.
+     * You should not need to call this method directly.
      *
      * {@inheritDoc}
      */
-    @Override
     public boolean editCellAt(int row, int column, EventObject e) {
-        getTreeTableHacker().hitHandleDetectionFromEditCell(column, e);    // RG: Fix Issue 49!
+        expandOrCollapseNode(column, e);    // RG: Fix Issue 49!
         boolean canEdit = super.editCellAt(row, column, e);
         if (canEdit && isHierarchical(column)) {
             repaint(getCellRect(row, column, false));
@@ -307,246 +283,69 @@ public class JXTreeTable extends JXTable {
         return canEdit;
     }
 
-    /**
-     * Overridden to enable hit handle detection a mouseEvent which triggered
-     * a expand/collapse. 
-     */
-    @Override
-    protected void processMouseEvent(MouseEvent e) {
-        // BasicTableUI selects on released if the pressed had been 
-        // consumed. So we try to fish for the accompanying released
-        // here and consume it as wll. 
-        if ((e.getID() == MouseEvent.MOUSE_RELEASED) && consumedOnPress) {
-            consumedOnPress = false;
-            e.consume();
-            return;
+    private void expandOrCollapseNode(int column, EventObject e) {
+        if (!(e instanceof MouseEvent)) return;
+        if (!isHierarchical(column)) return;
+        MouseEvent me = (MouseEvent) e;
+        if (hackAroundDragEnabled(me)) {
+            /*
+             * Hack around #168-jdnc:
+             * dirty little hack mentioned in the forum
+             * discussion about the issue: fake a mousePressed if drag enabled.
+             * The usability is slightly impaired because the expand/collapse
+             * is effectively triggered on released only (drag system intercepts
+             * and consumes all other).
+             */
+            me = new MouseEvent((Component)me.getSource(),
+                    MouseEvent.MOUSE_PRESSED,
+                    me.getWhen(),
+                    me.getModifiers(),
+                    me.getX(),
+                    me.getY(),
+                    me.getClickCount(),
+                    me.isPopupTrigger());
+            
         }
-        if (getTreeTableHacker().hitHandleDetectionFromProcessMouse(e)) {
-            // Issue #332-swing: hacking around selection loss.
-            // prevent the
-            // _table_ selection by consuming the mouseEvent
-            // if it resulted in a expand/collapse
-            consumedOnPress = true;
-            e.consume();
-            return;
+        // If the modifiers are not 0 (or the left mouse button),
+        // tree may try and toggle the selection, and table
+        // will then try and toggle, resulting in the
+        // selection remaining the same. To avoid this, we
+        // only dispatch when the modifiers are 0 (or the left mouse
+        // button).
+        if (me.getModifiers() == 0 ||
+            me.getModifiers() == InputEvent.BUTTON1_MASK) {
+                    int savedHeight = renderer.getRowHeight();
+                    renderer.setRowHeight(getRowHeight());
+                    MouseEvent pressed = new MouseEvent
+                        (renderer,
+                         me.getID(),
+                         me.getWhen(),
+                         me.getModifiers(),
+                         me.getX() - getCellRect(0, column, false).x,
+                         me.getY(),
+                         me.getClickCount(),
+                         me.isPopupTrigger());
+                    renderer.dispatchEvent(pressed);
+                    // For Mac OS X, we need to dispatch a MOUSE_RELEASED as well
+                    MouseEvent released = new MouseEvent
+                        (renderer,
+                         java.awt.event.MouseEvent.MOUSE_RELEASED,
+                         pressed.getWhen(),
+                         pressed.getModifiers(),
+                         pressed.getX(),
+                         pressed.getY(),
+                         pressed.getClickCount(),
+                         pressed.isPopupTrigger());
+                    renderer.dispatchEvent(released);
+                    renderer.setRowHeight(savedHeight);
         }
-        consumedOnPress = false;
-        super.processMouseEvent(e);
-    }
-    
-
-    protected TreeTableHacker getTreeTableHacker() {
-        if (treeTableHacker == null) {
-            treeTableHacker = createTreeTableHacker();
-        }
-        return treeTableHacker;
-    }
-    
-    protected TreeTableHacker createTreeTableHacker() {
-//        return new TreeTableHacker();
-        return new TreeTableHackerExt();
-    }
-
-    /**
-     * Temporary class to have all the hacking at one place. Naturally, it will
-     * change a lot. The base class has the "stable" behaviour as of around
-     * jun2006 (before starting the fix for 332-swingx). <p>
-     * 
-     * specifically:
-     * 
-     * <ol>
-     * <li> hitHandleDetection triggeredn in editCellAt
-     * </ol>
-     * 
-     */
-    public class TreeTableHacker {
-
-        protected boolean expansionChangedFlag;
-
-        /**
-         * Decision whether the handle hit detection
-         *   should be done in processMouseEvent or editCellAt.
-         * Here: returns false.
-         * 
-         * @return true for handle hit detection in processMouse, false
-         *   for editCellAt.
-         */
-        protected boolean isHitDetectionFromProcessMouse() {
-            return false;
-        }
-
-        /**
-        * Entry point for hit handle detection called from editCellAt, 
-        * does nothing if isHitDetectionFromProcessMouse is true;
-        * 
-        * @see #editCellAt(int, int, EventObject)
-        * @see #isHitDetectionFromProcessMouse()
-        */
-        public void hitHandleDetectionFromEditCell(int column, EventObject e) {
-            if (!isHitDetectionFromProcessMouse()) {
-                expandOrCollapseNode(column, e);
-            }
-        }
-
-        /**
-         * Entry point for hit handle detection called from processMouse.
-         * Does nothing if isHitDetectionFromProcessMouse is false. 
-         * 
-         * @return true if the mouseEvent triggered an expand/collapse in
-         *   the renderer, false otherwise. 
-         *   
-         * @see #processMouseEvent(MouseEvent)
-         * @see #isHitDetectionFromProcessMouse();
-         */
-        public boolean hitHandleDetectionFromProcessMouse(MouseEvent e) {
-            if (!isHitDetectionFromProcessMouse())
-                return false;
-            int col = columnAtPoint(e.getPoint());
-            boolean hit = ((col >= 0) && expandOrCollapseNode(columnAtPoint(e
-                    .getPoint()), e));
-            return hit;
-        }
-
-        /**
-         * complete editing if collapsed/expanded.
-         * Here: any editing is always cancelled.
-         * This is a rude fix to #120-jdnc: data corruption on
-         * collapse/expand if editing. This is called from 
-         * the renderer after expansion related state has changed.
-         * PENDING JW: should it take the old editing path as parameter?
-         * Might be possible to be a bit more polite, and internally
-         * reset the editing coordinates? On the other hand: the rudeness
-         * is the table's usual behaviour - which is often removing the editor
-         * as first reaction to incoming events.
-         *
-         */
-        protected void completeEditing() {
-            if (isEditing()) {
-                getCellEditor().cancelCellEditing();
-             }
-        }
-
-        /**
-         * Tricksery to make the tree expand/collapse.
-         * <p>
-         * 
-         * This might be - indirectly - called from one of two places:
-         * <ol>
-         * <li> editCellAt: original, stable but buggy (#332, #222) the table's
-         * own selection had been changed due to the click before even entering
-         * into editCellAt so all tree selection state is lost.
-         * 
-         * <li> processMouseEvent: the idea is to catch the mouseEvent, check
-         * if it triggered an expanded/collapsed, consume and return if so or 
-         * pass to super if not.
-         * </ol>
-         * 
-         * <p>
-         * widened access for testing ...
-         * 
-         * 
-         * @param column the column index under the event, if any.
-         * @param e the event which might trigger a expand/collapse.
-         * 
-         * @return this methods evaluation as to whether the event triggered a
-         *         expand/collaps
-         */
-        protected boolean expandOrCollapseNode(int column, EventObject e) {
-            if (!isHierarchical(column))
-                return false;
-            if (!mightBeExpansionTrigger(e))
-                return false;
-            boolean changedExpansion = false;
-            MouseEvent me = (MouseEvent) e;
-            if (hackAroundDragEnabled(me)) {
-                /*
-                 * Hack around #168-jdnc: dirty little hack mentioned in the
-                 * forum discussion about the issue: fake a mousePressed if drag
-                 * enabled. The usability is slightly impaired because the
-                 * expand/collapse is effectively triggered on released only
-                 * (drag system intercepts and consumes all other).
-                 */
-                me = new MouseEvent((Component) me.getSource(),
-                        MouseEvent.MOUSE_PRESSED, me.getWhen(), me
-                                .getModifiers(), me.getX(), me.getY(), me
-                                .getClickCount(), me.isPopupTrigger());
-
-            }
-            // If the modifiers are not 0 (or the left mouse button),
-            // tree may try and toggle the selection, and table
-            // will then try and toggle, resulting in the
-            // selection remaining the same. To avoid this, we
-            // only dispatch when the modifiers are 0 (or the left mouse
-            // button).
-            if (me.getModifiers() == 0
-                    || me.getModifiers() == InputEvent.BUTTON1_MASK) {
-                MouseEvent pressed = new MouseEvent(renderer, me.getID(), me
-                        .getWhen(), me.getModifiers(), me.getX()
-                        - getCellRect(0, column, false).x, me.getY(), me
-                        .getClickCount(), me.isPopupTrigger());
-                renderer.dispatchEvent(pressed);
-                // For Mac OS X, we need to dispatch a MOUSE_RELEASED as well
-                MouseEvent released = new MouseEvent(renderer,
-                        java.awt.event.MouseEvent.MOUSE_RELEASED, pressed
-                                .getWhen(), pressed.getModifiers(), pressed
-                                .getX(), pressed.getY(), pressed
-                                .getClickCount(), pressed.isPopupTrigger());
-                renderer.dispatchEvent(released);
-                if (expansionChangedFlag) {
-                    changedExpansion = true;
-                }
-            }
-            expansionChangedFlag = false;
-            return changedExpansion;
-        }
-
-        protected boolean mightBeExpansionTrigger(EventObject e) {
-            if (!(e instanceof MouseEvent)) return false;
-            MouseEvent me = (MouseEvent) e;
-            if (!SwingUtilities.isLeftMouseButton(me)) return false;
-            return me.getID() == MouseEvent.MOUSE_PRESSED;
-        }
-
-        /**
-         * called from the renderer's setExpandedPath after
-         * all expansion-related updates happend.
-         *
-         */
-        protected void expansionChanged() {
-            expansionChangedFlag = true;
-        }
-
     }
 
     /**
-     * 
-     * Note: currently this class looks a bit funny (only overriding
-     * the hit decision method). That's because the "experimental" code
-     * as of the last round moved to stable. But I expect that there's more
-     * to come, so I leave it here.
-     * 
-     * <ol>
-     * <li> hit handle detection in processMouse
-     * </ol>
-     */
-    public class TreeTableHackerExt extends TreeTableHacker {
-
-
-        /**
-         * Here: returns true.
-         * @inheritDoc
-         */
-        @Override
-        protected boolean isHitDetectionFromProcessMouse() {
-            return true;
-        }
-
-    }
-    /**
-     * decides whether we want to apply the hack for #168-jdnc. here: returns
-     * true if dragEnabled() and the improved drag handling is not activated (or
-     * the system property is not accessible). The given mouseEvent is not
-     * analysed.
+     * decides whether we want to apply the hack for #168-jdnc.
+     * here: returns true if dragEnabled() and the improved drag
+     * handling is not activated (or the system property is not accessible).
+     * The given mouseEvent is not analysed.
      * 
      * PENDING: Mustang?
      * 
@@ -579,7 +378,6 @@ public class JXTreeTable extends JXTable {
      *
      * {@inheritDoc}
      */
-    @Override
     public int getEditingRow() {
         return isHierarchical(editingColumn) ? -1 : editingRow;
     }
@@ -608,6 +406,17 @@ public class JXTreeTable extends JXTable {
         if (treeModel != renderer.getModel()) { // do not use assert here!
             throw new IllegalArgumentException("Mismatched TreeTableModel");
         }
+        // Install the default editor.
+        // JW: change to re-use the editor!
+        setDefaultEditor(AbstractTreeTableModel.hierarchicalColumnClass,
+            new TreeTableCellEditor(renderer));
+
+        // JTable supports row margins and intercell spacing, but JTree doesn't.
+        // We must reconcile the differences in the semantics of rowHeight as
+        // understood by JTable and JTree by overriding both setRowHeight() and
+        // setRowMargin();
+        adminSetRowHeight(getRowHeight());
+        setRowMargin(getRowMargin()); // call overridden setRowMargin()
         firePropertyChange("treeTableModel", old, getTreeTableModel());
     }
 
@@ -642,7 +451,6 @@ public class JXTreeTable extends JXTable {
      * @throws IllegalArgumentException if the specified tableModel is not an
      * instance of TreeTableModelAdapter
      */
-    @Override
     public final void setModel(TableModel tableModel) { // note final keyword
         if (tableModel instanceof TreeTableModelAdapter) {
             if (((TreeTableModelAdapter) tableModel).getTreeTable() == null) {
@@ -666,60 +474,6 @@ public class JXTreeTable extends JXTable {
         }
     }
 
-
-    
-    @Override
-    public void tableChanged(TableModelEvent e) {
-        if (isStructureChanged(e) || isUpdate(e)) {
-            super.tableChanged(e);
-        } else {
-            resizeAndRepaint();
-        }
-    }
-
-    /**
-     *  Overridden to return a do-nothing mapper.
-     *  
-     */
-    @Override
-    protected SelectionMapper getSelectionMapper() {
-        // JW: don't want to change super assumption 
-        // (mapper != null) - the selection mapping will change 
-        // anyway in Mustang (using core functionality)
-        SelectionMapper empty = new SelectionMapper(null, null) {
-
-            @Override
-            public void insertIndexInterval(int start, int length, boolean before) {
-            }
-
-            @Override
-            public void lock() {
-            }
-
-            @Override
-            public void removeIndexInterval(int start, int end) {
-            }
-
-            @Override
-            public void restoreSelection() {
-            }
-
-            @Override
-            public void setFilters(FilterPipeline pipeline) {
-            }
-
-            @Override
-            public void setViewSelectionModel(ListSelectionModel selection) {
-            }
-
-            @Override
-            public void unlock() {
-            }
-            
-        };
-        return empty ;
-    }
-
     /**
      * Throws UnsupportedOperationException because variable height rows are
      * not supported.
@@ -729,47 +483,63 @@ public class JXTreeTable extends JXTable {
      * @throws UnsupportedOperationException because variable height rows are
      * not supported
      */
-    @Override
     public final void setRowHeight(int row, int rowHeight) {
         throw new UnsupportedOperationException("variable height rows not supported");
     }
 
     /**
-     * Sets the row height for this JXTreeTable and forwards the 
-     * row height to the renderering tree.
-     * 
-     * @param rowHeight height of a row.
+     * Sets the row height for this JXTreeTable. Reconciles semantic differences
+     * between JTable and JTree regarding row height.
+     *
+     * @param rowHeight height of a row
      */
-    @Override
     public void setRowHeight(int rowHeight) {
         super.setRowHeight(rowHeight);
-        adjustTreeRowHeight(getRowHeight()); 
+        adjustTreeRowHeight(); // JTree doesn't have setRowMargin. So adjust.
     }
 
     /**
-     * Forwards tableRowHeight to tree.
-     * 
-     * @param tableRowHeight height of a row.
+     * <p>Sets the margin between columns.</p>
+     *
+     * <p>If you set the column margin to zero, make sure that you also set
+     * <code>showVerticalLines</code> to <code>false</code>.</p>
+     *
+     * @param columnMargin margin between columns; must be greater than or equal to zero.
+     * @see #setShowVerticalLines(boolean) setShowVerticalLines
      */
-    protected void adjustTreeRowHeight(int tableRowHeight) {
-        if (renderer != null && renderer.getRowHeight() != tableRowHeight) {
-            renderer.setRowHeight(tableRowHeight);
-        }
+    public void setColumnMargin(int columnMargin) {
+        super.setColumnMargin(columnMargin);
     }
 
     /**
-     * Forwards treeRowHeight to table. This is for completeness only: the
-     * rendering tree is under our total control, so we don't expect 
-     * any external call to tree.setRowHeight.
-     * 
-     * @param treeRowHeight height of a row.
+     * <p>Overridden to ensure that private renderer state is kept in sync with the
+     * state of the component. Calls the inherited version after performing the
+     * necessary synchronization. If you override this method, make sure you call
+     * this version from your version of this method.</p>
+     *
+     * <p>If you set row margin to zero, make sure that you also set
+     * <code>showHorizontalLines</code> to <code>false</code>.</p>
+     *
+     * @param rowMargin margin or intercell spacing between rows
+     * @see #setShowHorizontalLines(boolean) setShowHorizontalLines
      */
-    protected void adjustTableRowHeight(int treeRowHeight) {
-        if (getRowHeight() != treeRowHeight) {
-            adminSetRowHeight(treeRowHeight);
-        }
+    public void setRowMargin(int rowMargin) {
+        // No need to override setIntercellSpacing, because the change in
+        // rowMargin will be funneled through this method anyway.
+        super.setRowMargin(rowMargin);
+        adjustTreeRowHeight(); // JTree doesn't have setRowMargin. So adjust.
     }
 
+    /**
+     * Reconciles semantic differences between JTable and JTree regarding
+     * row height.
+     */
+    private void adjustTreeRowHeight() {
+        final int treeRowHeight = rowHeight + (rowMargin << 1);
+        if (renderer != null && renderer.getRowHeight() != treeRowHeight) {
+            renderer.setRowHeight(treeRowHeight);
+        }
+    }
 
     /**
      * <p>Overridden to ensure that private renderer state is kept in sync with the
@@ -790,7 +560,6 @@ public class JXTreeTable extends JXTable {
      *
      * @param mode any of the table selection modes
      */
-    @Override
     public void setSelectionMode(int mode) {
         if (renderer != null) {
             switch (mode) {
@@ -822,12 +591,16 @@ public class JXTreeTable extends JXTable {
      * @param column the column of the cell to render, where 0 is the first column
      * @return the <code>Component</code> used as a stamp to render the specified cell
      */
-    @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row,
         int column) {
         
         Component component = super.prepareRenderer(renderer, row, column);
-        return applyRenderer(component, getComponentAdapter(row, column)); 
+        // MUST ALWAYS ACCESS dataAdapter through accessor method!!!
+        ComponentAdapter    adapter = getComponentAdapter();
+        adapter.row = row;
+        adapter.column = column;
+        
+        return applyRenderer(component, adapter); 
     }
 
     /**
@@ -885,7 +658,6 @@ public class JXTreeTable extends JXTable {
     }
 
     
-    @Override
     public String getToolTipText(MouseEvent event) {
         int column = columnAtPoint(event.getPoint());
         if (isHierarchical(column)) {
@@ -946,7 +718,6 @@ public class JXTreeTable extends JXTable {
      * necessary synchronization. If you override this method, make sure you call
      * this version from your version of this method.
      */
-    @Override
     public void clearSelection() {
         if (renderer != null) {
             renderer.clearSelection();
@@ -1025,6 +796,33 @@ public class JXTreeTable extends JXTable {
     }
 
     
+    /**
+     * Determines whether or not the root node from the TreeModel is visible.
+     *
+     * @param visible true, if the root node is visible; false, otherwise
+     */
+    public void setRootVisible(boolean visible) {
+        renderer.setRootVisible(visible);
+        // JW: the revalidate forces the root to appear after a 
+        // toggling a visible from an initially invisible root.
+        // JTree fires a propertyChange on the ROOT_VISIBLE_PROPERTY
+        // BasicTreeUI reacts by (ultimately) calling JTree.treeDidChange
+        // which revalidate the tree part. 
+        // Might consider to listen for the propertyChange (fired only if there
+        // actually was a change) instead of revalidating unconditionally.
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Returns true if the root node of the tree is displayed.
+     *
+     * @return true if the root node of the tree is displayed
+     */
+    public boolean isRootVisible() {
+        return renderer.isRootVisible();
+    }
+
     /**
      * Returns true if the value identified by path is currently viewable, which
      * means it is either the root or all of its parents are expanded. Otherwise,
@@ -1108,6 +906,25 @@ public class JXTreeTable extends JXTable {
 
     
     /**
+     * Sets the value of the <code>expandsSelectedPaths</code> property for the tree
+     * part. This property specifies whether the selected paths should be expanded.
+     *
+     * @param expand true, if selected paths should be expanded; false, otherwise
+     */
+    public void setExpandsSelectedPaths(boolean expand) {
+        renderer.setExpandsSelectedPaths(expand);
+    }
+
+    /**
+     * Returns the value of the <code>expandsSelectedPaths</code> property.
+     *
+     * @return the value of the <code>expandsSelectedPaths</code> property
+     */
+    public boolean getExpandsSelectedPaths() {
+        return renderer.getExpandsSelectedPaths();
+    }
+
+    /**
      * Returns the TreePath for a given x,y location.
      *
      * @param x x value
@@ -1143,36 +960,6 @@ public class JXTreeTable extends JXTable {
      public int getRowForPath(TreePath path) {
        return renderer.getRowForPath(path);
      }
-
-//------------------------------ exposed Tree properties
-
-     /**
-      * Determines whether or not the root node from the TreeModel is visible.
-      *
-      * @param visible true, if the root node is visible; false, otherwise
-      */
-     public void setRootVisible(boolean visible) {
-         renderer.setRootVisible(visible);
-         // JW: the revalidate forces the root to appear after a 
-         // toggling a visible from an initially invisible root.
-         // JTree fires a propertyChange on the ROOT_VISIBLE_PROPERTY
-         // BasicTreeUI reacts by (ultimately) calling JTree.treeDidChange
-         // which revalidate the tree part. 
-         // Might consider to listen for the propertyChange (fired only if there
-         // actually was a change) instead of revalidating unconditionally.
-         revalidate();
-         repaint();
-     }
-
-     /**
-      * Returns true if the root node of the tree is displayed.
-      *
-      * @return true if the root node of the tree is displayed
-      */
-     public boolean isRootVisible() {
-         return renderer.isRootVisible();
-     }
-
 
     /**
      * Sets the value of the <code>scrollsOnExpand</code> property for the tree
@@ -1218,78 +1005,6 @@ public class JXTreeTable extends JXTable {
         return renderer.getShowsRootHandles();
     }
 
-    /**
-     * Sets the value of the <code>expandsSelectedPaths</code> property for the tree
-     * part. This property specifies whether the selected paths should be expanded.
-     *
-     * @param expand true, if selected paths should be expanded; false, otherwise
-     */
-    public void setExpandsSelectedPaths(boolean expand) {
-        renderer.setExpandsSelectedPaths(expand);
-    }
-
-    /**
-     * Returns the value of the <code>expandsSelectedPaths</code> property.
-     *
-     * @return the value of the <code>expandsSelectedPaths</code> property
-     */
-    public boolean getExpandsSelectedPaths() {
-        return renderer.getExpandsSelectedPaths();
-    }
-
-
-    /**
-     * Returns the number of mouse clicks needed to expand or close a node.
-     *
-     * @return number of mouse clicks before node is expanded
-     */
-    public int getToggleClickCount() {
-        return renderer.getToggleClickCount();
-    }
-
-    /**
-     * Sets the number of mouse clicks before a node will expand or close.
-     * The default is two. 
-     *
-     * @param clickCount the number of clicks required to expand/collapse a node.
-     */
-    public void setToggleClickCount(int clickCount) {
-        renderer.setToggleClickCount(clickCount);
-    }
-
-    /**
-     * Returns true if the tree is configured for a large model.
-     * The default value is false.
-     * 
-     * @return true if a large model is suggested
-     * @see #setLargeModel
-     */
-    public boolean isLargeModel() {
-        return renderer.isLargeModel();
-    }
-
-    /**
-     * Specifies whether the UI should use a large model.
-     * (Not all UIs will implement this.) <p>
-     * 
-     * <strong>NOTE</strong>: this method is exposed for completeness - 
-     * currently it's not recommended 
-     * to use a large model because there are some issues 
-     * (not yet fully understood), namely
-     * issue #25-swingx, and probably #270-swingx. 
-     * 
-     * @param newValue true to suggest a large model to the UI
-     */
-    public void setLargeModel(boolean newValue) {
-        renderer.setLargeModel(newValue);
-        // JW: random method calling ... doesn't help
-//        renderer.treeDidChange();
-//        revalidate();
-//        repaint();
-    }
-
-//------------------------------ exposed tree listeners
-    
     /**
      * Adds a listener for <code>TreeExpansion</code> events.
      * 
@@ -1365,9 +1080,8 @@ public class JXTreeTable extends JXTable {
      * think the table is being edited, as <code>getEditingRow</code> returns
      * -1, and therefore doesn't automaticly resize the editor for us.
      */
-    @Override
     public void sizeColumnsToFit(int resizingColumn) {
-        /** TODO: Review wrt doLayout() */
+        /** @todo Review wrt doLayout() */
         super.sizeColumnsToFit(resizingColumn);
         // rg:changed
         if (getEditingColumn() != -1 && isHierarchical(editingColumn)) {
@@ -1384,22 +1098,20 @@ public class JXTreeTable extends JXTable {
      * Since the tree is not actually in the component hieachy it will
      * never receive this unless we forward it in this manner.
      */
-    @Override
     public void updateUI() {
         super.updateUI();
         if (renderer != null) {
+            //  final int savedHeight = renderer.getRowHeight();
             renderer.updateUI();
+            //  renderer.setRowHeight(savedHeight);
 
             // Do this so that the editor is referencing the current renderer
             // from the tree. The renderer can potentially change each time
-            // laf changes. 
-            // JW: Hmm ... really? The renderer is fixed, set once
-            // in creating treetable... 
-            // commented to fix #213-jdnc (allow custom editors)
-//            setDefaultEditor(AbstractTreeTableModel.hierarchicalColumnClass,
-//                new TreeTableCellEditor(renderer));
+            // laf changes.
+            setDefaultEditor(AbstractTreeTableModel.hierarchicalColumnClass,
+                new TreeTableCellEditor(renderer));
 
-            if (getBackground() == null || getBackground() instanceof UIResource) {
+            if (getBackground() == null || getBackground()instanceof UIResource) {
                 setBackground(renderer.getBackground());
             }
         }
@@ -1412,11 +1124,47 @@ public class JXTreeTable extends JXTable {
      * @return true if the class of objects in the specified column implement
      * the {@link javax.swing.tree.TreeNode} interface; false otherwise.
      */
-    @Override
     public boolean isHierarchical(int column) {
         return AbstractTreeTableModel.hierarchicalColumnClass.isAssignableFrom(
             getColumnClass(column));
     }
+
+    /**
+     * Initializes this JXTreeTable and permanently binds the specified renderer
+     * to it.
+     *
+     * @param renderer private tree/renderer permanently and exclusively bound
+     * to this JXTreeTable.
+     */
+    private final void init(TreeTableCellRenderer renderer) {
+        this.renderer = renderer;
+        // Force the JTable and JTree to share their row selection models.
+        ListToTreeSelectionModelWrapper selectionWrapper =
+            new ListToTreeSelectionModelWrapper();
+
+        // JW: when would that happen?
+        if (renderer != null) {
+            renderer.bind(this); // IMPORTANT: link back!
+            renderer.setSelectionModel(selectionWrapper);
+        }
+
+        setSelectionModel(selectionWrapper.getListSelectionModel());
+        setDefaultRenderer(AbstractTreeTableModel.hierarchicalColumnClass,
+            renderer);
+        
+        // propagate the lineStyle property to the renderer
+        PropertyChangeListener l = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                JXTreeTable.this.renderer.putClientProperty(evt.getPropertyName(), evt.getNewValue());
+                
+            }
+            
+        };
+        addPropertyChangeListener("JTree.lineStyle", l);
+        
+    }
+
 
     /**
      * ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel
@@ -1448,7 +1196,6 @@ public class JXTreeTable extends JXTable {
          * and message super. This is the only place DefaultTreeSelectionModel
          * alters the ListSelectionModel.
          */
-        @Override
         public void resetRowSelection() {
             if (!updatingListSelectionModel) {
                 updatingListSelectionModel = true;
@@ -1482,29 +1229,23 @@ public class JXTreeTable extends JXTable {
             if (!updatingListSelectionModel) {
                 updatingListSelectionModel = true;
                 try {
-                    if (listSelectionModel.isSelectionEmpty()) {
-                        clearSelection();
-                    } else {
-                        // This is way expensive, ListSelectionModel needs an
-                        // enumerator for iterating.
-                        int min = listSelectionModel.getMinSelectionIndex();
-                        int max = listSelectionModel.getMaxSelectionIndex();
+                    // This is way expensive, ListSelectionModel needs an
+                    // enumerator for iterating.
+                    int min = listSelectionModel.getMinSelectionIndex();
+                    int max = listSelectionModel.getMaxSelectionIndex();
 
-                        List<TreePath> paths = new ArrayList<TreePath>();
+                    clearSelection();
+                    if (min != -1 && max != -1) {
                         for (int counter = min; counter <= max; counter++) {
                             if (listSelectionModel.isSelectedIndex(counter)) {
                                 TreePath selPath = renderer.getPathForRow(
                                     counter);
 
                                 if (selPath != null) {
-                                    paths.add(selPath);
+                                    addSelectionPath(selPath);
                                 }
                             }
                         }
-                        setSelectionPaths(paths.toArray(new TreePath[paths.size()]));
-                        // need to force here: usually the leadRow is adjusted 
-                        // in resetRowSelection which is disabled during this method
-                        leadRow = leadIndex;
                     }
                 }
                 finally {
@@ -1519,17 +1260,12 @@ public class JXTreeTable extends JXTable {
          */
         class ListSelectionHandler implements ListSelectionListener {
             public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    updateSelectedPathsFromSelectedRows();
-                }
+                updateSelectedPathsFromSelectedRows();
             }
         }
     }
 
-    /**
-     * 
-     */
-    protected static class TreeTableModelAdapter extends AbstractTableModel {
+    private static class TreeTableModelAdapter extends AbstractTableModel {
         private TreeModelListener treeModelListener;
         /**
          * Maintains a TreeTableModel and a JTree as purely implementation details.
@@ -1554,25 +1290,13 @@ public class JXTreeTable extends JXTable {
                 // Don't use fireTableRowsInserted() here; the selection model
                 // would get updated twice.
                 public void treeExpanded(TreeExpansionEvent event) {
-                    updateAfterExpansionEvent(event);
+                    fireTableDataChanged();
                 }
 
                 public void treeCollapsed(TreeExpansionEvent event) {
-                    updateAfterExpansionEvent(event);
+                    fireTableDataChanged();
                 }
             });
-        }
-
-        /**
-         * updates the table after having received an TreeExpansionEvent.<p>
-         * 
-         * @param event the TreeExpansionEvent which triggered the method call.
-         */
-        protected void updateAfterExpansionEvent(TreeExpansionEvent event) {
-            // moved to let the renderer handle directly
-//            treeTable.getTreeTableHacker().setExpansionChangedFlag();
-            // JW: delayed fire leads to a certain sluggishness occasionally? 
-            fireTableDataChanged();
         }
 
         /**
@@ -1592,7 +1316,7 @@ public class JXTreeTable extends JXTable {
         }
 
         /**
-         * @return <code>TreeModelListener</code>
+         * @return
          */
         private TreeModelListener getTreeModelListener() {
             if (treeModelListener == null) {
@@ -1663,7 +1387,6 @@ public class JXTreeTable extends JXTable {
         // Wrappers, implementing TableModel interface.
         // TableModelListener management provided by AbstractTableModel superclass.
 
-        @Override
         public Class getColumnClass(int column) {
             return model.getColumnClass(column);
         }
@@ -1672,7 +1395,6 @@ public class JXTreeTable extends JXTable {
             return model.getColumnCount();
         }
 
-        @Override
         public String getColumnName(int column) {
             return model.getColumnName(column);
         }
@@ -1682,31 +1404,19 @@ public class JXTreeTable extends JXTable {
         }
 
         public Object getValueAt(int row, int column) {
-            // Issue #270-swingx: guard against invisible row
-            Object node = nodeForRow(row);
-            return node != null ? model.getValueAt(node, column) : null;
+            return model.getValueAt(nodeForRow(row), column);
         }
 
-        @Override
         public boolean isCellEditable(int row, int column) {
-            // Issue #270-swingx: guard against invisible row
-            Object node = nodeForRow(row);
-            return node != null ? model.isCellEditable(node, column) : false;
+            return model.isCellEditable(nodeForRow(row), column);
         }
 
-        @Override
         public void setValueAt(Object value, int row, int column) {
-            // Issue #270-swingx: guard against invisible row
-            Object node = nodeForRow(row);
-            if (node != null) {
-                model.setValueAt(value, node, column);
-            }
+            model.setValueAt(value, nodeForRow(row), column);
         }
 
         protected Object nodeForRow(int row) {
-            // Issue #270-swingx: guard against invisible row
-            TreePath path = tree.getPathForRow(row);
-            return path != null ? path.getLastPathComponent() : null;
+            return tree.getPathForRow(row).getLastPathComponent();
         }
 
         /**
@@ -1774,8 +1484,6 @@ public class JXTreeTable extends JXTable {
 
 
 
-
-
         private TreeTableModel model; // immutable
         private final JTree tree; // immutable
         private JXTreeTable treeTable = null; // logically immutable
@@ -1789,7 +1497,7 @@ public class JXTreeTable extends JXTable {
             putClientProperty("JTree.lineStyle", "None");
             setRootVisible(false); // superclass default is "true"
             setShowsRootHandles(true); // superclass default is "false"
-                /** TODO: Support truncated text directly in DefaultTreeCellRenderer. */
+                /** @todo Support truncated text directly in DefaultTreeCellRenderer. */
             setOverwriteRendererIcons(true);
             setCellRenderer(new ClippedTreeCellRenderer());
         }
@@ -1869,21 +1577,10 @@ public class JXTreeTable extends JXTable {
             }
         }
 
-        
-        @Override
-        protected void setExpandedState(TreePath path, boolean state) {
-            int count = getRowCount();
-            super.setExpandedState(path, state);
-            treeTable.getTreeTableHacker().expansionChanged();
-            treeTable.getTreeTableHacker().completeEditing();
-            
-        }
-
         /**
          * updateUI is overridden to set the colors of the Tree's renderer
          * to match that of the table.
          */
-        @Override
         public void updateUI() {
             super.updateUI();
             // Make the tree's cell renderer use the table's cell selection
@@ -1910,28 +1607,32 @@ public class JXTreeTable extends JXTable {
         /**
          * Sets the row height of the tree, and forwards the row height to
          * the table.
-         * 
-         *
          */
-        @Override
         public void setRowHeight(int rowHeight) {
-            // JW: can't ... updateUI invoked with rowHeight = 0
-            // hmmm... looks fishy ...
-//            if (rowHeight <= 0) throw 
-//               new IllegalArgumentException("the rendering tree must have a fixed rowHeight > 0");
             super.setRowHeight(rowHeight);
             if (rowHeight > 0) {
+                // JW: setting the largeModel property is suggested in
+                // #25-swingx. 
+                // backing out: leads to NPEs and icons not showing
+//                setLargeModel(true);
                 if (treeTable != null) {
-                    treeTable.adjustTableRowHeight(rowHeight);
+                    // Reconcile semantic differences between JTable and JTree
+                    final int tableRowMargin = treeTable.getRowMargin();
+                    assert tableRowMargin >= 0;
+                    final int tableRowHeight = rowHeight - (tableRowMargin << 1);
+                    if (treeTable.getRowHeight() != tableRowHeight) {
+                        treeTable.adminSetRowHeight(tableRowHeight);
+                    }
                 }
-            }
+            } 
+//            else {
+//                setLargeModel(false);
+//            }
         }
-
 
         /**
          * This is overridden to set the height to match that of the JTable.
          */
-        @Override
         public void setBounds(int x, int y, int w, int h) {
             if (treeTable != null) {
                 y = 0;
@@ -1945,10 +1646,14 @@ public class JXTreeTable extends JXTable {
          * Sublcassed to translate the graphics such that the last visible row
          * will be drawn at 0,0.
          */
-        @Override
         public void paint(Graphics g) {
-            Rectangle cellRect = treeTable.getCellRect(visibleRow, 0, false);
-            g.translate(0, -cellRect.y);
+            int rowMargin = treeTable.getRowMargin();
+            // MUST account for rowMargin for precise positioning.
+            // Offset by (rowMargin * 3)/2, and remember to offset by an
+            // additional pixel if rowMargin is odd!
+            int margins = rowMargin + (rowMargin >> 1) + (rowMargin % 2);
+            int translationOffset = margins + visibleRow * getRowHeight();
+            g.translate(0, -translationOffset);
 
             hierarchicalColumnWidth = getWidth();
             super.paint(g);
@@ -1960,8 +1665,13 @@ public class JXTreeTable extends JXTable {
                 // still not satifying in all cases...
                 // RG: Now it satisfies (at least for the row margins)
                 // Still need to make similar adjustments for column margins...
-                highlightBorder.paintBorder(this, g, 0, cellRect.y,
-                        getWidth(), cellRect.height);
+                highlightBorder.paintBorder(this, g, 0, translationOffset,
+                        getWidth(),
+                        // uhhh getRowHeight() + 1 - 2 * (margins)
+                        getRowHeight() - (rowMargin << 1) - rowMargin); // RG:
+                                                                        // subtract
+                                                                        // (rowMargin
+                                                                        // * 3)
             }
         }
 
@@ -2009,7 +1719,7 @@ public class JXTreeTable extends JXTable {
                     getItemRect(itemRect), iconRect, textRect,
                     getIconTextGap());
 
-                /** TODO: setText is more heavyweight than we want in this
+                /** @todo setText is more heavyweight than we want in this
                  * situation. Make JLabel.text protected instead of private.
                  */
 
@@ -2047,11 +1757,11 @@ public class JXTreeTable extends JXTable {
      *
      * @return the adapter that knows how to access the component data model
      */
-    @Override
     protected ComponentAdapter getComponentAdapter() {
         if (dataAdapter == null) {
             dataAdapter = new TreeTableDataAdapter(this); 
         }
+        // MUST ALWAYS ACCESS dataAdapter through accessor method!!!
         return dataAdapter;
     }
 
@@ -2075,27 +1785,23 @@ public class JXTreeTable extends JXTable {
             return table;
         }
 
-        @Override
         public boolean isExpanded() {
-            return super.isExpanded(); /** TODO: implement this method */
+            return super.isExpanded(); /** @todo implement this method */
         }
 
-        @Override
         public boolean hasFocus() {
-            boolean focus = super.hasFocus(); /** TODO: implement this method */
+            boolean focus = super.hasFocus(); /** @todo implement this method */
             return focus;
         }
 
-        @Override
         public boolean isLeaf() {
-            return super.isLeaf(); /** TODO: implement this method */
+            return super.isLeaf(); /** @todo implement this method */
         }
         /**
          *
          * @return true if the cell identified by this adapter displays hierarchical
          *      nodes; false otherwise
          */
-        @Override
         public boolean isHierarchical() {
             return table.isHierarchical(column);
         }

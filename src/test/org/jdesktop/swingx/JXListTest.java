@@ -6,27 +6,41 @@
  */
 package org.jdesktop.swingx;
 
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.Collator;
-import java.util.Vector;
+import java.util.Collections;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.jdesktop.swingx.action.LinkModelAction;
+import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.ConditionalHighlighter;
 import org.jdesktop.swingx.decorator.Filter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
+import org.jdesktop.swingx.decorator.Highlighter;
+import org.jdesktop.swingx.decorator.HighlighterPipeline;
 import org.jdesktop.swingx.decorator.PatternFilter;
+import org.jdesktop.swingx.decorator.PatternHighlighter;
 import org.jdesktop.swingx.decorator.SelectionMapper;
+import org.jdesktop.swingx.decorator.ShuttleSorter;
 import org.jdesktop.swingx.decorator.SortKey;
 import org.jdesktop.swingx.decorator.SortOrder;
-import org.jdesktop.swingx.util.PropertyChangeReport;
+import org.jdesktop.swingx.decorator.Sorter;
 
 /**
  * Testing JXList.
@@ -35,164 +49,17 @@ import org.jdesktop.swingx.util.PropertyChangeReport;
  */
 public class JXListTest extends InteractiveTestCase {
 
-    protected ListModel listModel;
+    private ListModel listModel;
     protected DefaultListModel ascendingListModel;
 
-    /**
-     * test exceptions on null data(model, vector, array).
-     *
-     */
-    public void testNullData() {
-        try {
-            new JXList((ListModel) null);
-            fail("JXList contructor must throw on null data");
-        } catch (IllegalArgumentException e) {
-            // expected
-        } catch (Exception e) {
-            fail("unexpected exception type " + e);
-        }
-        
-        try {
-           new JXList((Vector) null);
-            fail("JXList contructor must throw on null data");
-        } catch (IllegalArgumentException e) {
-            // expected
-        } catch (Exception e) {
-            fail("unexpected exception type " + e);
-        }
-        
-        try {
-            new JXList((Object[]) null);
-             fail("JXList contructor must throw on null data");
-         } catch (IllegalArgumentException e) {
-             // expected
-         } catch (Exception e) {
-             fail("unexpected exception type " + e);
-         }
-    }
-    
 
-    /**
-     * test filterEnabled property on initialization.
-     *
-     */
-    public void testConstructorFilterEnabled() {
-        // 
-        assertFilterEnabled(new JXList(), false);
-        assertFilterEnabled(new JXList(new DefaultListModel()), false);
-        assertFilterEnabled(new JXList(new Vector()), false);
-        assertFilterEnabled(new JXList(new Object[] { }), false);
-        
-        assertFilterEnabled(new JXList(false), false);
-        assertFilterEnabled(new JXList(new DefaultListModel(), false), false);
-        assertFilterEnabled(new JXList(new Vector(), false), false);
-        assertFilterEnabled(new JXList(new Object[] { }, false), false);
-
-        assertFilterEnabled(new JXList(true), true);
-        assertFilterEnabled(new JXList(new DefaultListModel(), true), true);
-        assertFilterEnabled(new JXList(new Vector(), true), true);
-        assertFilterEnabled(new JXList(new Object[] { }, true), true);
-    }
-    
-    private void assertFilterEnabled(JXList list, boolean b) {
-        assertEquals(b, list.isFilterEnabled());
-    }
-
-    /**
-     * added xtable.setSortOrder(int, SortOrder)
-     * 
-     */
-    public void testSetSortOrder() {
-        JXList list = new JXList(ascendingListModel, true);
-        list.setSortOrder(SortOrder.ASCENDING);
-        assertEquals("column must be sorted after setting sortOrder on ", SortOrder.ASCENDING, list.getSortOrder());
-    }
-    
-    /**
-     * JXList has responsibility to guarantee usage of 
-     * its comparator: setComparator if already sorted.
-     */
-    public void testDynamicComparatorToSortController() {
-        JXList list = new JXList(listModel, true);
-        list.toggleSortOrder();
-        list.setComparator(Collator.getInstance());
-        SortKey sortKey = SortKey.getFirstSortKeyForColumn(list.getFilters().getSortController().getSortKeys(), 0);
-        assertNotNull(sortKey);
-        assertEquals(list.getComparator(), sortKey.getComparator());
-    }
-
-    /**
-     * JXList has responsibility to guarantee usage of 
-     * its comparator: toggle.
-     */
-    public void testToggleComparatorToSortController() {
-        JXList list = new JXList(listModel, true);
-        list.setComparator(Collator.getInstance());
-        list.toggleSortOrder();
-        SortKey sortKey = SortKey.getFirstSortKeyForColumn(list.getFilters().getSortController().getSortKeys(), 0);
-        assertNotNull(sortKey);
-        assertEquals(list.getComparator(), sortKey.getComparator());
-    }
-
-    /**
-     * JXList has responsibility to guarantee usage of 
-     * its comparator: set.
-     */
-    public void testSetComparatorToSortController() {
-        JXList list = new JXList(listModel, true);
-        list.setComparator(Collator.getInstance());
-        list.setSortOrder(SortOrder.DESCENDING);
-        SortKey sortKey = SortKey.getFirstSortKeyForColumn(list.getFilters().getSortController().getSortKeys(), 0);
-        assertNotNull(sortKey);
-        assertEquals(list.getComparator(), sortKey.getComparator());
-    }
-    
-    /**
-     * add and test comparator property.
-     * 
-     */
-    public void testComparator() {
-        JXList list = new JXList();
-        assertNull(list.getComparator());
-        Collator comparator = Collator.getInstance();
-        PropertyChangeReport report = new PropertyChangeReport();
-        list.addPropertyChangeListener(report);
-        list.setComparator(comparator);
-        assertEquals(comparator, list.getComparator());
-        assertEquals(1, report.getEventCount());
-        assertEquals(1, report.getEventCount("comparator"));
-        
-    }
-    /**
-     * testing new sorter api: 
-     * getSortOrder(), toggleSortOrder(), resetSortOrder().
-     *
-     */
-    public void testToggleSortOrder() {
-        JXList list = new JXList(ascendingListModel, true);
-        assertSame(SortOrder.UNSORTED, list.getSortOrder());
-        list.toggleSortOrder();
-        assertSame(SortOrder.ASCENDING, list.getSortOrder());
-        list.toggleSortOrder();
-        assertSame(SortOrder.DESCENDING, list.getSortOrder());
-        list.resetSortOrder();
-        assertSame(SortOrder.UNSORTED, list.getSortOrder());
-    }
-
-    /**
-     * prepare sort testing: internal probs with SortController?
-     */
-    public void testSortController() {
-        JXList list = new JXList(ascendingListModel, true);
-        assertNotNull("sortController must be initialized", list.getSortController());
-    }
-    
     /**
      * Issue #232-swingx: selection not kept if selectionModel had been changed.
      *
      */
     public void testSelectionMapperUpdatedOnSelectionModelChange() {
-        JXList table = new JXList(true);
+        JXList table = new JXList();
+        table.setFilterEnabled(true);
         // created lazily, to see the failure,
         // need to get hold before replacing list's selection
         SelectionMapper mapper = table.getSelectionMapper();
@@ -243,7 +110,11 @@ public class JXListTest extends InteractiveTestCase {
     }
 
     public void testConvertToModelPreconditions() {
-        final JXList list = new JXList(ascendingListModel, true);
+        final JXList list = new JXList(ascendingListModel);
+        // a side-effect of setFilterEnabled is to clear the selection!
+        // this is done in JList.setModel(..) which is called when 
+        // changing filterEnabled!
+        list.setFilterEnabled(true);
         assertEquals(20, list.getElementCount());
         list.setFilters(new FilterPipeline(new Filter[] {new PatternFilter("0", 0, 0) }));
         assertEquals(2, list.getElementCount());
@@ -260,7 +131,11 @@ public class JXListTest extends InteractiveTestCase {
  
 
     public void testElementAtPreconditions() {
-        final JXList list = new JXList(ascendingListModel, true);
+        final JXList list = new JXList(ascendingListModel);
+        // a side-effect of setFilterEnabled is to clear the selection!
+        // this is done in JList.setModel(..) which is called when 
+        // changing filterEnabled!
+        list.setFilterEnabled(true);
         assertEquals(20, list.getElementCount());
         list.setFilters(new FilterPipeline(new Filter[] {new PatternFilter("0", 0, 0) }));
         assertEquals(2, list.getElementCount());
@@ -287,7 +162,11 @@ public class JXListTest extends InteractiveTestCase {
      *
      */
     public void testSelectionListenerNotification() {
-        final JXList list = new JXList(ascendingListModel, true);
+        final JXList list = new JXList(ascendingListModel);
+        // a side-effect of setFilterEnabled is to clear the selection!
+        // this is done in JList.setModel(..) which is called when 
+        // changing filterEnabled!
+        list.setFilterEnabled(true);
         assertEquals(20, list.getElementCount());
         final int modelRow = 0;
         // set a selection 
@@ -313,10 +192,15 @@ public class JXListTest extends InteractiveTestCase {
     /**
      * setFilterEnabled throws NPE if formerly had selection.
      * 
+     * Reason is internal state mismanagement... filterEnabled must be
+     * set before calling super.setModel!
      *
      */
     public void testSetFilterEnabledWithSelection() {
         final JXList list = new JXList(ascendingListModel);
+        // a side-effect of setFilterEnabled is to clear the selection!
+        // this is done in JList.setModel(..) which is called when 
+        // changing filterEnabled!
         assertEquals(20, list.getElementCount());
         final int modelRow = 0;
         // set a selection 
@@ -326,83 +210,65 @@ public class JXListTest extends InteractiveTestCase {
     }
 
     public void testEmptyFilter() {
-        JXList list = new JXList(ascendingListModel);
+        JXList list = new JXList();
+        list.setModel(ascendingListModel);
         assertEquals(ascendingListModel.getSize(), list.getElementCount());
         assertEquals(ascendingListModel.getElementAt(0), list.getElementAt(0));
     }
     
     public void testFilterEnabled() {
-        JXList list = new JXList(ascendingListModel, true);
+        JXList list = new JXList();
+        list.setFilterEnabled(true);
+        list.setModel(ascendingListModel);
         assertNotSame(ascendingListModel, list.getModel());
         assertEquals(ascendingListModel.getSize(), list.getElementCount());
         assertEquals(ascendingListModel.getElementAt(0), list.getElementAt(0));
         
     }
 
-    /**
-     * Emergency break for #2-swinglabs: 
-     * it's not allowed to reset filterEnabled property to false again.
-     *
-     */
     public void testFilterEnabledAndDisabled() {
-        JXList list = new JXList(ascendingListModel, true);
-        try {
-            list.setFilterEnabled(false);
-            fail("must not reset the filterEnabled property");
-        } catch (IllegalStateException e) {
-            // do nothing this is the exception we expect. 
-        } catch (Exception e) { 
-            fail("unexpected exception type" + e);
-        }
-//        assertSame(ascendingListModel, list.getModel());
-//        assertEquals(ascendingListModel.getSize(), list.getElementCount());
-//        assertEquals(ascendingListModel.getElementAt(0), list.getElementAt(0));
+        JXList list = new JXList();
+        list.setFilterEnabled(true);
+        list.setModel(ascendingListModel);
+        FilterPipeline pipeline = list.getFilters();
+        SortKey sortKey = new SortKey(SortOrder.DESCENDING, 0);
+        pipeline.getSortController().setSortKeys(Collections.singletonList(sortKey ));
+        list.setFilterEnabled(false);
+        assertSame(ascendingListModel, list.getModel());
+        assertEquals(ascendingListModel.getSize(), list.getElementCount());
+        assertEquals(ascendingListModel.getElementAt(0), list.getElementAt(0));
         
     }
-    
     public void testSortingFilterEnabled() {
-        JXList list = new JXList(ascendingListModel, true);
+        JXList list = new JXList();
+        list.setFilterEnabled(true);
+        list.setModel(ascendingListModel);
+        Sorter sorter = new ShuttleSorter(0, false);
         FilterPipeline pipeline = list.getFilters();
         assertNotNull(pipeline);
-        list.setSortOrder(SortOrder.DESCENDING);
+        SortKey sortKey = new SortKey(SortOrder.DESCENDING, 0);
+        pipeline.getSortController().setSortKeys(Collections.singletonList(sortKey ));
         assertEquals(ascendingListModel.getSize(), list.getElementCount());
         assertEquals(ascendingListModel.getElementAt(0), list.getElementAt(list.getElementCount() - 1));
         
     }
     
     public void testSortingKeepsModelSelection() {
-        JXList list = new JXList(ascendingListModel, true);
+        JXList list = new JXList();
+        list.setFilterEnabled(true);
+        list.setModel(ascendingListModel);
         list.setSelectedIndex(0);
-        list.setSortOrder(SortOrder.DESCENDING);
+        FilterPipeline pipeline = list.getFilters();
+        SortKey sortKey = new SortKey(SortOrder.DESCENDING, 0);
+        pipeline.getSortController().setSortKeys(Collections.singletonList(sortKey ));
         assertEquals("last row must be selected after sorting", 
                 ascendingListModel.getSize() - 1, list.getSelectedIndex());
     }
 
-    /**
-     * Issue #2-swinglabs: setting filter if not enabled throws exception on selection.
-     * Reported by Kim.
-     * 
-     * Fix: should not accept filter if not enabled. 
-     * PENDING JW: Doesn't? appears to be fixed? Check!  
-     *  
-     *
-     */
-    public void testFilterDisabled() {
-        JXList list = new JXList();
-        list.setModel(ascendingListModel);
-        Filter[] filter = new Filter[] { new PatternFilter("1", 0, 0) };
-        try {
-            list.setFilters(new FilterPipeline(filter));
-            fail("setFilter must not be called if filters not enabled");
-        } catch (IllegalStateException e) {
-            // do nothing, this is the documented behaviour
-        } catch (Exception e) {
-            fail("unexpected exception type " + e);
-        }
-    }
-
     public void testSelectionAfterDeleteAbove() {
-        JXList list = new JXList(ascendingListModel, true);
+        JXList list = new JXList();
+        list.setFilterEnabled(true);
+        list.setModel(ascendingListModel);
         list.setSelectedIndex(1);
         ascendingListModel.remove(0);
         assertEquals("first row must be selected removing old first", 
@@ -410,20 +276,150 @@ public class JXListTest extends InteractiveTestCase {
         
     }
     
+    /**
+     * related to #2-swinglabs: clarify behaviour to expect if 
+     * filtering disabled?
+     *
+     */
+    public void testSortingFilterDisabled() {
+        JXList list = new JXList();
+        list.setModel(ascendingListModel);
+        Sorter sorter = new ShuttleSorter(0, false);
+        FilterPipeline pipeline = list.getFilters();
+        // Probably wrong assumption for disabled filtering
+//        assertNotNull(pipeline);
+//        pipeline.setSorter(sorter);
+//        assertSame(ascendingListModel, list.getModel());
+//        assertEquals(ascendingListModel.getSize(), list.getModelSize());
+//        assertEquals(ascendingListModel.getElementAt(0), list.getElementAt(0));
+        
+    }
 
-    protected ListModel createListModel() {
+    /**
+     * Issue #2-swinglabs: setting filter if not enabled throws exception on selection.
+     * Reported by Kim.
+     * 
+     * Fix: should not accept filter if not enabled.
+     *
+     */
+    public void interactiveTestFilterDisabled() {
+        JXList list = new JXList();
+        list.setModel(ascendingListModel);
+        Filter[] filter = new Filter[] { new PatternFilter("1", 0, 0) };
+        list.setFilters(new FilterPipeline(filter));
+        JXFrame frame = wrapWithScrollingInFrame(list, "filter disabled");
+        frame.setVisible(true);
+    }
+    
+    public void interactiveTestSorter() {
+        JXList list = new JXList();
+        list.setFilterEnabled(true);
+        list.setModel(ascendingListModel);
+//        final Sorter sorter = new ShuttleSorter(0, false);
+        final FilterPipeline pipeline = list.getFilters();
+        SortKey sortKey = new SortKey(SortOrder.DESCENDING, 0);
+        pipeline.getSortController().setSortKeys(Collections.singletonList(sortKey ));
+        Action action = new AbstractAction("Toggle Sort Order") {
+
+            public void actionPerformed(ActionEvent e) {
+                pipeline.getSortController().toggleSortOrder(0);
+                
+            }
+            
+        };
+        JXFrame frame = wrapWithScrollingInFrame(list, "Toggle sorter");
+        addAction(frame, action);
+        frame.setVisible(true);
+        
+    }
+    
+    public void interactiveTestCompareFocusedCellBackground() {
+        JXList xlist = new JXList(listModel);
+        xlist.setBackground(new Color(0xF5, 0xFF, 0xF5));
+        JList list = new JList(listModel);
+        list.setBackground(new Color(0xF5, 0xFF, 0xF5));
+        JFrame frame = wrapWithScrollingInFrame(xlist, list, "unselectedd focused background: JXList/JList");
+        frame.setVisible(true);
+    }
+
+    public void interactiveTestTablePatternFilter5() {
+        JXList list = new JXList(listModel);
+        String pattern = "Row";
+        list.setHighlighters(new HighlighterPipeline(new Highlighter[] {
+            new PatternHighlighter(null, Color.red, pattern, 0, 1),
+        }));
+        JFrame frame = wrapWithScrollingInFrame(list, "PatternHighlighter: " + pattern);
+        frame.setVisible(true);
+    }
+
+    public void interactiveTestTableAlternateHighlighter1() {
+        JXList list = new JXList(listModel);
+        list.setHighlighters(new HighlighterPipeline(new Highlighter[] {
+            AlternateRowHighlighter.
+            linePrinter,
+        }));
+
+        JFrame frame = wrapWithScrollingInFrame(list, "AlternateRowHighlighter - lineprinter");
+        frame.setVisible(true);
+    }
+
+    public void interactiveTestRolloverHighlight() {
+        JXList list = new JXList(listModel);
+    //    table.setLinkVisitor(new EditorPaneLinkVisitor());
+        list.setRolloverEnabled(true);
+        Highlighter conditional = new ConditionalHighlighter(
+                new Color(0xF0, 0xF0, 0xE0), null, -1, -1) {
+
+            protected boolean test(ComponentAdapter adapter) {
+                Point p = (Point) adapter.getComponent().getClientProperty(RolloverProducer.ROLLOVER_KEY);
+     
+                return p != null &&  p.y == adapter.row;
+            }
+            
+        };
+        list.setHighlighters(new HighlighterPipeline(new Highlighter[] {conditional }));
+        JFrame frame = wrapWithScrollingInFrame(list, "rollover highlight");
+        frame.setVisible(true);
+
+    }
+
+    /**
+     * Issue #20: Highlighters and LinkRenderers don't work together
+     *
+     */
+    public void interactiveTestRolloverHighlightAndLink() {
+        JXList list = new JXList(createListModelWithLinks());
+        LinkModelAction action = new LinkModelAction(new EditorPaneLinkVisitor());
+        list.setCellRenderer(new LinkRenderer(action, LinkModel.class));
+        list.setRolloverEnabled(true);
+        Highlighter conditional = new ConditionalHighlighter(
+                new Color(0xF0, 0xF0, 0xE0), null, -1, -1) {
+
+            protected boolean test(ComponentAdapter adapter) {
+                Point p = (Point) adapter.getComponent().getClientProperty(RolloverProducer.ROLLOVER_KEY);
+     
+                return p != null &&  p.y == adapter.row;
+            }
+            
+        };
+        list.setHighlighters(new HighlighterPipeline(new Highlighter[] {conditional }));
+        JFrame frame = wrapWithScrollingInFrame(list, "rollover highlight with links");
+        frame.setVisible(true);
+
+    }
+    private ListModel createListModel() {
         JXList list = new JXList();
         return new DefaultComboBoxModel(list.getActionMap().allKeys());
     }
 
-    protected DefaultListModel createAscendingListModel(int startRow, int count) {
+    private DefaultListModel createAscendingListModel(int startRow, int count) {
         DefaultListModel l = new DefaultListModel();
         for (int row = startRow; row < startRow  + count; row++) {
             l.addElement(new Integer(row));
         }
         return l;
     }
-    protected DefaultListModel createListModelWithLinks() {
+    private DefaultListModel createListModelWithLinks() {
         DefaultListModel model = new DefaultListModel();
         for (int i = 0; i < 20; i++) {
             try {
@@ -453,4 +449,18 @@ public class JXListTest extends InteractiveTestCase {
     }
 
     
+    public static void main(String[] args) {
+        setSystemLF(true);
+        JXListTest test = new JXListTest();
+        try {
+          test.runInteractiveTests();
+         //   test.runInteractiveTests("interactive.*Column.*");
+         //   test.runInteractiveTests("interactive.*TableHeader.*");
+         //   test.runInteractiveTests("interactive.*Render.*");
+//            test.runInteractiveTests("interactive.*Disab.*");
+        } catch (Exception e) {
+            System.err.println("exception when executing interactive tests:");
+            e.printStackTrace();
+        }
+    }
 }

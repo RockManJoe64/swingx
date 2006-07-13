@@ -23,8 +23,6 @@ import javax.swing.table.TableModel;
 import org.jdesktop.swingx.InteractiveTestCase;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXTable;
-import org.jdesktop.swingx.table.ColumnControlButton.ColumnVisibilityAction;
-import org.jdesktop.swingx.table.ColumnControlButton.DefaultColumnControlPopup;
 import org.jdesktop.swingx.util.AncientSwingTeam;
 
 /**
@@ -33,37 +31,6 @@ import org.jdesktop.swingx.util.AncientSwingTeam;
 public class ColumnControlButtonTest extends InteractiveTestCase {
     protected TableModel sortableTableModel;
 
-    /**
-     * test that the actions synch's its own selected property with 
-     * the column's visible property. <p>
-     * 
-     * Looks as if the non-synch of action.setSelected only shows 
-     * if the ColumnControlPopup doesn't create a menuitem via ActionFactory: the
-     * listeners internally installed via ActionFactory probably take care?
-     *  <p>
-     * 
-     * An analogous test in the incubator (in kleopatra/.../table) did fail
-     * for a dialog based custom ColumnControlPopup. For now, changed the visibility
-     * action to explicitly update the tableColumn. All tests are passing,
-     * but need to further evaluate.
-     *
-     */
-    public void testColumnVisibilityAction() {
-        JXTable table = new JXTable(10, 3);
-        table.setColumnControlVisible(true);
-        ColumnControlButton columnControl = (ColumnControlButton) table.getColumnControl();
-        ColumnVisibilityAction action = columnControl.getColumnVisibilityActions().get(0);
-        TableColumnExt columnExt = table.getColumnExt(0);
-        boolean visible = columnExt.isVisible();
-        // sanity
-        assertTrue(visible);
-        assertEquals(columnExt.isVisible(), action.isSelected());
-        action.setSelected(!visible);
-        // hmmm... here it's working? unexpected
-        // synch might be done by the listener's installed by ActionFactor.createMenuItem()?
-        assertEquals(!visible, columnExt.isVisible());
-    }
-    
     /**
      * suspected: enabled not synched on init. 
      * But is (done in ccb.installTable()). 
@@ -123,60 +90,6 @@ public class ColumnControlButtonTest extends InteractiveTestCase {
                 priorityColumn.getPropertyChangeListeners().length);
      }
 
-    /**
-     * Issue #212-swingx: 
-     * 
-     * Behaviour change: 
-     * <ul>
-     * <li>before - guarantee that exactly one column is always visible, 
-     *    independent of source of visibiblity change
-     * <li> now - this is true for user gesture induced invisible (through 
-     *    columnControl, but not for programmatic hiding. It's up to 
-     *    developers to not hide all. To alleviate the effects if they 
-     *    hide all, the JXTableHeader and ColumnControl is always visible.
-     * </ul>
-     * This is testing the old behaviour (guarding against regression)
-     * Here we directly set the second last visible column to invisible. This 
-     * failed if a) column visibility is set after adding the table to a frame
-     * and b) model.count = 2.
-     *
-     */
-    public void testSetAllColumnsToInvisible() {
-        // This test will not work in a headless configuration.
-        if (GraphicsEnvironment.isHeadless()) {
-            return;
-        }
-        final JXTable table = new JXTable(10, 2);
-        table.setColumnControlVisible(true);
-        wrapWithScrollingInFrame(table, "");
-        table.getColumnExt(0).setVisible(false);
-        assertEquals(1, table.getColumnCount());
-        table.getColumnExt(0).setVisible(false);
-        assertEquals(0, table.getColumnCount());
-    }
-    /**
-     * Issue #212-swingx: 
-     * 
-     * guarantee that exactly one column is always visible if 
-     * visibility is toggled via the ColumnControl.
-     * 
-     * Here we deselect the menuitem.
-     * 
-     */
-    public void testSetLastColumnMenuItemToUnselected() {
-        // This test will not work in a headless configuration.
-        if (GraphicsEnvironment.isHeadless()) {
-            return;
-        }
-        final JXTable table = new JXTable(10, 1);
-        table.setColumnControlVisible(true);
-        wrapWithScrollingInFrame(table, "");
-        ColumnControlButton columnControl = (ColumnControlButton) table.getColumnControl();
-        Component[] items = ((DefaultColumnControlPopup) columnControl.getColumnControlPopup()).getPopupMenu().getComponents();
-        ((JMenuItem) items[0]).setSelected(false);
-        assertEquals(1, table.getColumnCount());
-    }
-
    /** 
     * Issue #192: initially invisibility columns are hidden
     * but marked as visible in control.
@@ -196,9 +109,9 @@ public class ColumnControlButtonTest extends InteractiveTestCase {
        final TableColumnExt priorityColumn = table.getColumnExt("First Name");
        priorityColumn.setVisible(false);
        ColumnControlButton columnControl = (ColumnControlButton) table.getColumnControl();
-       assertNotNull("popup menu not null", columnControl.popup);
+       assertNotNull("popup menu not null", columnControl.popupMenu);
        int columnMenuItems = 0;
-       Component[] items = ((DefaultColumnControlPopup) columnControl.getColumnControlPopup()).getPopupMenu().getComponents();
+       Component[] items = columnControl.popupMenu.getComponents();
        for (int i = 0; i < items.length; i++) {
            if (!(items[i] instanceof JMenuItem)) {
                break;
@@ -208,7 +121,7 @@ public class ColumnControlButtonTest extends InteractiveTestCase {
        // wrong assumption - has separator and actions!
        assertEquals("menu items must be equal to columns", totalColumnCount, 
                columnMenuItems);
-       JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) ((DefaultColumnControlPopup) columnControl.getColumnControlPopup()).getPopupMenu()
+       JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) columnControl.popupMenu
            .getComponent(0);
        // sanit assert
        assertEquals(priorityColumn.getHeaderValue(), menuItem.getText());
@@ -259,11 +172,10 @@ public class ColumnControlButtonTest extends InteractiveTestCase {
     /** 
      * Issue #212: programmatically toggle column vis does not work.
      * 
-     * Visual check: compare toggle column visibility both via the columnControl 
-     * and programmatically by button. While the columnControl prevents to hide
-     * the very last visible column, developers have full control to do so 
-     * programatically.
+     * Visual check: programmatically toggle column visibility.
      * 
+     * Happens if a) column visibility is set after adding the table to a frame
+     * and b) model.count = 2.
      * 
      */
     public void interactiveTestColumnControlSetModelToggleInvisibleColumns() {

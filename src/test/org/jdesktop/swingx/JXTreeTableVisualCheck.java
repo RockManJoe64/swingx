@@ -17,11 +17,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -33,7 +32,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
-import org.jdesktop.swingx.action.AbstractActionExt;
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.ConditionalHighlighter;
@@ -65,48 +63,14 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         try {
 //            test.runInteractiveTests();
 //            test.runInteractiveTests("interactive.*Highligh.*");
-//               test.runInteractiveTests("interactive.*ToolTip.*");
-           test.runInteractiveTests("interactive.*DnD.*");
-             test.runInteractiveTests("interactive.*Compare.*");
-//             test.runInteractiveTests("interactive.*RowHeightCompare.*");
-             test.runInteractiveTests("interactive.*Edit.*");
+         //      test.runInteractiveTests("interactive.*SortingFilter.*");
+//           test.runInteractiveTests("interactive.*Expand.*");
+             test.runInteractiveTests("interactive.*ToolTip.*");
         } catch (Exception ex) {
 
         }
     }
 
-    /**
-     * visual check what happens on toggling the largeModel property.
-     * It's okay for ComponentTreeModel, blows up for FileSystemModel.
-     *
-     */
-    public void interactiveLargeModel() {
-//        final JXTreeTable treeTable = new JXTreeTable(treeTableModel); 
-
-        final JXTreeTable treeTable = new JXTreeTable(createMutableVisualizeModel());
-        treeTable.setRootVisible(true);
-        ToolTipManager.sharedInstance().unregisterComponent(treeTable);
-        Action action = new AbstractAction("toggle largeModel") {
-
-            public void actionPerformed(ActionEvent e) {
-                treeTable.setLargeModel(!treeTable.isLargeModel());
-               
-            }
-            
-        };
-        JXFrame frame = wrapWithScrollingInFrame(treeTable, "large model");
-        addAction(frame, action);
-        frame.setVisible(true);
-    }
-
-    private ComponentTreeTableModel createMutableVisualizeModel() {
-        JXPanel frame = new JXPanel();
-        frame.add(new JTextField());
-        frame.add(new JTextField());
-        frame.add(new JComboBox());
-        frame.add(new JXDatePicker());
-        return new ComponentTreeTableModel(frame);
-    }
     /**
      * issue #296-swingx: expose scrollPathToVisible in JXTreeTable.
      * 
@@ -127,6 +91,10 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
             public void actionPerformed(ActionEvent e) {
                 TreePath path = model.getPathToRoot(container.getContentPane());
                 table.scrollPathToVisible(path);
+//                ((JTree) table.getDefaultRenderer(
+//                        AbstractTreeTableModel.hierarchicalColumnClass))
+//                        .scrollPathToVisible(path);
+                
                 tree.scrollPathToVisible(path);
                 
             }
@@ -180,7 +148,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
      *
      */
     public void interactiveTreeTableModelEditing() {
-        final TreeTableModel model = createMutableVisualizeModel();
+        final TreeTableModel model = new ComponentTreeTableModel(new JXFrame());
         final JXTreeTable table = new JXTreeTable(model);
         JTree tree =  new JTree(model) {
 
@@ -278,43 +246,6 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
             
         };
         addAction(frame, insertAction);
-        Action toggleRoot = new AbstractAction("toggle root visible") {
-            public void actionPerformed(ActionEvent e) {
-                boolean rootVisible = !tree.isRootVisible();
-                treeTable.setRootVisible(rootVisible);
-                tree.setRootVisible(rootVisible);
-            }
-            
-        };
-        addAction(frame, toggleRoot);
-        frame.setVisible(true);
-    }
- 
-    /**
-     * Issue #254-swingx: collapseAll/expandAll behaviour depends on 
-     * root visibility (same for treeTable/tree)
-     * 
-     * initial: root not visible, all root children visible
-     *  do: collapse all - has no effect, unexpected?
-     *  do: toggle root - root and all children visible, expected
-     *  do: collapse all - only root visible, expected
-     *  do: toggle root - all nodes invisible, expected
-     *  do: expand all - still all nodes invisible, unexpected?
-     *  
-     *   
-     */
-    public void interactiveTestInsertNodeEmptyModelExpand() {
-        final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        final InsertTreeTableModel model = new InsertTreeTableModel(root, true);
-        for (int i = 0; i < 5; i++) {
-            model.addChild(root);
-        }
-        final JXTree tree = new JXTree(model);
-        tree.setRootVisible(false);
-        final JXTreeTable treeTable = new JXTreeTable(model);
-        treeTable.setColumnControlVisible(true);
-        // treetable root invisible by default
-        JXFrame frame = wrapWithScrollingInFrame(tree, treeTable, "insert into empty model");
         Action toggleRoot = new AbstractAction("toggle root") {
             public void actionPerformed(ActionEvent e) {
                 boolean rootVisible = !tree.isRootVisible();
@@ -324,22 +255,6 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
             
         };
         addAction(frame, toggleRoot);
-        Action expandAll = new AbstractAction("expandAll") {
-            public void actionPerformed(ActionEvent e) {
-                treeTable.expandAll();
-                tree.expandAll();
-            }
-            
-        };
-        addAction(frame, expandAll);
-        Action collapseAll = new AbstractAction("collapseAll") {
-            public void actionPerformed(ActionEvent e) {
-                treeTable.collapseAll();
-                tree.collapseAll();
-            }
-            
-        };
-        addAction(frame, collapseAll);
         frame.setVisible(true);
     }
  
@@ -368,7 +283,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         treeTable.setColumnControlVisible(true);
         treeTable.setRootVisible(true);
         JXFrame frame = wrapWithScrollingInFrame(tree, treeTable, "insert problem - root collapsed");
-        Action insertAction = new AbstractAction("insert node to root") {
+        Action insertAction = new AbstractAction("insert node") {
 
             public void actionPerformed(ActionEvent e) {
                 model.addChild(childB);
@@ -421,8 +336,8 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         tree.setCellRenderer(renderer);
         treeTable.setTreeCellRenderer(renderer);
         treeTable.setRootVisible(true);
-        JXFrame frame = wrapWithScrollingInFrame(tree, treeTable, "update expanded parent on insert - rendering changed for > 3 children");
-        Action insertAction = new AbstractAction("insert node selected treetable") {
+        JXFrame frame = wrapWithScrollingInFrame(tree, treeTable, "update expanded parent on insert");
+        Action insertAction = new AbstractAction("insert node") {
 
             public void actionPerformed(ActionEvent e) {
                 int selected = treeTable.getSelectedRow();
@@ -445,7 +360,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
      * the textfield for editing is at the wrong position in RToL.
      */
     public void interactiveRToLTreeTableEditor() {
-        final TreeTableModel model = createMutableVisualizeModel();
+        final TreeTableModel model = new ComponentTreeTableModel(new JXFrame());
         final JXTreeTable table = new JXTreeTable(model);
         final JXFrame frame = wrapWithScrollingInFrame(table, "Editor: position follows Component orientation");
         Action toggleComponentOrientation = new AbstractAction("toggle orientation") {
@@ -473,7 +388,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
      *  
      */
     public void interactiveTreeTableEditorIcons() {
-        final TreeTableModel model = createMutableVisualizeModel();
+        final TreeTableModel model = new ComponentTreeTableModel(new JXFrame());
         final JXTreeTable table = new JXTreeTable(model);
         JXFrame frame = wrapWithScrollingInFrame(table, "Editor: icons showing");
         frame.setVisible(true);
@@ -535,45 +450,7 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         };
         addAction(frame, action);
     }
-
-    /**
-     * compare treeTable/tree height
-     *
-     */
-    public void interactiveTestHighlightAndRowHeightCompareTree() {
-        JXTreeTable treeTable = new JXTreeTable(treeTableModel);
-        treeTable.setRowHeight(22);
-        treeTable.setRowMargin(1);
-        treeTable.setShowHorizontalLines(true);
-        treeTable.setHighlighters(new HighlighterPipeline(new Highlighter[] {
-                AlternateRowHighlighter.linePrinter,
-                new HierarchicalColumnHighlighter(), }));
-        final JXTree tree = new JXTree(treeTableModel);
-        JXTree renderer = (JXTree) treeTable.getCellRenderer(0, 0);
-        tree.setRowHeight(renderer.getRowHeight());
-
-        JFrame frame = wrapWithScrollingInFrame(treeTable, tree, 
-                "LinePrinter-, ColumnHighlighter and RowHeight");
-        frame.setVisible(true);
-    }
-
-    /**
-     * compare treeTable/tree height
-     *
-     */
-    public void interactiveTestHighlighterRowHeightCompareTree() {
-        JXTreeTable treeTable = new JXTreeTable(treeTableModel);
-        treeTable.addHighlighter(new Highlighter(Color.orange, null));
-        treeTable.setIntercellSpacing(new Dimension(15, 15));
-        treeTable.setRowHeight(48);
-        treeTable.setShowHorizontalLines(true);
-        final JXTree tree = new JXTree(treeTableModel);
-        JXTree renderer = (JXTree) treeTable.getCellRenderer(0, 0);
-        tree.setRowHeight(renderer.getRowHeight());
-        JFrame frame = wrapWithScrollingInFrame(treeTable, tree,
-                "rowheight 48, margin 15");
-        frame.setVisible(true);
-    }
+    
 
     /**
      * Issue #168-jdnc: dnd enabled breaks node collapse/expand.
@@ -584,18 +461,16 @@ public class JXTreeTableVisualCheck extends JXTreeTableUnitTest {
         final JXTreeTable treeTable = new JXTreeTable(treeTableModel);
         treeTable.setColumnControlVisible(true);
         final JXTree tree = new JXTree(treeTableModel);
-        JXTree renderer = (JXTree) treeTable.getCellRenderer(0, 0);
-        tree.setRowHeight(renderer.getRowHeight());
         JXFrame frame = wrapWithScrollingInFrame(treeTable, tree, "toggle dragEnabled (starting with false)");
         frame.setVisible(true);
-        Action action = new AbstractActionExt("Toggle dnd: false") {
+        Action action = new AbstractAction("Toggle dnd") {
 
             public void actionPerformed(ActionEvent e) {
                 
                 boolean dragEnabled = !treeTable.getDragEnabled();
                 treeTable.setDragEnabled(dragEnabled);
                 tree.setDragEnabled(dragEnabled);
-                setName("Toggle dnd: " + dragEnabled);
+               
             }
             
         };

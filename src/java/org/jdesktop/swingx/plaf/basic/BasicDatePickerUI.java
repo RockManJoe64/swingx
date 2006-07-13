@@ -18,43 +18,20 @@
  */
 package org.jdesktop.swingx.plaf.basic;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Date;
-import java.util.SortedSet;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.Icon;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.UIResource;
-import javax.swing.text.View;
+import org.jdesktop.swingx.plaf.DatePickerUI;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jdesktop.swingx.JXDatePickerFormatter;
+import org.jdesktop.swingx.calendar.DateSpan;
 import org.jdesktop.swingx.calendar.JXMonthView;
-import org.jdesktop.swingx.plaf.DatePickerUI;
+
+import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.UIResource;
+import java.awt.event.*;
+import java.awt.*;
+import java.util.Date;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author Joshua Outwater
@@ -68,12 +45,10 @@ public class BasicDatePickerUI extends DatePickerUI {
     protected MouseListener mouseListener;
     protected MouseMotionListener mouseMotionListener;
 
-    @SuppressWarnings({"UNUSED_SYMBOL"})
     public static ComponentUI createUI(JComponent c) {
         return new BasicDatePickerUI();
     }
 
-    @Override
     public void installUI(JComponent c) {
         datePicker = (JXDatePicker)c;
         datePicker.setLayout(createLayoutManager());
@@ -83,7 +58,6 @@ public class BasicDatePickerUI extends DatePickerUI {
         installListeners();
     }
 
-    @Override
     public void uninstallUI(JComponent c) {
         uninstallListeners();
         uninstallKeyboardActions();
@@ -98,9 +72,7 @@ public class BasicDatePickerUI extends DatePickerUI {
         if (editor == null || editor instanceof UIResource) {
             datePicker.setEditor(createEditor());
         }
-        editor = datePicker.getEditor();
-        datePicker.add(editor);
-        editor.addPropertyChangeListener(getHandler());
+        datePicker.add(datePicker.getEditor());
 
         popupButton = createPopupButton();
 
@@ -115,11 +87,7 @@ public class BasicDatePickerUI extends DatePickerUI {
     }
 
     protected void uninstallComponents() {
-        JFormattedTextField editor = datePicker.getEditor();
-        if (editor != null) {
-            editor.removePropertyChangeListener(getHandler());
-            datePicker.remove(editor);
-        }
+        datePicker.remove(datePicker.getEditor());
 
         if (popupButton != null) {
             datePicker.remove(popupButton);
@@ -136,14 +104,25 @@ public class BasicDatePickerUI extends DatePickerUI {
     }
 
     protected void installKeyboardActions() {
+        KeyStroke enterKey =
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
+
+        JFormattedTextField editor = datePicker.getEditor();
+        InputMap inputMap = editor.getInputMap(JComponent.WHEN_FOCUSED);
+        inputMap.put(enterKey, "COMMIT_EDIT");
+
+        ActionMap actionMap = editor.getActionMap();
+        actionMap.put("COMMIT_EDIT", new CommitEditAction());
+
         KeyStroke spaceKey =
                 KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false);
 
-        InputMap inputMap = popupButton.getInputMap(JComponent.WHEN_FOCUSED);
+        inputMap = popupButton.getInputMap(JComponent.WHEN_FOCUSED);
         inputMap.put(spaceKey, "TOGGLE_POPUP");
 
-        ActionMap actionMap = popupButton.getActionMap();
+        actionMap = popupButton.getActionMap();
         actionMap.put("TOGGLE_POPUP", new TogglePopupAction());
+
     }
 
     protected void uninstallKeyboardActions() {
@@ -222,7 +201,6 @@ public class BasicDatePickerUI extends DatePickerUI {
         JButton b = new JButton();
         b.setName("popupButton");
         b.setRolloverEnabled(false);
-        b.setMargin(new Insets(0, 3, 0, 3));
 
         Icon icon = UIManager.getIcon("JXDatePicker.arrowDown.image");
         if (icon == null) {
@@ -256,27 +234,27 @@ public class BasicDatePickerUI extends DatePickerUI {
         return (Dimension)dim.clone();
     }
 
-    @Override
-    public int getBaseline(int width, int height) {
-        JFormattedTextField editor = datePicker.getEditor();
-        View rootView = editor.getUI().getRootView(editor);
-        if (rootView.getViewCount() > 0) {
-            Insets insets = editor.getInsets();
-            Insets insetsOut = datePicker.getInsets();
-            int nh = height - insets.top - insets.bottom
-                    - insetsOut.top - insetsOut.bottom;
-            int y = insets.top + insetsOut.top;
-            View fieldView = rootView.getView(0);
-            int vspan = (int) fieldView.getPreferredSpan(View.Y_AXIS);
-            if (nh != vspan) {
-                int slop = nh - vspan;
-                y += slop / 2;
-            }
-            FontMetrics fm = editor.getFontMetrics(editor.getFont());
-            y += fm.getAscent();
-            return y;
+    /**
+     * Action used to commit the current value in the JFormattedTextField.
+     * This action is used by the keyboard bindings.
+     */
+    private class CommitEditAction extends AbstractAction {
+        public CommitEditAction() {
+            super("CommitEditPopup");
         }
-        return -1;
+
+        public void actionPerformed(ActionEvent ev) {
+            try {
+                JFormattedTextField editor = datePicker.getEditor();
+                // Commit the current value.
+                editor.commitEdit();
+
+                // Reformat the value according to the formatter.
+                editor.setValue(editor.getValue());
+                datePicker.postActionEvent();
+            } catch (java.text.ParseException ex) {
+            }
+        }
     }
 
     /**
@@ -324,12 +302,8 @@ public class BasicDatePickerUI extends DatePickerUI {
         public void actionPerformed(ActionEvent ev) {
             String command = ev.getActionCommand();
             if ("MONTH_VIEW".equals(command)) {
-                SortedSet<Date> selection = datePicker.getMonthView().getSelectionModel().getSelection();
-                if (!selection.isEmpty()) {
-                    datePicker.getEditor().setValue(selection.first());
-                } else {
-                    datePicker.getEditor().setValue(null);
-                }
+                DateSpan span = datePicker.getMonthView().getSelectedDateSpan();
+                datePicker.getEditor().setValue(span.getStartAsDate());
                 setVisible(false);
                 datePicker.postActionEvent();
             }
@@ -352,7 +326,6 @@ public class BasicDatePickerUI extends DatePickerUI {
             if (!datePicker.isEditable()) {
                 JFormattedTextField editor = datePicker.getEditor();
                 if (editor.isEditValid()) {
-                    //noinspection EmptyCatchBlock
                     try {
                         editor.commitEdit();
                     } catch (java.text.ParseException ex) {
@@ -408,15 +381,17 @@ public class BasicDatePickerUI extends DatePickerUI {
                 popup = new BasicDatePickerPopup();
             }
             if (!popup.isVisible()) {
-                JXMonthView monthView = datePicker.getMonthView();
-                SortedSet<Date> selection = monthView.getSelection();
-                if (!selection.isEmpty()) {
-                    Date date = selection.first();
-                    monthView.setSelectionInterval(date, date);
-                    monthView.ensureDateVisible(date.getTime());
-                } else {
-                    monthView.ensureDateVisible(System.currentTimeMillis());
+                JFormattedTextField editor = datePicker.getEditor();
+                if (editor.getValue() == null) {
+                    editor.setValue(new Date(datePicker.getLinkDate()));
                 }
+                DateSpan span =
+                        new DateSpan((java.util.Date)editor.getValue(),
+                                (java.util.Date)editor.getValue());
+                JXMonthView monthView = datePicker.getMonthView();
+                monthView.setSelectedDateSpan(span);
+                monthView.ensureDateVisible(
+                        ((Date)editor.getValue()).getTime());
                 popup.show(datePicker,
                         0, datePicker.getHeight());
             } else {
@@ -450,19 +425,14 @@ public class BasicDatePickerUI extends DatePickerUI {
             } else if (JXDatePicker.EDITOR.equals(property)) {
                 JFormattedTextField oldEditor = (JFormattedTextField)e.getOldValue();
                 if (oldEditor != null) {
-                    oldEditor.removePropertyChangeListener(this);
                     datePicker.remove(oldEditor);
                 }
 
                 JFormattedTextField editor = (JFormattedTextField)e.getNewValue();
                 datePicker.add(editor);
-                editor.addPropertyChangeListener(this);
                 datePicker.revalidate();
             } else if ("componentOrientation".equals(property)) {
                 datePicker.revalidate();
-            } else if ("value".equals(property)) {
-                Date date = (Date) datePicker.getEditor().getValue();
-                datePicker.setDate(date);
             }
         }
 

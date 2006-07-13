@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
@@ -81,13 +82,6 @@ public class ActionContainerFactory {
     private Map groupMap;
 
     /**
-     * Constructs an container factory which uses the default 
-     * ActionManager.
-     *
-     */
-    public ActionContainerFactory() {
-    }
-    /**
      * Constructs an container factory which uses managed actions.
      *
      * @param manager use the actions managed with this manager for
@@ -116,7 +110,15 @@ public class ActionContainerFactory {
      * ActionContainerFactory
      */
     public void setActionManager(ActionManager manager) {
+        ActionManager oldManager = this.manager;
+        if (oldManager != null) {
+            oldManager.setFactory(null);
+        }
         this.manager = manager;
+        
+        if (manager != null) {
+            manager.setFactory(this);
+        }
     }
 
     /**
@@ -493,6 +495,7 @@ public class ActionContainerFactory {
      * @param button
      * @param a
      * @param group
+     * @return
      */
     public void configureButton(JToggleButton button, AbstractActionExt a, ButtonGroup group) {
        configureSelectableButton(button, a, group);

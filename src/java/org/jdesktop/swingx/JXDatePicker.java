@@ -20,38 +20,25 @@
  */
 package org.jdesktop.swingx;
 
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import org.jdesktop.swingx.calendar.DateSpan;
+import org.jdesktop.swingx.calendar.JXMonthView;
+import org.jdesktop.swingx.plaf.DatePickerUI;
+import org.jdesktop.swingx.plaf.JXDatePickerAddon;
+import org.jdesktop.swingx.plaf.LookAndFeelAddons;
+
+import javax.swing.*;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.text.DefaultFormatterFactory;
+import java.awt.*;
+import java.awt.event.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.EventListener;
-import java.util.SortedSet;
 import java.util.TimeZone;
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFormattedTextField.AbstractFormatter;
-import javax.swing.JFormattedTextField.AbstractFormatterFactory;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.text.DefaultFormatterFactory;
-import org.jdesktop.swingx.calendar.DateSpan;
-import org.jdesktop.swingx.calendar.JXMonthView;
-import org.jdesktop.swingx.event.EventListenerMap;
 import org.jdesktop.swingx.painter.gradient.BasicGradientPainter;
-import org.jdesktop.swingx.plaf.DatePickerUI;
-import org.jdesktop.swingx.plaf.JXDatePickerAddon;
-import org.jdesktop.swingx.plaf.LookAndFeelAddons;
 
 /**
  * A component that combines a button, an editable field and a JXMonthView
@@ -66,7 +53,7 @@ import org.jdesktop.swingx.plaf.LookAndFeelAddons;
 public class JXDatePicker extends JComponent {
 
     static {
-        LookAndFeelAddons.contribute(new JXDatePickerAddon());
+      LookAndFeelAddons.contribute(new JXDatePickerAddon());
     }
 
     /**
@@ -76,12 +63,10 @@ public class JXDatePicker extends JComponent {
 
     public static final String EDITOR = "editor";
     public static final String MONTH_VIEW = "monthView";
-    public static final String DATE_IN_MILLIS = "dateInMillis";
+    public static final String DATE_IN_MILLIS ="dateInMillis";
     public static final String LINK_PANEL = "linkPanel";
 
-    /**
-     * The editable date field that displays the date
-     */
+    /** The editable date field that displays the date */
     private JFormattedTextField _dateField;
 
     /**
@@ -94,13 +79,12 @@ public class JXDatePicker extends JComponent {
     private JXMonthView _monthView;
     private String _actionCommand = "selectionChanged";
     private boolean editable = true;
-    private EventListenerMap listenerMap;
 
     /**
      * Create a new date picker using the current date as the initial
      * selection and the default abstract formatter
      * <code>JXDatePickerFormatter</code>.
-     * <p/>
+     *
      * The date picker is configured with the default time zone and locale
      *
      * @see #setTimeZone
@@ -114,7 +98,7 @@ public class JXDatePicker extends JComponent {
      * Create a new date picker using the specified time as the initial
      * selection and the default abstract formatter
      * <code>JXDatePickerFormatter</code>.
-     * <p/>
+     *
      * The date picker is configured with the default time zone and locale
      *
      * @param millis initial time in milliseconds
@@ -122,27 +106,24 @@ public class JXDatePicker extends JComponent {
      * @see #getTimeZone
      */
     public JXDatePicker(long millis) {
-        listenerMap = new EventListenerMap();
-        _monthView = new JXMonthView(millis);
-        Date date = new Date(millis);
-        _monthView.setSelectionInterval(date, date);
+        _monthView = new JXMonthView();
         _monthView.setTraversable(true);
 
         _linkFormat = new MessageFormat(UIManager.getString("JXDatePicker.linkFormat"));
 
         _linkDate = System.currentTimeMillis();
         _linkPanel = new TodayPanel();
-
+        
         updateUI();
 
-        _dateField.setValue(_monthView.getSelection().first());
+        _dateField.setValue(new Date(millis));
     }
 
     /**
      * @inheritDoc
      */
     public DatePickerUI getUI() {
-        return (DatePickerUI) ui;
+        return (DatePickerUI)ui;
     }
 
     /**
@@ -159,9 +140,8 @@ public class JXDatePicker extends JComponent {
      *
      * @see UIManager#getUI
      */
-    @Override
     public void updateUI() {
-        setUI((DatePickerUI) UIManager.getUI(this));
+        setUI((DatePickerUI)UIManager.getUI(this));
         invalidate();
     }
 
@@ -197,7 +177,7 @@ public class JXDatePicker extends JComponent {
      */
     public void setFormats(DateFormat[] formats) {
         _dateField.setFormatterFactory(new DefaultFormatterFactory(
-                new JXDatePickerFormatter(formats)));
+                                new JXDatePickerFormatter(formats)));
     }
 
     /**
@@ -215,30 +195,19 @@ public class JXDatePicker extends JComponent {
         if (factory != null) {
             AbstractFormatter formatter = factory.getFormatter(_dateField);
             if (formatter instanceof JXDatePickerFormatter) {
-                return ((JXDatePickerFormatter) formatter).getFormats();
+                return ((JXDatePickerFormatter)formatter).getFormats();
             }
         }
         return null;
     }
 
     /**
-     * Set the currently selected date.  If the date is <code>null</code> the selection is cleared.
+     * Set the currently selected date.
      *
      * @param date date
      */
     public void setDate(Date date) {
-        SortedSet<Date> selection = _monthView.getSelection();
-        Date selectedDate = selection.isEmpty() ? null : selection.first();
-
-        // Only set the date if the value was null and the current selection is not null or
-        // the value is not null and is not equal to the current selection.
-        if (date == null && selectedDate != date) {
-            _monthView.clearSelection();
-            getEditor().setValue(date);
-        } else if (date != null && !date.equals(selectedDate)) {
-            _monthView.setSelectionInterval(date, date);
-            getEditor().setValue(date);
-        }
+        _dateField.setValue(date);
     }
 
     /**
@@ -247,7 +216,7 @@ public class JXDatePicker extends JComponent {
      * @param millis milliseconds
      */
     public void setDateInMillis(long millis) {
-        setDate(new Date(millis));
+        _dateField.setValue(new Date(millis));
     }
 
     /**
@@ -256,22 +225,16 @@ public class JXDatePicker extends JComponent {
      * @return Date
      */
     public Date getDate() {
-        SortedSet<Date> selection = _monthView.getSelection();
-        return selection.isEmpty() ? null : selection.first();
+        return (Date)_dateField.getValue();
     }
 
     /**
      * Returns the currently selected date in milliseconds.
      *
-     * @return the date in milliseconds, -1 if there is no selection.
+     * @return the date in milliseconds
      */
     public long getDateInMillis() {
-        long result = -1;
-        Date selection = getDate();
-        if (selection != null) {
-            result = selection.getTime();
-        }
-        return result;
+        return ((Date)_dateField.getValue()).getTime();
     }
 
     /**
@@ -331,7 +294,7 @@ public class JXDatePicker extends JComponent {
      * this method will replace the currently installed linkPanel and install
      * a new one with the requested date and format.
      *
-     * @param linkDate         Date in milliseconds
+     * @param linkDate Date in milliseconds
      * @param linkFormatString String used to format the link
      * @see java.text.MessageFormat
      */
@@ -340,7 +303,7 @@ public class JXDatePicker extends JComponent {
         _linkFormat = new MessageFormat(linkFormatString);
         setLinkPanel(new TodayPanel());
     }
-
+    
     /**
      * Return the panel that is used at the bottom of the popup.  The default
      * implementation shows a link that displays the current month.
@@ -350,7 +313,7 @@ public class JXDatePicker extends JComponent {
     public JPanel getLinkPanel() {
         return _linkPanel;
     }
-
+    
     /**
      * Set the panel that will be used at the bottom of the popup.
      *
@@ -361,7 +324,7 @@ public class JXDatePicker extends JComponent {
         _linkPanel = linkPanel;
         firePropertyChange(LINK_PANEL, oldLinkPanel, _linkPanel);
     }
-
+    
     /**
      * Returns the formatted text field used to edit the date selection.
      *
@@ -375,12 +338,6 @@ public class JXDatePicker extends JComponent {
         JFormattedTextField oldEditor = _dateField;
         _dateField = editor;
         firePropertyChange(EDITOR, oldEditor, _dateField);
-    }
-
-    @Override
-    public void setComponentOrientation(ComponentOrientation orientation) {
-        super.setComponentOrientation(orientation);
-        _monthView.setComponentOrientation(orientation);
     }
 
     /**
@@ -399,12 +356,6 @@ public class JXDatePicker extends JComponent {
      */
     public void commitEdit() throws ParseException {
         _dateField.commitEdit();
-
-        // Reformat the value according to the formatter.
-        _dateField.setValue(_dateField.getValue());
-
-        Date date = (Date) _dateField.getValue();
-        setDate(date);
     }
 
     public void setEditable(boolean value) {
@@ -418,35 +369,6 @@ public class JXDatePicker extends JComponent {
 
     public boolean isEditable() {
         return editable;
-    }
-
-    /**
-     * Returns the font that is associated with the editor of this date picker.
-     */
-    @Override
-    public Font getFont() {
-        return getEditor().getFont();
-    }
-
-    /**
-     * Set the font for the editor associated with this date picker.
-     */
-    @Override
-    public void setFont(final Font font) {
-        getEditor().setFont(font);
-    }
-
-    /**
-     * Get the baseline for the specified component, or a value less
-     * than 0 if the baseline can not be determined.  The baseline is measured
-     * from the top of the component.
-     *
-     * @param width  Width of the component to determine baseline for.
-     * @param height Height of the component to determine baseline for.
-     * @return baseline for the specified component
-     */
-    public int getBaseline(int width, int height) {
-        return ((DatePickerUI) ui).getBaseline(width, height);
     }
 
     /**
@@ -469,14 +391,14 @@ public class JXDatePicker extends JComponent {
 
     /**
      * Adds an ActionListener.
-     * <p/>
+     * <p>
      * The ActionListener will receive an ActionEvent when a selection has
      * been made.
      *
      * @param l The ActionListener that is to be notified
      */
     public void addActionListener(ActionListener l) {
-        listenerMap.add(ActionListener.class, l);
+        listenerList.add(ActionListener.class, l);
     }
 
     /**
@@ -485,36 +407,24 @@ public class JXDatePicker extends JComponent {
      * @param l The action listener to remove.
      */
     public void removeActionListener(ActionListener l) {
-        listenerMap.remove(ActionListener.class, l);
-    }
-
-    @Override
-    public <T extends EventListener> T[] getListeners(Class<T> listenerType) {
-        java.util.List<T> listeners = listenerMap.getListeners(listenerType);
-        T[] result;
-        if (!listeners.isEmpty()) {
-            result = (T[]) java.lang.reflect.Array.newInstance(listenerType, listeners.size());
-            result = listeners.toArray(result);
-        } else {
-            result = super.getListeners(listenerType);
-        }
-        return result;
+        listenerList.remove(ActionListener.class, l);
     }
 
     /**
      * Fires an ActionEvent to all listeners.
      */
     protected void fireActionPerformed() {
-        ActionListener[] listeners = getListeners(ActionListener.class);
+        Object[] listeners = listenerList.getListenerList();
         ActionEvent e = null;
-
-        for (ActionListener listener : listeners) {
-            if (e == null) {
-                e = new ActionEvent(JXDatePicker.this,
-                        ActionEvent.ACTION_PERFORMED,
-                        _actionCommand);
+        for (int i = listeners.length - 2; i >= 0; i -=2) {
+            if (listeners[i] == ActionListener.class) {
+                if (e == null) {
+                    e = new ActionEvent(JXDatePicker.this,
+                            ActionEvent.ACTION_PERFORMED,
+                            _actionCommand);
+                }
+                ((ActionListener)listeners[i + 1]).actionPerformed(e);
             }
-            listener.actionPerformed(e);
         }
     }
 
@@ -532,8 +442,7 @@ public class JXDatePicker extends JComponent {
             todayLink.setClickedColor(textColor);
             add(todayLink);
         }
-
-        @Override
+        
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
@@ -542,35 +451,16 @@ public class JXDatePicker extends JComponent {
             g.setColor(new Color(221, 221, 221));
             g.drawLine(0, 1, getWidth(), 1);
         }
-
+        
         private final class TodayAction extends AbstractAction {
             TodayAction() {
-                super(_linkFormat.format(new Object[]{new Date(_linkDate)}));
+                super(_linkFormat.format(new Object[] { new Date(_linkDate) }));
             }
-
+            
             public void actionPerformed(ActionEvent ae) {
                 DateSpan span = new DateSpan(_linkDate, _linkDate);
                 _monthView.ensureDateVisible(span.getStart());
             }
         }
-    }
-
-    public static void main(String args[]) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JFrame frame = new JFrame();
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                JXDatePicker datePicker = new JXDatePicker();
-                datePicker.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println(
-                                ((JXDatePicker) e.getSource()).getMonthView().getSelection());
-                    }
-                });
-                frame.getContentPane().add(datePicker);
-                frame.pack();
-                frame.setVisible(true);
-            }
-        });
     }
 }

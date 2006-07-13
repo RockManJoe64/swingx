@@ -34,7 +34,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     protected int               testColumn = 0;         // always in model coordinates
     protected int               highlightColumn = -1;   // always in model coordinates
 
-    // TODO JW ?? - changed from 255 to 256 to not be "on" by default...
+    // JW ?? - changed from 255 to 256 to not be "on" by default...
     protected int               mask = 256;
 
     public ConditionalHighlighter() {
@@ -66,7 +66,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: JW ??
+     * JW ??
      */
     public void setMask(int alpha) {
         mask = alpha;
@@ -74,8 +74,8 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: JW ??
-     * @return mask
+     * JW ??
+     * @return
      */
     public int getMask() {
         return mask;
@@ -89,7 +89,6 @@ public abstract class ConditionalHighlighter extends Highlighter {
      * @param adapter
      * @return the highlighted component
      */
-    @Override
     public Component highlight(Component renderer, ComponentAdapter adapter) {
         if (needsHighlight(adapter)) {
             return doHighlight(renderer, adapter);
@@ -101,11 +100,11 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: ??
+     * ??
      * 
      * @param renderer
      * @param adapter
-     * @return renderer
+     * @return
      */
     protected Component doMask(Component renderer, ComponentAdapter adapter) {
 
@@ -117,7 +116,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: ??
+     * ??
      */
     protected void maskBackground(Component renderer, ComponentAdapter adapter) {
         Color seed = renderer.getBackground();
@@ -130,7 +129,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: ??
+     * ??
      * @param renderer
      * @param adapter
      */
@@ -146,7 +145,6 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
    
     @Override
-    @Deprecated
     protected Color computeSelectedForeground(Color seed) {
         return getSelectedForeground() == null ? 
                 seed == null ? null : seed.brighter() : getSelectedForeground();
