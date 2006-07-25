@@ -57,9 +57,9 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
                 "colorRendering", "dithering", "fractionalMetrics", "interpolation",
                 "rendering", "strokeControl", "textAntialiasing");
         setCategory("Appearance", "clip", "composite", "effects");
-        setCategory("Behavior", "resizeClip", "useCache");
+        //setCategory("Behavior", "resizeClip", "useCache");
     }
-    
+    /*
     public static final class ResizeClipPropertyEditor extends EnumerationValuePropertyEditor {
         public ResizeClipPropertyEditor() {
             super(null, new EnumerationValue[] {
@@ -69,7 +69,8 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
                 new EnumerationValue("Both", Resize.BOTH, "Resize.BOTH")
             });
         }
-    }
+    }*/
+    
     public static final class CompositePropertyEditor extends EnumerationValuePropertyEditor {
         public CompositePropertyEditor() {
             super(null, new EnumerationValue[] {
