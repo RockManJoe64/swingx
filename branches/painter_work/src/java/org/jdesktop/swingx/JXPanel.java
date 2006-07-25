@@ -74,6 +74,7 @@ public class JXPanel extends JPanel implements Scrollable {
      * backgroundPainter is specified
      */
     private Painter backgroundPainter;
+    private Painter foregroundPainter;
     /**
      * Keeps track of the old dimensions so that if the dimensions change, the
      * saved gradient image can be thrown out and re-rendered. This size is
@@ -255,6 +256,29 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     /**
+     * Specifies a Painter to use to paint the background of this JXPanel.
+     * If <code>p</code> is not null, then setOpaque(false) will be called
+     * as a side effect. A component should not be opaque if painters are
+     * being used, because Painters may paint transparent pixels or not
+     * paint certain pixels, such as around the border insets.
+     */
+    public void setForegroundPainter(Painter p) {
+        Painter old = getForegroundPainter();
+        this.foregroundPainter = p;
+        
+        if (p != null) {
+            setOpaque(false);
+        }
+        
+        firePropertyChange("foregroundPainter", old, getForegroundPainter());
+        repaint();
+    }
+    
+    public Painter getForegroundPainter() {
+        return foregroundPainter;
+    }
+    
+    /**
      * Overriden paint method to take into account the alpha setting
      */
     public void paint(Graphics g) {
@@ -279,7 +303,6 @@ public class JXPanel extends JPanel implements Scrollable {
     protected void paintComponent(Graphics g) {
         if (backgroundPainter != null) {
             Graphics2D g2 = (Graphics2D)g.create();
-            //Insets ins = this.getBorder().getBorderInsets(this);
             Insets ins = this.getInsets();
             g2.translate(ins.left, ins.top);
             backgroundPainter.paint(g2, this, 
@@ -289,5 +312,15 @@ public class JXPanel extends JPanel implements Scrollable {
         } else {
             super.paintComponent(g);
         }
+        
+        if (foregroundPainter != null) {
+            Graphics2D g2 = (Graphics2D)g.create();
+            Insets ins = this.getInsets();
+            g2.translate(ins.left, ins.top);
+            foregroundPainter.paint(g2, this, 
+                    this.getWidth()  - ins.left - ins.right,
+                    this.getHeight() - ins.top  - ins.bottom);
+            g2.dispose();
+        }        
     }
 }

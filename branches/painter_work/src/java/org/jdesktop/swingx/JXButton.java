@@ -1,7 +1,7 @@
 /*
- * JXLabel.java
+ * JXButton.java
  *
- * Created on July 25, 2006, 1:55 PM
+ * Created on July 25, 2006, 3:15 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -12,18 +12,17 @@ package org.jdesktop.swingx;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import javax.swing.JLabel;
+import javax.swing.JButton;
 import org.jdesktop.swingx.painter.Painter;
 
 /**
  *
- * @author joshy
+ * @author jm158417
  */
-public class JXLabel extends JLabel {
+public class JXButton extends JButton {
     
-    /** Creates a new instance of JXLabel */
-    public JXLabel() {
-        super();
+    /** Creates a new instance of JXButton */
+    public JXButton() {
     }
     
     private Painter backgroundPainter;
@@ -38,6 +37,8 @@ public class JXLabel extends JLabel {
         this.backgroundPainter = backgroundPainter;
         if (backgroundPainter != null) {
             setOpaque(false);
+            setContentAreaFilled(false);
+            //setBorder(null);
         }
         firePropertyChange("backgroundPainter", old, backgroundPainter);
         repaint();
@@ -62,10 +63,11 @@ public class JXLabel extends JLabel {
             Graphics2D g2 = (Graphics2D)g.create();
             //Insets ins = this.getBorder().getBorderInsets(this);
             Insets ins = this.getInsets();
-            g2.translate(ins.left, ins.top);
-            backgroundPainter.paint(g2, this, 
-                    this.getWidth()  - ins.left - ins.right,
-                    this.getHeight() - ins.top  - ins.bottom);
+            //g2.translate(ins.left, ins.top);
+            backgroundPainter.paint(g2, this, this.getWidth(), this.getHeight());
+            //backgroundPainter.paint(g2, this, 
+            //        this.getWidth()  - ins.left - ins.right,
+            //        this.getHeight() - ins.top  - ins.bottom);
             g2.dispose();
         }
         
