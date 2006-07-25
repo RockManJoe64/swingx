@@ -40,9 +40,9 @@ public class PainterUIResource implements Painter, UIResource {
         this.p = p;
     }
     
-    public void paint(Graphics2D g, JComponent component) {
+    public void paint(Graphics2D g, JComponent component, int width, int height) {
         if (p != null) {
-            p.paint(g, component);
+            p.paint(g, component, width, height);
         }
     }
 }

@@ -84,5 +84,5 @@ public interface Painter<T extends JComponent> {
      * @param g The Graphics2D object in which to paint
      * @param component The JComponent that the Painter is delegate for.
      */
-    public void paint(Graphics2D g, T component);
+    public void paint(Graphics2D g, T component, int width, int height);
 }

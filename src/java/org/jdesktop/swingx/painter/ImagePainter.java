@@ -28,7 +28,10 @@ import java.awt.TexturePaint;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -82,7 +85,9 @@ public class ImagePainter extends AbstractPainter {
     /**
      * The image to draw
      */
-    private Image img;
+    private transient Image img;
+    
+    private URL imageURL;
     
     /**
      * Specifies how to draw the image, i.e. what kind of Style to use
@@ -167,7 +172,11 @@ public class ImagePainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component) {
+    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+        if (img == null && imageURL != null) {
+            loadImage();
+        }
+        
         if (img != null) {
             int imgWidth = img.getWidth(null);
             int imgHeight = img.getHeight(null);
@@ -212,8 +221,8 @@ public class ImagePainter extends AbstractPainter {
                         break;
                     case POSITIONED:
                           g.drawImage(img, (int)imagePosition.getX(), (int)imagePosition.getY(), 
-                                  (int)(((double)img.getWidth(null))*imageScale),
-                                  (int)(((double)img.getHeight(null))*imageScale),
+                                  (int)(((double)img.getWidth(null))*getImageScale()),
+                                  (int)(((double)img.getHeight(null))*getImageScale()),
                                   null);
                         break;
                     case CSS_POSITIONED:
@@ -231,16 +240,47 @@ public class ImagePainter extends AbstractPainter {
     }
     
     private Point2D imagePosition = new Point2D.Double(0,0);
+    
     public void setImagePosition(Point2D imagePosition) {
+        Point2D old = this.getImagePosition();
         this.imagePosition = imagePosition;
+        firePropertyChange("imagePosition",old,this.imagePosition);
     }
+    
     public Point2D getImagePosition() {
         return imagePosition;
     }
 
     private double imageScale = 1.0;
+    
     public void setImageScale(double imageScale) {
+        double old = getImageScale();
         this.imageScale = imageScale;
+        firePropertyChange("imageScale",old,this.imageScale);
+    }
+    public double getImageScale() {
+        return imageScale;
+    }
+
+    public URL getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(URL imageURL) {
+        System.out.println("setting image url to : " + imageURL);
+        URL old = getImageURL();
+        this.imageURL = imageURL;
+        loadImage();
+        firePropertyChange("imageURL",old,this.imageURL);
+    }
+
+    private void loadImage() {
+        try {
+            setImage(ImageIO.read(getImageURL()));
+        } catch (IOException ex) {
+            System.out.println("ex: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
 }

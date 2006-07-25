@@ -9,7 +9,6 @@
 
 package org.jdesktop.swingx.painter;
 
-import org.jdesktop.swingx.BeanInfoSupport;
 import org.jdesktop.swingx.editors.PaintPropertyEditor;
 
 /**

@@ -106,7 +106,7 @@ public class GlossPainter extends AbstractPainter {
     /**
      * {@inheritDoc}
      */
-    protected void paintBackground(Graphics2D g, JComponent component) {
+    protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         if (getPaint() != null) {
             Ellipse2D ellipse = new Ellipse2D.Double(-component.getWidth() / 2.0,
                 component.getHeight() / 2.7, component.getWidth() * 2.0,

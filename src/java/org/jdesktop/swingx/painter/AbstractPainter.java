@@ -40,7 +40,6 @@ import java.util.Map;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.JavaBean;
 import org.jdesktop.swingx.util.PaintUtils;
-import org.jdesktop.swingx.util.Resize;
 
 /**
  * <p>A convenient base class from which concrete Painter implementations may
@@ -89,8 +88,6 @@ import org.jdesktop.swingx.util.Resize;
 public abstract class AbstractPainter<T extends JComponent> extends JavaBean implements Painter<T> {
     //------------------------------------------------- Saved Graphics State
     private boolean stateSaved = false;
-    private Paint oldPaint;
-    private Font oldFont;
     private Stroke oldStroke;
     private AffineTransform oldTransform;
     private Composite oldComposite;
@@ -106,11 +103,6 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      */
     private Shape clip;
     /**
-     * A Resize value indicating if and how the clip should be resized
-     * according to the size of the Component
-     */
-    private Resize resizeClip = Resize.BOTH;
-    /**
      * The composite to use. By default this is a reasonable AlphaComposite,
      * but you may want to specify a different composite
      */
@@ -118,7 +110,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     /**
      * RenderingHints to apply when painting
      */
-    private Map<RenderingHints.Key,Object> renderingHints;
+    private transient Map<RenderingHints.Key,Object> renderingHints;
     /**
      * A hint as to whether or not to attempt caching the image
      */
@@ -126,7 +118,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     /**
      * The cached image, if useCache is true
      */
-    private SoftReference<BufferedImage> cachedImage;
+    private transient SoftReference<BufferedImage> cachedImage;
     /**
      * The Effects to apply to the results of the paint() operation
      */
@@ -235,27 +227,6 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         return clip;
     }
     
-    /**
-     * Specifies the resize behavior of the clip. As with all other properties
-     * that rely on Resize, the value of the width/height of the shape will
-     * represent a percentage of the width/height of the component, as a value
-     * between 0 and 1
-     *
-     * @param r value indication whether/how to resize the clip. If null,
-     *        Resize.NONE will be used
-     */
-    public void setResizeClip(Resize r) {
-        Resize old = getResizeClip();
-        this.resizeClip = r == null ? Resize.NONE : r;
-        firePropertyChange("resizeClip", old, getResizeClip());
-    }
-    
-    /**
-     * @return value indication whether/how to resize the clip. Will never be null
-     */
-    public Resize getResizeClip() {
-        return resizeClip;
-    }
     
     /**
      * Sets the Composite to use. For example, you may specify a specific
@@ -660,6 +631,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      *
      * @param g the Graphics2D object who's state will be saved
      */
+     /*
     protected void saveState(Graphics2D g) {
         oldPaint = g.getPaint();
         oldFont = g.getFont();
@@ -675,6 +647,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         
         stateSaved = true;
     }
+    */
     
     /**
      * Restores previously saved state. A call to saveState must have occured
@@ -682,6 +655,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * 
      * @param g the Graphics2D object to restore previously saved state to
      */
+     /*
     protected void restoreState(Graphics2D g) {
         if (!stateSaved) {
             throw new IllegalStateException("A call to saveState must occur " +
@@ -702,12 +676,22 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         
         stateSaved = false;
     }
+    */
+    
+    private boolean shouldRestoreState = true;
         
     /**
      * @inheritDoc
      */
-    public void paint(Graphics2D g, T component) {
-        saveState(g);
+    public void paint(Graphics2D g, T component, int width, int height) {
+        if(!isEnabled()) {
+            return;
+        }
+        //saveState(g);
+        
+        if(isShouldRestoreState()) {
+            g = (Graphics2D)g.create();
+        }
         
         configureGraphics(g, component);
         
@@ -728,7 +712,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
                 
                 Graphics2D gfx = image.createGraphics();
                 configureGraphics(gfx, component);
-                paintBackground(gfx, component);
+                paintBackground(gfx, component, component.getWidth(), component.getHeight());
                 gfx.dispose();
 
                 for (Effect effect : effects) {
@@ -741,11 +725,14 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
                     cachedImage = new SoftReference<BufferedImage>(image);
                 }
             } else {
-                paintBackground(g, component);
+                paintBackground(g, component, component.getWidth(), component.getHeight());
             }
         }
         
-        restoreState(g);
+        //restoreState(g);
+        if(isShouldRestoreState()) {
+            g.dispose();
+        }
     }
     
     /**
@@ -768,25 +755,6 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         }
         Shape clip = getClip();
         if (clip != null) {
-            //resize the clip if necessary
-            double width = 1;
-            double height = 1;
-            Resize resizeClip = getResizeClip();
-            if (resizeClip == Resize.HORIZONTAL || resizeClip == Resize.BOTH) {
-                width = c.getWidth();
-            }
-            if (resizeClip == Resize.VERTICAL || resizeClip == Resize.BOTH) {
-                height = c.getHeight();
-            }
-            if (clip instanceof RoundRectangle2D) {
-                RoundRectangle2D rect = (RoundRectangle2D)clip;
-                clip = new RoundRectangle2D.Double(
-                        rect.getX(), rect.getY(), width, height,
-                        rect.getArcWidth(), rect.getArcHeight());
-            } else {
-                clip = AffineTransform.getScaleInstance(
-                        width, height).createTransformedShape(clip);
-            }
             g.setClip(clip);
         }
     }
@@ -799,5 +767,38 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * @param g The Graphics2D object in which to paint
      * @param component The JComponent that the Painter is delegate for.
      */
-    protected abstract void paintBackground(Graphics2D g, T component);
+    protected abstract void paintBackground(Graphics2D g, T component, int width, int height);
+
+    public boolean isShouldRestoreState() {
+        return shouldRestoreState;
+    }
+
+    public void setShouldRestoreState(boolean shouldRestoreState) {
+        boolean oldShouldRestoreState = isShouldRestoreState();
+        this.shouldRestoreState = shouldRestoreState;
+        firePropertyChange("shouldRestoreState",oldShouldRestoreState,shouldRestoreState);
+    }
+
+    /**
+     * Holds value of property enabled.
+     */
+    private boolean enabled = true;
+
+    /**
+     * Getter for property enabled.
+     * @return Value of property enabled.
+     */
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    /**
+     * Setter for property enabled.
+     * @param enabled New value of property enabled.
+     */
+    public void setEnabled(boolean enabled) {
+        boolean oldEnabled = this.isEnabled();
+        this.enabled = enabled;
+        firePropertyChange("enabled", new Boolean (oldEnabled), new Boolean (enabled));
+    }
 }

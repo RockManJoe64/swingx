@@ -198,7 +198,7 @@ public class CheckerboardPainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component) {
+    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         g.setPaint(getCheckerPaint(component));
         g.fillRect(0, 0, component.getWidth(), component.getHeight());
     }
