@@ -38,7 +38,7 @@ import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.apache.batik.ext.awt.MultipleGradientPaint.ColorSpaceEnum;
 import org.apache.batik.ext.awt.RadialGradientPaint;
 import org.jdesktop.swingx.JXPanel;
-import org.jdesktop.swingx.painter.BackgroundPainter;
+import org.jdesktop.swingx.painter.ComponentBackgroundPainter;
 import org.jdesktop.swingx.painter.CheckerboardPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.GlossPainter;
@@ -108,7 +108,7 @@ public class PainterPropertyEditor extends PropertyEditorSupport {
         textPainter.setPaint(Color.WHITE);
         
         e.writeObject(new CompoundPainter(
-                new BackgroundPainter(),
+                new ComponentBackgroundPainter(),
                 new CheckerboardPainter(),
                 new MattePainter(Color.BLACK),
                 new BasicGradientPainter(BasicGradientPainter.RED_XP),
