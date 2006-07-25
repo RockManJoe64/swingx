@@ -84,8 +84,8 @@ public class SelectionMapper {
     }
 
     /**
-     * TODO: temporarily added for testing...
-     * @return view selection model
+     * temporarily added for testing...
+     * @return
      */
     public ListSelectionModel getViewSelectionModel() {
         return viewSelection;
@@ -115,7 +115,7 @@ public class SelectionMapper {
           viewSelection.addSelectionInterval(index, index);
         }
         int lead = modelSelection.getLeadSelectionIndex();
-        // TODO: PENDING: JW - this is a quick hack for spurious AIOB - need to enquire why
+        // PENDING: JW - this is a quick hack for spurious AIOB - need to enquire why 
         // they happen in the first place
         if (lead >= 0) {
             lead = convertToView(lead);
@@ -148,7 +148,7 @@ public class SelectionMapper {
     }
 
     public void clearModelSelection() {
-        // TODO: JW: need to reset anchor/lead?
+        // JW: need to reset anchor/lead?
         modelSelection.clearSelection();
         modelSelection.setAnchorSelectionIndex(-1);
         modelSelection.setLeadSelectionIndex(-1);
@@ -158,7 +158,7 @@ public class SelectionMapper {
      * 
      */
     private void clearViewSelection() {
-        // TODO: JW - hmm... clearSelection doesn't reset the lead/anchor. Why not?
+        // JW - hmm... clearSelection doesn't reset the lead/anchor. Why not?
         viewSelection.clearSelection();
         viewSelection.setAnchorSelectionIndex(-1);
         viewSelection.setLeadSelectionIndex(-1);
@@ -187,12 +187,12 @@ public class SelectionMapper {
     }
 
     private int convertToModel(int index) {
-        // TODO: JW: check for valid index? must be < pipeline.getOutputSize()
+        // JW: check for valid index? must be < pipeline.getOutputSize()
         return (pipeline != null) && pipeline.isAssigned() ? pipeline.convertRowIndexToModel(index) : index;
     }
     
     private int convertToView(int index) {
-        // TODO: JW: check for valid index? must be < pipeline.getInputSize()
+        // JW: check for valid index? must be < pipeline.getInputSize()
         return (pipeline != null) && pipeline.isAssigned() ? pipeline.convertRowIndexToView(index) : index;
     }
     

@@ -56,7 +56,7 @@ import javax.swing.Action;
  * @see javax.swing.Action
  * @author Scott Violet
  */
-public abstract class UIAction implements Action {
+abstract class UIAction implements Action {
     private String name;
 
     public UIAction(String name) {

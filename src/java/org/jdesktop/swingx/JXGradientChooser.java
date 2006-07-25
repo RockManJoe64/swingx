@@ -50,12 +50,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.apache.batik.ext.awt.MultipleGradientPaint;
-import org.apache.batik.ext.awt.RadialGradientPaint;
 import org.jdesktop.swingx.action.AbstractActionExt;
 import org.jdesktop.swingx.color.*;
 import org.jdesktop.swingx.multislider.Thumb;
 import org.jdesktop.swingx.multislider.ThumbListener;
-import org.jdesktop.swingx.painter.gradient.RadialGradientPainter;
 
 /**
  * A specialized JXPanel that allows the user to construct and choose a Gradient.
@@ -95,12 +93,7 @@ public class JXGradientChooser extends JXPanel {
     }
     
     
-        
     public MultipleGradientPaint getGradient() {
-        return gradientPreview.getGradient();
-    }
-    
-    public MultipleGradientPaint getFlatGradient() {
 	// get the list of colors
 	List<Thumb<Color>> stops = slider.getModel().getSortedThumbs();
 	int len = stops.size();
@@ -127,7 +120,6 @@ public class JXGradientChooser extends JXPanel {
     }
     
     public void setGradient(MultipleGradientPaint mgrad) {
-        // removing all thumbs;
 	while(slider.getModel().getThumbCount() > 0) {
 	    slider.getModel().removeThumb(0);
 	}
@@ -136,15 +128,6 @@ public class JXGradientChooser extends JXPanel {
 	for(int i=0; i<fracts.length; i++) {
 	    slider.getModel().addThumb(fracts[i],colors[i]);
 	}
-        
-        if(mgrad instanceof RadialGradientPaint) {
-            styleCombo.setSelectedItem(GradientStyle.Radial);
-            gradientPreview.setGradient(mgrad);
-        } else {
-            styleCombo.setSelectedItem(GradientStyle.Linear);
-            gradientPreview.setGradient(mgrad);
-        }
-        
 	repaint();
     }
     
@@ -189,11 +172,6 @@ public class JXGradientChooser extends JXPanel {
     
     public JXMultiThumbSlider<Color> getSlider() {
         return slider;
-    }
-    
-    private void updateGradientProperty() {
-        firePropertyChange("gradient",null,getGradient());
-        gradientPreview.repaint();
     }
     
     
@@ -317,9 +295,8 @@ public class JXGradientChooser extends JXPanel {
         changeColorButton.setText("00");
         changeColorButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel2.add(changeColorButton, gridBagConstraints);
 
@@ -510,8 +487,8 @@ public class JXGradientChooser extends JXPanel {
         deleteThumbButton.setAction(deleteThumbAction);
         changeColorButton.addPropertyChangeListener("background", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                System.out.println("color bg changed");
                 selectColorForThumb();
-                updateGradientProperty();
             }
         });
         colorLocationSpinner.addChangeListener(new ChangeLocationListener());
@@ -656,14 +633,8 @@ public class JXGradientChooser extends JXPanel {
 	slider.setThumbRenderer(new GradientThumbRenderer(this, slider));
 	slider.setTrackRenderer(new GradientTrackRenderer(this));
 	slider.addMultiThumbListener(new StopListener(slider));
-        ////	gradient_selector.add(slider, "Center");
-        
-        gradientPreview.addPropertyChangeListener("gradient", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-                updateGradientProperty();
-            }
-        });
-        
+//	
+////	gradient_selector.add(slider, "Center");
     }
 
     private final class ChangeLocationListener implements ChangeListener {
@@ -671,9 +642,9 @@ public class JXGradientChooser extends JXPanel {
             if(slider.getSelectedIndex() >= 0) {
                 Thumb thumb = slider.getModel().getThumbAt(slider.getSelectedIndex());
                 thumb.setPosition((float)((Integer)colorLocationSpinner.getValue())/100);
+                //slider.recalc();
                 slider.repaint();
                 updateFromStop(thumb);
-                updateGradientProperty();
             }
         }
     }
@@ -696,11 +667,10 @@ public class JXGradientChooser extends JXPanel {
                     alphaSpinner.setValue(alpha);
                 }
 		slider.repaint();
-                updateGradientProperty();
+		gradientPreview.repaint();
 	    }
 	}
     }
-    
     private final class AddThumbAction extends AbstractActionExt {
 	public AddThumbAction() {
 	    super("Add");
@@ -721,7 +691,6 @@ public class JXGradientChooser extends JXPanel {
 	    
 	}
     }
-    
     private final class DeleteThumbAction extends AbstractActionExt {
 	public DeleteThumbAction() {
 	    super("Delete");
@@ -761,7 +730,6 @@ public class JXGradientChooser extends JXPanel {
 	    updateFromStop(thumb,pos,color);
 	    updateDeleteButtons();
 	}
-        
 	public void mousePressed(MouseEvent e) {
 	    if(e.getClickCount() > 1) {
 	        selectColorForThumb();
@@ -771,11 +739,11 @@ public class JXGradientChooser extends JXPanel {
     
     private final class RepaintOnEventListener implements ActionListener, ItemListener {
         public void actionPerformed(ActionEvent e) {
-            updateGradientProperty();
+            gradientPreview.repaint();
         }
 
         public void itemStateChanged(ItemEvent e) {
-            updateGradientProperty();
+            gradientPreview.repaint();
         }
     }
     

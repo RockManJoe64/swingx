@@ -8,17 +8,12 @@
 package org.jdesktop.swingx;
 
 import java.awt.Point;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 
-import javax.swing.CellEditor;
-import javax.swing.JTextField;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -26,10 +21,8 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.FileSystemModel;
-import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jdesktop.swingx.util.PropertyChangeReport;
-import org.jdesktop.swingx.util.TreeSelectionReport;
 
 
 public class JXTreeTableUnitTest extends InteractiveTestCase {
@@ -42,259 +35,6 @@ public class JXTreeTableUnitTest extends InteractiveTestCase {
     }
 
     /**
-     * Issue #342-swingx: default margins in JXTreeTable.
-     * 
-     * This is not only a treeTable issue: the coupling of 
-     * margins to showing gridlines (and still get a "nice" 
-     * looking selection) is not overly obvious in JTable as
-     * well. Added convenience method to JXTable to adjust margins to 
-     * 0/1 if hiding/showing grid lines. 
-     *
-     */
-    public void testDefaultMargins() {
-        JXTreeTable table = new JXTreeTable(simpleTreeTableModel);
-        // sanity: initial margins are (0, 0), grid off
-        boolean show = false;
-        assertEquals(0, table.getRowMargin());
-        assertEquals(show, table.getShowHorizontalLines());
-        assertEquals(0, table.getColumnMargin());
-        assertEquals(show, table.getShowVerticalLines());
-        // show lines
-        table.setDefaultMargins(!show, !show);
-        assertEquals(1, table.getRowMargin());
-        assertEquals(!show, table.getShowHorizontalLines());
-        assertEquals(1, table.getColumnMargin());
-        assertEquals(!show, table.getShowVerticalLines());
-        
-    }
-
-    /**
-     * Issue #120-jdnc: data corruption if collapsed while editing.
-     * Note: this tests programatic collapse while editing! 
-     * Don't know how to test mouse-triggered collapse/expand, "looked"
-     * at it in the visualCheck. 
-     */
-    public void testEditOnCollapse() {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("ROOT");
-        DefaultMutableTreeNode a = new DefaultMutableTreeNode("A");
-        DefaultMutableTreeNode a1 = new DefaultMutableTreeNode("A1");
-        DefaultMutableTreeNode b = new DefaultMutableTreeNode("B");
-        a.add(a1);
-        root.add(a);
-        root.add(b);
-        TreeTableModel model = new DefaultTreeTableModel(root) {
-            public boolean isCellEditable(Object obj,int col) {
-                return true;
-              }
-                                                                                      
-              public void setValueAt(Object value,Object node,int col) {
-                  MutableTreeNode treeNode = (MutableTreeNode) node;
-                 treeNode.setUserObject(value);
-                 MutableTreeNode parent = (MutableTreeNode) treeNode.getParent();
-                 nodesChanged(parent, new int[] { parent.getIndex(treeNode) } );
-              }
-                                                                                      
-              public Object getValueAt(Object node,int col) {
-                  return ((DefaultMutableTreeNode) node).getUserObject();
-              }
-            };
-            
-        JXTreeTable treeTable = new JXTreeTable(model);
-        treeTable.setEditable(true);
-        treeTable.expandAll();
-        assertEquals(3, treeTable.getRowCount());
-        Object valueBelow = treeTable.getValueAt(2, 0);
-        treeTable.editCellAt(1, 0);
-        ((JTextField) treeTable.getEditorComponent()).setText("other");
-        treeTable.collapseRow(0);
-        assertEquals(2, treeTable.getRowCount());
-        if (treeTable.isEditing()) {
-            treeTable.getCellEditor().stopCellEditing();
-        }
-        assertEquals(valueBelow, treeTable.getValueAt(1, 0));
-    }
-
-
-    /**
-     * Issue #212-jdnc: reuse editor, install only once.
-     * 
-     */
-    public void testReuseEditor() {
-        JXTreeTable treeTable = new JXTreeTable(treeTableModel);
-        CellEditor editor = treeTable.getDefaultEditor(TreeTableModel.class);
-        assertTrue(editor instanceof TreeTableCellEditor);
-        treeTable.setTreeTableModel(simpleTreeTableModel);
-        assertSame("hierarchical editor must be unchanged", editor, 
-                treeTable.getDefaultEditor(TreeTableModel.class));
-    }
-    /**
-     * Issue #4-, #340-swingx: duplicate notification
-     * 
-     * starting from unselected, the event count is 1 as expected 
-     */
-    public void testSelectionEvents() {
-        JXTreeTable treeTable = prepareTreeTable(false);
-        TreeSelectionReport report = new TreeSelectionReport();
-        treeTable.getTreeSelectionModel().addTreeSelectionListener(report);
-        treeTable.setRowSelectionInterval(1, 1);
-        assertEquals(1, report.getEventCount());
-    }
-
-
-    /**
-     * Issue #4-, #340-swingx: duplicate notification
-     * 
-     * Hmm... unexpected: the eventCount (2) is not effected by 
-     * catching isAdjusting listSelectionEvents. The reason is 
-     * an intermediate clearSelection which fires the additional.
-     */
-    public void testSelectionChangedEvents() {
-        JXTreeTable treeTable = prepareTreeTable(true);
-        TreeSelectionReport report = new TreeSelectionReport();
-        treeTable.getTreeSelectionModel().addTreeSelectionListener(report);
-        treeTable.setRowSelectionInterval(1, 1);
-        assertEquals(1, report.getEventCount());
-    }
-
-    /**
-     * Issue #4-, #340-swingx: duplicate notification
-     * 
-     * The old in the event must be the last selected. 
-     */
-    public void testSelectionChangedHasFirstOldPath() {
-        JXTreeTable treeTable = prepareTreeTable(true);
-        TreeSelectionReport report = new TreeSelectionReport();
-        treeTable.getTreeSelectionModel().addTreeSelectionListener(report);
-        treeTable.setRowSelectionInterval(1, 1);
-        TreeSelectionEvent event = report.getLastEvent();
-        assertEquals(treeTable.getPathForRow(1), event.getNewLeadSelectionPath());
-        assertEquals(treeTable.getPathForRow(0), event.getOldLeadSelectionPath());
-    }
-
-
-    /**
-     * creates and configures a treetable for usage in selection tests.
-     * 
-     * @param selectFirstRow boolean to indicate if the first row should
-     *   be selected.
-     * @return
-     */
-    protected JXTreeTable prepareTreeTable(boolean selectFirstRow) {
-        JXTreeTable treeTable = new JXTreeTable(simpleTreeTableModel);
-        treeTable.setRootVisible(true);
-        // sanity: assert that we have at least two rows to change selection
-        assertTrue(treeTable.getRowCount() > 1);
-        if (selectFirstRow) {
-            treeTable.setRowSelectionInterval(0, 0);
-        }
-        return treeTable;
-    }
-
-    /**
-     * Issue #4-, #340-swingx: duplicate notification
-     * 
-     * sanity: check if there's only one event fired if selection is 
-     * set directly via the treeSelectionModel. Characterize normal
-     * treeSelection to mimic.
-     */
-    public void testSelectionChangedOnTreeSelection() {
-        JXTreeTable treeTable = prepareTreeTable(true);
-        TreePath oldSelected = treeTable.getPathForRow(0);
-        TreeSelectionReport report = new TreeSelectionReport();
-        treeTable.getTreeSelectionModel().addTreeSelectionListener(report);
-        TreePath newSelected = treeTable.getPathForRow(1);
-        treeTable.getTreeSelectionModel().setSelectionPath(newSelected);
-        assertEquals(1, report.getEventCount());
-        // check the paths
-        TreeSelectionEvent event = report.getLastEvent();
-        assertEquals(oldSelected, event.getOldLeadSelectionPath());
-        assertEquals(newSelected, event.getNewLeadSelectionPath());
-    }
-
-    /**
-     * Issue #270-swingx: NPE in some contexts when accessing the 
-     * TreeTableModelAdapter.
-     *
-     */
-    public void testConservativeRowForNodeInAdapter() {
-        // for testing we need a model which relies on 
-        // node != null
-        TreeTableModel model = new DefaultTreeTableModel((TreeNode) simpleTreeTableModel.getRoot()) {
-
-            @Override
-            public Object getValueAt(Object node, int column) {
-                // access node
-                node.toString();
-                return super.getValueAt(node, column);
-            }
-
-            @Override
-            public void setValueAt(Object value, Object node, int column) {
-                // access node
-                node.toString();
-                super.setValueAt(value, node, column);
-            }
-
-            @Override
-            public boolean isCellEditable(Object node, int column) {
-                // access node
-                node.toString();
-                return super.isCellEditable(node, column);
-            }
-            
-        };
-        // can't use ComponentTreeTableModel with JXFrame in headless environment
-//        JXTreeTable treeTable = new JXTreeTable(new ComponentTreeTableModel(new JXFrame()));
-        JXTreeTable treeTable = new JXTreeTable(model);
-        treeTable.setRootVisible(true);
-        TableModel adapter = treeTable.getModel();
-        treeTable.collapseAll();
-        assertEquals(1, treeTable.getRowCount());
-        // simulate contexts where the accessed row isn't currently visible
-        adapter.getValueAt(treeTable.getRowCount(), 0);
-        adapter.isCellEditable(treeTable.getRowCount(), 0);
-        adapter.setValueAt("somename", treeTable.getRowCount(), 0);
-    }
-    /**
-     * test if table and tree rowHeights are the same.
-     *
-     */
-    public void testAdjustedRowHeights() {
-        JXTreeTable treeTable = new JXTreeTable(simpleTreeTableModel);
-        JXTree tree = (JXTree) treeTable.getCellRenderer(0, 0);
-        // sanity: same initially
-        assertEquals("table and tree rowHeights must be equal", 
-                treeTable.getRowHeight(), tree.getRowHeight());
-        // change treeTable height
-        treeTable.setRowHeight(treeTable.getRowHeight() * 2);
-        assertEquals("table and tree rowHeights must be equal", 
-                treeTable.getRowHeight(), tree.getRowHeight());
-        // change treeTable height
-        tree.setRowHeight(tree.getRowHeight() * 2);
-        assertEquals("table and tree rowHeights must be equal", 
-                treeTable.getRowHeight(), tree.getRowHeight());
-
-    }
-    /**
-     * #321-swingx: missing tree property toggleClickCount, largeModel.
-     *
-     */
-    public void testToggleClickCount() {
-        JXTreeTable treeTable = new JXTreeTable(simpleTreeTableModel);
-        int clickCount = treeTable.getToggleClickCount();
-        // asserting documented default clickCount == 2
-        assertEquals("default clickCount", 2, clickCount);
-        int newClickCount = clickCount + 1;
-        treeTable.setToggleClickCount(newClickCount);
-        assertEquals("toggleClickCount must be changed", 
-                newClickCount, treeTable.getToggleClickCount());
-        boolean largeModel = treeTable.isLargeModel();
-        assertFalse("initial largeModel", largeModel);
-        treeTable.setLargeModel(!largeModel);
-        assertTrue("largeModel property must be toggled", treeTable.isLargeModel());
-        
-    }
-    /**
      * Issue #168-jdnc: dnd enabled breaks node collapse/expand.
      * testing auto-detection of dragHackEnabled.
      * 
@@ -302,8 +42,7 @@ public class JXTreeTableUnitTest extends InteractiveTestCase {
     public void testDragHackFlagOn() {
         JXTreeTable treeTable = new JXTreeTable(simpleTreeTableModel);
         assertNull(treeTable.getClientProperty(JXTreeTable.DRAG_HACK_FLAG_KEY));
-        treeTable.getTreeTableHacker().expandOrCollapseNode(0, 
-                new MouseEvent(treeTable, MouseEvent.MOUSE_PRESSED, 0, InputEvent.BUTTON1_MASK, 0, 0, 1, false));
+        treeTable.editCellAt(0, 0, new MouseEvent(treeTable, 0, 0, 0, 0, 0, 1, false));
         Boolean dragHackFlag = (Boolean) treeTable.getClientProperty(JXTreeTable.DRAG_HACK_FLAG_KEY);
         assertNotNull(dragHackFlag);
         assertTrue(dragHackFlag);
@@ -318,8 +57,7 @@ public class JXTreeTableUnitTest extends InteractiveTestCase {
         System.setProperty("sun.swing.enableImprovedDragGesture", "true");
         JXTreeTable treeTable = new JXTreeTable(simpleTreeTableModel);
         assertNull(treeTable.getClientProperty(JXTreeTable.DRAG_HACK_FLAG_KEY));
-        treeTable.getTreeTableHacker().expandOrCollapseNode(0, 
-                new MouseEvent(treeTable, MouseEvent.MOUSE_PRESSED, 0, InputEvent.BUTTON1_MASK, 0, 0, 1, false));
+        treeTable.editCellAt(0, 0, new MouseEvent(treeTable, 0, 0, 0, 0, 0, 1, false));
         Boolean dragHackFlag = (Boolean) treeTable.getClientProperty(JXTreeTable.DRAG_HACK_FLAG_KEY);
         assertNotNull(dragHackFlag);
         assertFalse(dragHackFlag);
@@ -516,6 +254,19 @@ public class JXTreeTableUnitTest extends InteractiveTestCase {
         
     }
 
+    public void testTableRowAtOutsidePoint() {
+        JTable treeTable = new JTable(2, 4);
+        int negativeYRowHeight = (treeTable.getRowHeight()+ treeTable.getRowMargin()) * treeTable.getRowCount() ;
+        int negativeYRowHeightPlusOne = negativeYRowHeight - 1;
+        int negativeYMinimal = -1;
+        assertEquals("negative y location rowheight " + negativeYRowHeight + " must return row -1", 
+                -1,  treeTable.rowAtPoint(new Point(-1, negativeYRowHeight)));
+        assertEquals("negative y location " + negativeYRowHeightPlusOne +" must return row -1", 
+                -1,  treeTable.rowAtPoint(new Point(-1, negativeYRowHeightPlusOne)));
+//        assertEquals("minimal negative y location must return row -1", 
+//                -1,  treeTable.rowAtPoint(new Point(-1, negativeYMinimal)));
+        
+    }
 
     public void testPathForLocationContract() {
         JXTreeTable treeTable = new JXTreeTable(treeTableModel);

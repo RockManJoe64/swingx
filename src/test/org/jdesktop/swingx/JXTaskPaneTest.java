@@ -17,9 +17,6 @@ import javax.swing.JButton;
 import javax.swing.UIManager;
 
 import org.jdesktop.swingx.icon.EmptyIcon;
-import org.jdesktop.swingx.plaf.LookAndFeelAddons;
-import org.jdesktop.swingx.plaf.aqua.AquaLookAndFeelAddons;
-import org.jdesktop.swingx.plaf.metal.MetalLookAndFeelAddons;
 import org.jdesktop.swingx.util.PropertyChangeReport;
 
 public class JXTaskPaneTest extends InteractiveTestCase {
@@ -185,12 +182,4 @@ public class JXTaskPaneTest extends InteractiveTestCase {
     TestUtilities.cycleAddons(new JXTaskPane());
   }
 
-  public void testIssue344() throws Exception {
-    new JXTaskPane();
-    LookAndFeelAddons.setAddon(new MetalLookAndFeelAddons());
-    String uiClass = UIManager.getString(JXTaskPane.uiClassID);
-    assertTrue("org.jdesktop.swingx.plaf.metal.MetalTaskPaneUI".equals(uiClass)
-      || "org.jdesktop.swingx.plaf.misc.GlossyTaskPaneUI".equals(uiClass));
-  }
-  
 }

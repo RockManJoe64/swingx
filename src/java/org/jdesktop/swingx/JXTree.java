@@ -21,19 +21,15 @@
 
 package org.jdesktop.swingx;
 
-import java.applet.Applet;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -47,7 +43,6 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -57,10 +52,10 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.jdesktop.swingx.JXList.ListRolloverController;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.jdesktop.swingx.decorator.HighlighterPipeline;
-import org.jdesktop.swingx.tree.DefaultXTreeCellEditor;
 
 
 /**
@@ -76,8 +71,6 @@ public class JXTree extends JTree {
     private Method conversionMethod = null;
     private final static Class[] methodSignature = new Class[] {Object.class};
     private final static Object[] methodArgs = new Object[] {null};
-    private static final int[] EMPTY_INT_ARRAY = new int[0];
-    private static final TreePath[] EMPTY_TREEPATH_ARRAY = new TreePath[0];
 
     protected FilterPipeline filters;
     protected HighlighterPipeline highlighters;
@@ -98,7 +91,6 @@ public class JXTree extends JTree {
     private TreeRolloverController linkController;
     private boolean overwriteIcons;
     private Searchable searchable;
-    private CellEditorRemover editorRemover;
     
     
     
@@ -107,7 +99,7 @@ public class JXTree extends JTree {
      * used by this tree defines a leaf node as any node without children.
      */
     public JXTree() {
-	init();
+	initActions();
     }
 
     /**
@@ -122,7 +114,7 @@ public class JXTree extends JTree {
      */
     public JXTree(Object[] value) {
         super(value);
-	init();
+	initActions();
     }
 
     /**
@@ -137,7 +129,7 @@ public class JXTree extends JTree {
      */
     public JXTree(Vector value) {
         super(value);
-	init();
+	initActions();
     }
 
     /**
@@ -153,7 +145,7 @@ public class JXTree extends JTree {
      */
     public JXTree(Hashtable value) {
         super(value);
-	init();
+	initActions();
     }
 
     /**
@@ -168,7 +160,6 @@ public class JXTree extends JTree {
      */
     public JXTree(TreeNode root) {
         super(root, false);
-        init();
     }
 
     /**
@@ -186,7 +177,7 @@ public class JXTree extends JTree {
      */
     public JXTree(TreeNode root, boolean asksAllowsChildren) {
         super(root, asksAllowsChildren);
-	init();
+		initActions();
     }
 
     /**
@@ -201,10 +192,13 @@ public class JXTree extends JTree {
      */
     public JXTree(TreeModel newModel) {
         super(newModel);
-        init();
+        initActions();
+        // To support delegation of convertValueToText() to the model...
+        // JW: need to set again (is done in setModel, but at call
+        // in super constructor the field is not yet valid)
+        conversionMethod = getValueConversionMethod(newModel);
     }
 
-    @Override
     public void setModel(TreeModel newModel) {
         // To support delegation of convertValueToText() to the model...
         // JW: method needs to be set before calling super
@@ -213,24 +207,7 @@ public class JXTree extends JTree {
         super.setModel(newModel);
     }
 
-    /**
-     * Tries to find and return a method for Object --> to String conversion on the
-     * model by reflection. Looks for a signature:
-     * 
-     * <pre> <code>
-     *   String convertValueToText(Object);
-     * </code> </pre>
-     * 
-     * 
-     * 
-     * PENDING JW: check - does this work with restricted permissions?
-     * JW: widened access for testing - do test!
-     * 
-     * @param model the model to detect the method
-     * @return the <code> Method </code> or null if the model has no method with
-     *   the expected signature 
-     */
-    protected Method getValueConversionMethod(TreeModel model) {
+    private Method getValueConversionMethod(TreeModel model) {
         try {
             return model == null ? null : model.getClass().getMethod(
                     "convertValueToText", methodSignature);
@@ -241,8 +218,6 @@ public class JXTree extends JTree {
         return null;
     }
 
-    
-    @Override
     public String convertValueToText(Object value, boolean selected,
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
         // Delegate to model, if possible. Otherwise fall back to superclass...
@@ -263,38 +238,14 @@ public class JXTree extends JTree {
         return "";
     }
 
-    private void init() {
-        // To support delegation of convertValueToText() to the model...
-        // JW: need to set again (is done in setModel, but at call
-        // in super constructor the field is not yet valid)
-        conversionMethod = getValueConversionMethod(getModel());
-        // Issue #233-swingx: default editor not bidi-compliant 
-        // manually install an enhanced TreeCellEditor which 
-        // behaves slightly better in RtoL orientation.
-        // Issue #231-swingx: icons lost
-        // Anyway, need to install the editor manually because
-        // the default install in BasicTreeUI doesn't know about
-        // the DelegatingRenderer and therefore can't see
-        // the DefaultTreeCellRenderer type to delegate to. 
-        // As a consequence, the icons are lost in the default
-        // setup.
-        // JW PENDING need to mimic ui-delegate default re-set?
-        // JW PENDING alternatively, cleanup and use DefaultXXTreeCellEditor in incubator
-        TreeCellRenderer xRenderer = getCellRenderer();
-        if (xRenderer instanceof JXTree.DelegatingRenderer) {
-            TreeCellRenderer delegate = ((JXTree.DelegatingRenderer) xRenderer).getDelegateRenderer();
-            if (delegate instanceof DefaultTreeCellRenderer) { 
-                setCellEditor(new DefaultXTreeCellEditor(this, (DefaultTreeCellRenderer) delegate));
-            }   
-        }
-
+    private void initActions() {
         // Register the actions that this class can handle.
         ActionMap map = getActionMap();
         map.put("expand-all", new Actions("expand-all"));
         map.put("collapse-all", new Actions("collapse-all"));
         map.put("find", createFindAction());
-
-        KeyStroke findStroke = SearchFactory.getInstance().getSearchAccelerator();
+        // JW: this should be handled by the LF!
+        KeyStroke findStroke = KeyStroke.getKeyStroke("control F");
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(findStroke, "find");
 
     }
@@ -339,7 +290,7 @@ public class JXTree extends JTree {
 
     /**
      * 
-     * @return a not-null Searchable for this editor.
+     * @returns a not-null Searchable for this editor.  
      */
     public Searchable getSearchable() {
         if (searchable == null) {
@@ -368,6 +319,7 @@ public class JXTree extends JTree {
      */
     public class TreeSearchable extends AbstractSearchable {
 
+        @Override
         protected void findMatchAndUpdateState(Pattern pattern, int startRow,
                 boolean backwards) {
             SearchResult searchResult = null;
@@ -385,6 +337,7 @@ public class JXTree extends JTree {
 
         }
 
+        @Override
         protected SearchResult findExtendedMatch(Pattern pattern, int row) {
             return findMatchAt(pattern, row);
         }
@@ -397,9 +350,9 @@ public class JXTree extends JTree {
          * @param pattern
          * @param row
          *            a valid row index in view coordinates
+         * @param column
          *            a valid column index in view coordinates
-         * @return an appropriate <code>SearchResult</code> if matching or
-         * null if no matching
+         * @return
          */
         protected SearchResult findMatchAt(Pattern pattern, int row) {
             TreePath path = getPathForRow(row);
@@ -416,10 +369,12 @@ public class JXTree extends JTree {
             return null;
         }
 
+        @Override
         protected int getSize() {
             return getRowCount();
         }
 
+        @Override
         protected void moveMatchMarker() {
             int row = lastSearchResult.foundRow;
             setSelectionRow(row);
@@ -444,46 +399,11 @@ public class JXTree extends JTree {
      * Expands all nodes in the tree table.
      */
     public void expandAll() {
-        if (getRowCount() == 0) {
-            expandRoot();
-        }
         for (int i = 0; i < getRowCount(); i++) {
             expandRow(i);
         }
     }
 
-    /**
-     * Expands the root path, assuming the current TreeModel has been set.
-     */
-    private void expandRoot() {
-        TreeModel              model = getModel();
-        if(model != null && model.getRoot() != null) {
-            expandPath(new TreePath(model.getRoot()));
-        }
-    }
-
-    /**
-     * overridden to always return a not-null array 
-     * (following SwingX convention).
-     */
-    @Override
-    public int[] getSelectionRows() {
-        int[] rows = super.getSelectionRows();
-        return rows != null ? rows : EMPTY_INT_ARRAY; 
-    }
-    
-    
-
-    /**
-     * overridden to always return a not-null array 
-     * (following SwingX convention).
-     */
-    @Override
-    public TreePath[] getSelectionPaths() {
-        // TODO Auto-generated method stub
-        TreePath[] paths = super.getSelectionPaths();
-        return paths != null ? paths : EMPTY_TREEPATH_ARRAY; 
-    }
 
     public HighlighterPipeline getHighlighters() {
         return highlighters;
@@ -558,7 +478,7 @@ public class JXTree extends JTree {
      * is re-dispatched as a pressed just inside the label bounds. This 
      * is a first go for #166-swingx.
      * 
-     * @return <code>RolloverProducer</code> to use with this tree
+     * @return
      */
     protected RolloverProducer createRolloverProducer() {
         RolloverProducer r = new RolloverProducer() {
@@ -613,10 +533,7 @@ public class JXTree extends JTree {
    
     /**
      * returns the rolloverEnabled property.
-     *
-     * TODO: Why doesn't this just return rolloverEnabled???
-     *
-     * @return if rollober is enabled.
+     * @return
      */
     public boolean isRolloverEnabled() {
         return rolloverProducer != null;
@@ -675,6 +592,7 @@ public class JXTree extends JTree {
         }
 
 
+        @Override
         protected RolloverRenderer getRolloverRenderer(Point location, boolean prepare) {
             TreeCellRenderer renderer = component.getCellRenderer();
             RolloverRenderer rollover = renderer instanceof RolloverRenderer 
@@ -693,6 +611,7 @@ public class JXTree extends JTree {
         }
 
 
+        @Override
         protected Point getFocusedCell() {
             // TODO Auto-generated method stub
             return null;
@@ -711,6 +630,10 @@ public class JXTree extends JTree {
         return delegatingRenderer;
     }
 
+    public void setRolloverCursor(Point newLocation) {
+        // TODO Auto-generated method stub
+        
+    }
 
     public TreeCellRenderer getCellRenderer() {
         return getDelegatingRenderer();
@@ -921,131 +844,6 @@ public class JXTree extends JTree {
     }
 
     
-//----------------------- edit
-    
-    /**
-     * Overridden to terminate edits on focusLost. 
-     * This method updates the internal CellEditorRemover.
-     * 
-     * @see #updateEditorRemover()
-     */
-    @Override
-    public void startEditingAtPath(TreePath path) {
-        super.startEditingAtPath(path);
-        if (isEditing()) {
-            updateEditorRemover();
-        }
-    }
-
-    
-    /**
-     * Overridden to release the CellEditorRemover, if any.
-     */
-    @Override
-    public void removeNotify() {
-        if (editorRemover != null) {
-            editorRemover.release();
-            editorRemover = null;
-        }
-        super.removeNotify();
-    }
-
-    /**
-     * Lazily creates and updates the internal CellEditorRemover.
-     * 
-     *
-     */
-    private void updateEditorRemover() {
-        if (editorRemover == null) {
-            editorRemover = new CellEditorRemover();
-        }
-        editorRemover.updateKeyboardFocusManager();
-    }
-
-    /** This class tracks changes in the keyboard focus state. It is used
-     * when the JXTree is editing to determine when to terminate the edit.
-     * If focus switches to a component outside of the JXTree, but in the
-     * same window, this will terminate editing. The exact terminate 
-     * behaviour is controlled by the invokeStopEditing property.
-     * 
-     * @see javax.swing.JTree#setInvokesStopCellEditing(boolean)
-     * 
-     */
-    public class CellEditorRemover implements PropertyChangeListener {
-        /** the focusManager this is listening to. */
-        KeyboardFocusManager focusManager;
-
-        public CellEditorRemover() {
-            updateKeyboardFocusManager();
-        }
-
-        /**
-         * Updates itself to listen to the current KeyboardFocusManager. 
-         *
-         */
-        public void updateKeyboardFocusManager() {
-            KeyboardFocusManager current = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-            setKeyboardFocusManager(current);
-        }
-
-        /**
-         * stops listening.
-         *
-         */
-        public void release() {
-            setKeyboardFocusManager(null);
-        }
-        
-        /**
-         * Sets the focusManager this is listening to. 
-         * Unregisters/registers itself from/to the old/new manager, 
-         * respectively. 
-         * 
-         * @param current the KeyboardFocusManager to listen too.
-         */
-        private void setKeyboardFocusManager(KeyboardFocusManager current) {
-            if (focusManager == current)
-                return;
-            KeyboardFocusManager old = focusManager;
-            if (old != null) {
-                old.removePropertyChangeListener("permanentFocusOwner", this);
-            }
-            focusManager = current;
-            if (focusManager != null) {
-                focusManager.addPropertyChangeListener("permanentFocusOwner",
-                        this);
-            }
-
-        }
-        public void propertyChange(PropertyChangeEvent ev) {
-            if (!isEditing()) {
-                return;
-            }
-
-            Component c = focusManager.getPermanentFocusOwner();
-            while (c != null) {
-                JXTree tree = JXTree.this;
-                if (c == tree) {
-                    // focus remains inside the table
-                    return;
-                } else if ((c instanceof Window) ||
-                           (c instanceof Applet && c.getParent() == null)) {
-                    if (c == SwingUtilities.getRoot(tree)) {
-                        if (tree.getInvokesStopCellEditing()) {
-                            tree.stopEditing();
-                        }
-                        if (tree.isEditing()) {
-                            tree.cancelEditing();
-                        }
-                    }
-                    break;
-                }
-                c = c.getParent();
-            }
-        }
-    }
-
-    
     protected ComponentAdapter getComponentAdapter() {
         return dataAdapter;
     }
@@ -1079,7 +877,7 @@ public class JXTree extends JTree {
         }
 
         public Object getFilteredValueAt(int row, int column) {
-            /** TODO: Implement filtering */
+            /** @todo Implement filtering */
             return getValueAt(row, column);
         }
 
@@ -1087,22 +885,20 @@ public class JXTree extends JTree {
             return tree.isRowSelected(row);
         }
 
-        @Override
         public boolean isExpanded() {
             return tree.isExpanded(row);
         }
 
-        @Override
         public boolean isLeaf() {
             return tree.getModel().isLeaf(getValue());
         }
 
         public boolean isCellEditable(int row, int column) {
-            return false;	/** TODO:  */
+            return false;	/** @todo  */
         }
 
         public void setValueAt(Object aValue, int row, int column) {
-            /** TODO:  */
+            /** @todo  */
         }
         
         public String getColumnName(int columnIndex) {
@@ -1113,6 +909,5 @@ public class JXTree extends JTree {
             return null;
         }
     }
-
 
 }

@@ -37,9 +37,9 @@ public abstract class Filter {
     /** the column the filter is bound to. JW: no need to make it final. */
     private /** final */ int column;		// in model coordinates
     protected FilterPipeline		pipeline = null;
-    protected ComponentAdapter	adapter = null;	/** TODO: make private */
+    protected ComponentAdapter	adapter = null;	/** @todo make private */
     protected int[]             fromPrevious = new int[0];
-    // TODO: JW... magic number!
+    // JW... magic number!
     int order = -1;	// package private
 
     /**
@@ -83,7 +83,7 @@ public abstract class Filter {
     }
 
     /**
-     * TODO: PENDING: not tested!
+     * PENDING: not tested!
      * 
      * @param modelColumn
      */
@@ -179,11 +179,11 @@ public abstract class Filter {
      * returns editability of the cell identified by the specified row
      * and column index.
      * 
-     * PRE: 0 &lt;= row &lt; <code>getSize()</code>
+     * PRE: 0 <= row < getSize()
      * 
      * @param row row index in this filter's "view" coordinates
      * @param column
-     * @return true if the cell at the specified row/col is editable
+     * @return
      */
     public boolean isCellEditable(int row, int column) {
         int mappedRow = mapTowardModel(row);
@@ -254,18 +254,18 @@ public abstract class Filter {
 
 
     /**
-     * PRE: 0 &lt;= row &lt; <code>getSize();</code>
+     * PRE: 0 <= row < getSize();
      * 
      * @param row
-     * @return TODO:
+     * @return
      */
     protected abstract int mapTowardModel(int row);
 
     /**
-     * PRE: 0 &lt;= row &lt; <code>getInputSize();</code>
+     * PRE: 0 <= row < getInputSize();
      * 
      * @param row
-     * @return TODO:
+     * @return
      */
     protected int mapTowardView(int row) {
         // WARNING: Not all model indices map to view when view is filtered!
@@ -286,7 +286,7 @@ public abstract class Filter {
      * @return the row in this filter that maps to the specified row in
      * the previous filter
      */
-    @Deprecated /** TODO: remove this deprecated method; use mapTowardView() instead */
+    @Deprecated /** @todo remove this deprecated method; use mapTowardView() instead */
     protected int translateFromPreviousFilter(int row) {
         return mapTowardView(row);
     }
@@ -302,18 +302,18 @@ public abstract class Filter {
      * @return the row in the previous filter that maps to the specified row in
      * this filter
      */
-    @Deprecated /** TODO: remove this deprecated method; use mapTowardModel() instead */
+    @Deprecated /** @todo remove this deprecated method; use mapTowardModel() instead */
     protected int translateToPreviousFilter(int row) {
         return mapTowardModel(row);
     }
 
     /**
-     * returns the filter to use for accessing input.
+     * returns to filter to use for accessing input.
      * That's the previous (model is first) filter if this is 
      * part of a pipeline or null if this is standalone or the first
      * in the pipeline.
      * 
-     * @return filter to use for accessing input
+     * @return
      */
     private Filter getMappingFilter() {
         Filter filter = null;
@@ -356,7 +356,7 @@ public abstract class Filter {
 
     /**
      * Binds this filter to the specified <code>ComponentAdapter</code>.
-     * Called by {@link FilterPipeline#assign(ComponentAdapter)}
+     * Called by {@link org.jdesktop.swing.decorator.FilterPipeline#bind(org.jdesktop.swing.decorator.ComponentAdapter) FilterPipeline.bind()}.
      *
      * @param adapter adapter that this filter is bound to
      */
@@ -375,6 +375,7 @@ public abstract class Filter {
 
     /**
      * Binds this filter to the specified filter pipeline.
+     * Called by {@link org.jdesktop.swing.decorator.FilterPipeline#bind(org.jdesktop.swing.decorator.ComponentAdapter) FilterPipeline.bind()}.
      *
      * @param pipeline the filter pipeline that this filter is bound to
      */
@@ -393,9 +394,6 @@ public abstract class Filter {
         }
     }
 
-    /**
-     * Called by {@link FilterPipeline#assignFilters()}
-     */
     void assign(FilterPipeline pipeline, int i) {
         if (order >= 0) {
             throw new IllegalArgumentException("Element " + i +
@@ -408,4 +406,9 @@ public abstract class Filter {
     protected FilterPipeline getPipeline() {
         return pipeline;
     }
+
+
+
+
 }
+

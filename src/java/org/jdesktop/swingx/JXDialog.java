@@ -70,7 +70,7 @@ public class JXDialog extends JDialog {
     public static final String CLOSE_ACTION_COMMAND = "close";
     public static final String UIPREFIX = "XDialog.";
 
-    protected JComponent content;
+    JComponent content;
     
     public JXDialog(Frame frame, JComponent content) {
         super(frame);
@@ -156,7 +156,7 @@ public class JXDialog extends JDialog {
      * create the dialog button controls.
      * 
      * 
-     * @return panel containing button controls
+     * @return
      */
     protected JComponent createButtonPanel() {
         // PENDING: this is a hack until we have a dedicated ButtonPanel!
@@ -171,11 +171,9 @@ public class JXDialog extends JDialog {
         Action findAction = getAction(EXECUTE_ACTION_COMMAND);
         Action closeAction = getAction(CLOSE_ACTION_COMMAND);
 
-        JButton findButton = new JButton(findAction);
-        panel.add(findButton);
-        if (findAction != closeAction) {
-            panel.add(new JButton(closeAction));
-        }
+        JButton findButton;
+        panel.add(findButton = new JButton(findAction));
+        panel.add(new JButton(closeAction));
 
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
@@ -202,7 +200,7 @@ public class JXDialog extends JDialog {
      * convenience wrapper to access rootPane's actionMap.
      * 
      * @param key
-     * @return root pane's <code>ActionMap</code>
+     * @return
      */
     private Action getAction(Object key) {
         return getRootPane().getActionMap().get(key);

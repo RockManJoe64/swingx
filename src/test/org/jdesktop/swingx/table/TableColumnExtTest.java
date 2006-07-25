@@ -11,6 +11,7 @@ import java.util.Comparator;
 
 import junit.framework.TestCase;
 
+import org.jdesktop.swingx.decorator.Sorter;
 import org.jdesktop.swingx.util.PropertyChangeReport;
 
 /**
@@ -19,60 +20,34 @@ import org.jdesktop.swingx.util.PropertyChangeReport;
 public class TableColumnExtTest extends TestCase {
 
     /**
-     * Issue #154-swingx.
-     * 
-     * added property headerTooltip.
+     * Issue #273-swingx: make Comparator a bound property of TableColumnExt.
+     * (instead of client property)
      *
+     * test if comparator is taken initially. 
      */
-    public void testHeaderTooltip() {
-        TableColumnExt columnExt = new TableColumnExt();
-        columnExt.setTitle("mytitle");
-        assertNull("tooltip is null initially", columnExt.getToolTipText());
-        String toolTip = "some column text";
-        PropertyChangeReport report = new PropertyChangeReport();
-        columnExt.addPropertyChangeListener(report);
-        columnExt.setToolTipText(toolTip);
-        assertEquals(toolTip, columnExt.getToolTipText());
-        assertEquals("must have fired one propertyChangeEvent for toolTipText ", 
-                1, report.getEventCount("toolTipText"));
-        TableColumnExt cloned = (TableColumnExt) columnExt.clone();
-        assertEquals("tooltip property must be cloned", columnExt.getToolTipText(),
-                cloned.getToolTipText());
-    }
-    
-    public void testSortable() {
-        TableColumnExt columnExt = new TableColumnExt();
-        boolean sortable = columnExt.isSortable();
-        assertTrue("columnExt isSortable by default", sortable);
-        PropertyChangeReport report = new PropertyChangeReport();
-        columnExt.addPropertyChangeListener(report);
-        columnExt.setSortable(!sortable);
-        // sanity assert: the change was taken
-        assertEquals(sortable, !columnExt.isSortable());
-        assertEquals("must have fired one propertyChangeEvent for sortable ", 
-                1, report.getEventCount("sortable"));
-        TableColumnExt cloned = (TableColumnExt) columnExt.clone();
-        assertEquals("sortable property must be cloned", columnExt.isSortable(),
-                cloned.isSortable());
+    public void testInitialComparator() {
+        TableColumnExt tableColumn = new TableColumnExt();
+        Comparator comparator = Collator.getInstance();
+        tableColumn.setComparator(comparator);
+        Sorter sorter = tableColumn.getSorter();
+        assertEquals(comparator, sorter.getComparator());
+        assertEquals(sorter.getComparator(), tableColumn.getComparator());
     }
     
     /**
      * Issue #273-swingx: make Comparator a bound property of TableColumnExt.
      * (instead of client property)
      *
-     * test if comparator is taken initially. This test doesn't make much sense
-     * after removing the sorter property because there's nothing to synch any 
-     * more 
-     * 
-     * TODO remove!
+     * test if comparator is updated. 
      */
-    public void testInitialComparator() {
+    public void testSetComparator() {
         TableColumnExt tableColumn = new TableColumnExt();
+        Sorter sorter = tableColumn.getSorter();
         Comparator comparator = Collator.getInstance();
         tableColumn.setComparator(comparator);
-        assertEquals(comparator, tableColumn.getComparator());
+        assertEquals(comparator, sorter.getComparator());
+        assertEquals(sorter.getComparator(), tableColumn.getComparator());
     }
-    
     
     /**
      * Issue #273-swingx: make Comparator a bound property of TableColumnExt.
@@ -149,18 +124,4 @@ public class TableColumnExtTest extends TestCase {
         assertTrue("min < max", clone.getMinWidth() < clone.getMaxWidth());
         assertTrue("cloned base resizable", clone.getResizable());
     }
-    /**
-     * Issue #39-swingx:
-     * Client properties not preserved when cloning.
-     *
-     */
-    public void testClientPropertyClone() {
-        TableColumnExt column = new TableColumnExt(0);
-        String key = "property";
-        Object value = new Object();
-        column.putClientProperty(key, value);
-        TableColumnExt cloned = (TableColumnExt) column.clone();
-        assertEquals("client property must be in cloned", value, cloned.getClientProperty(key));
-    }
-
 }

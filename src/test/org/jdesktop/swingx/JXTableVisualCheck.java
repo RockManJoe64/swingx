@@ -27,7 +27,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,7 +46,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.jdesktop.swingx.JXTableHeader.SortGestureRecognizer;
-import org.jdesktop.swingx.action.AbstractActionExt;
 import org.jdesktop.swingx.action.LinkModelAction;
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -60,10 +58,7 @@ import org.jdesktop.swingx.decorator.PatternFilter;
 import org.jdesktop.swingx.decorator.PatternHighlighter;
 import org.jdesktop.swingx.decorator.RolloverHighlighter;
 import org.jdesktop.swingx.decorator.ShuttleSorter;
-import org.jdesktop.swingx.decorator.SortController;
-import org.jdesktop.swingx.decorator.Sorter;
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter.UIAlternateRowHighlighter;
-import org.jdesktop.swingx.table.ColumnFactory;
 import org.jdesktop.swingx.table.ColumnHeaderRenderer;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -82,7 +77,7 @@ public class JXTableVisualCheck extends JXTableUnitTest {
       JXTableVisualCheck test = new JXTableVisualCheck();
       try {
 //        test.runInteractiveTests();
-          test.runInteractiveTests("interactive.*ColumnControl.*");
+//          test.runInteractiveTests("interactive.*ColumnControl.*");
 //          test.runInteractiveTests("interactive.*TableHeader.*");
 //          test.runInteractiveTests("interactive.*Multiple.*");
 //          test.runInteractiveTests("interactive.*RToL.*");
@@ -90,7 +85,7 @@ public class JXTableVisualCheck extends JXTableUnitTest {
 //          test.runInteractiveTests("interactive.*isable.*");
           
 //          test.runInteractiveTests("interactive.*Column.*");
-        test.runInteractiveTests("interactive.*Header.*");
+        test.runInteractiveTests("interactive.*High.*");
       } catch (Exception e) {
           System.err.println("exception when executing interactive tests:");
           e.printStackTrace();
@@ -105,100 +100,6 @@ public class JXTableVisualCheck extends JXTableUnitTest {
         setSystemLF(true);
     }
 
-    
-    /**
-     * visually check if terminateEditOnFocusLost, autoStartEdit
-     * work as expected.
-     *
-     */
-    public void interactiveToggleEditProperties() {
-        final JXTable table = new JXTable(10, 2);
-        JXFrame frame = wrapWithScrollingInFrame(table, new JButton("something to focus"), 
-                "JXTable: toggle terminate/autoStart on left (right is dummy) ");
-        Action toggleTerminate = new AbstractAction("toggleTerminate") {
-
-            public void actionPerformed(ActionEvent e) {
-                table.setTerminateEditOnFocusLost(!table.isTerminateEditOnFocusLost());
-                
-            }
-            
-        };
-        addAction(frame, toggleTerminate);
-        Action toggleAutoStart = new AbstractAction("toggleAutoStart") {
-
-            public void actionPerformed(ActionEvent e) {
-                table.setAutoStartEditOnKeyStroke(!table.isAutoStartEditOnKeyStroke());
-                
-            }
-            
-        };
-        addAction(frame, toggleAutoStart);
-        frame.setVisible(true);
-        
-    }
-    
-    /**
-     * Example: how to implement a custom toggle sort cycle.
-     * unsorted - ascending - descending - unsorted.
-     */
-    public void interactiveCustomToggleSortOrder() {
-        FilterPipeline myFilterPipeline = new CustomToggleSortOrderFP();
-        JXTable table = new JXTable(sortableTableModel);
-        table.setFilters(myFilterPipeline);
-        JXFrame frame = wrapWithScrollingInFrame(table, "Custom sort toggle");
-        frame.setVisible(true);
-        
-    }
-    /**
-     * Example: how to implement a custom toggle sort cycle.
-     * 
-     */
-    public class CustomToggleSortOrderFP extends FilterPipeline {
-
-        public CustomToggleSortOrderFP() {
-            super();
-        }
-
-        public CustomToggleSortOrderFP(Filter[] inList) {
-            super(inList);
-        }
-
-        @Override
-        protected SortController createDefaultSortController() {
-            return new CustomSortController();
-        }
-        
-        protected class CustomSortController extends SorterBasedSortController {
-
-            @Override
-            public void toggleSortOrder(int column, Comparator comparator) {
-                Sorter currentSorter = getSorter();
-                if ((currentSorter != null) && 
-                     (currentSorter.getColumnIndex() == column) &&
-                     !currentSorter.isAscending()) {
-                    setSorter(null);
-                } else {
-                    super.toggleSortOrder(column, comparator);
-                } 
-            }
-            
-        }
-    };
-    
-
-
-    /**
-     * Respect not-sortable column.
-     */
-    public void interactiveColumnNotSortable() {
-        final JXTable table = new JXTable(sortableTableModel) ;
-        table.setColumnControlVisible(true);
-        table.getColumnExt(0).setSortable(false);
-        JXFrame frame = wrapWithScrollingInFrame(table, "Always sorted");
-        frame.setVisible(true);
-        
-    }
-   
 
     /**
      * Expose sorted column. 
@@ -321,83 +222,6 @@ public class JXTableVisualCheck extends JXTableUnitTest {
         frame.setVisible(true);
         
     }
-    
-    /**
-     * Issue #281-swingx, Issue #334-swing: 
-     * header should be auto-repainted on changes to
-     * header title, value. Must update size if appropriate.
-     * 
-     * still open: core #4292511 - autowrap not really working
-     *
-     */
-    public void interactiveUpdateHeaderAndSizeRequirements() {
-        
-        final String[] alternate = { 
-                "simple", 
-//                "<html><b>This is a test of a large label to see if it wraps </font></b>",
-//                "simple", 
-                 "<html><center>Line 1<br>Line 2</center></html>" 
-                };
-        final JXTable table = new JXTable(10, 2);
-        
-        JXFrame frame = wrapWithScrollingInFrame(table, "update header");
-        Action action = new AbstractAction("update headervalue") {
-            boolean first;
-            public void actionPerformed(ActionEvent e) {
-                table.getColumn(1).setHeaderValue(first ? alternate[0] : alternate[1]);
-                first = !first;
-                
-            }
-            
-        };
-        addAction(frame, action);
-        frame.setVisible(true);
-        
-    }
-    
-    /**
-     * Issue #??-swingx: column auto-sizing support.
-     *
-     */
-    public void interactiveTestExpandsToViewportWidth() {
-        final JXTable table = new JXTable();
-        ColumnFactory factory = new ColumnFactory() {
-            @Override
-            public void configureTableColumn(TableModel model, TableColumnExt columnExt) {
-                 super.configureTableColumn(model, columnExt);
-                 if (model.getColumnClass(columnExt.getModelIndex()) == Integer.class) {
-                     // to see the effect: excess width is distributed relative
-                     // to the difference between maxSize and prefSize
-                     columnExt.setMaxWidth(200);
-                 } else {
-                 
-                     columnExt.setMaxWidth(1024);
-                 }
-            }
-            
-        };
-        table.setColumnFactory(factory);
-        table.setColumnControlVisible(true);
-        table.setModel(sortableTableModel);
-        table.setHorizontalScrollEnabled(true);
-        table.packAll();
-        JXFrame frame = wrapWithScrollingInFrame(table, "expand to width");
-        Action toggleModel = new AbstractAction("toggle model") {
-
-            public void actionPerformed(ActionEvent e) {
-                table.setModel(table.getModel() == sortableTableModel ? 
-                        new DefaultTableModel(20, 4) : sortableTableModel);
-                
-            }
-            
-        };
-        addAction(frame, toggleModel);
-        frame.setSize(table.getPreferredSize().width - 50, 300);
-        frame.setVisible(true);
-        LOG.info("table: " + table.getWidth());
-        LOG.info("Viewport: " + table.getParent().getWidth());
-    }
-    
     /**
      * Issue #256-swingx: viewport config.
      *
@@ -731,36 +555,6 @@ public class JXTableVisualCheck extends JXTableUnitTest {
         frame.setVisible(true);
     }
  
-    /**
-     * Issue #55-swingx: NPE on setModel if sorter in pipeline and new
-     * model getColumnCount() < sorter.getColumnIndex().
-     *
-     */
-    public void interactiveSetModelFilter() {
-        final DefaultTableModel model = createAscendingModel(0, 20, 3, true);
-        final AncientSwingTeam ancientSwingTeam = new AncientSwingTeam();
-        final JXTable table = new JXTable(ancientSwingTeam);
-        Sorter sorter = new ShuttleSorter(3, false);
-        FilterPipeline pipeline = new FilterPipeline(new Filter[] {sorter});
-        table.setFilters(pipeline);
-        table.setRowHeight(0, 25);
-        Action action = new AbstractAction("toggleModel") {
-
-            public void actionPerformed(ActionEvent e) {
-                if (table.getModel() == ancientSwingTeam) {
-                    table.setModel(model);
-                } else {
-                    table.setModel(ancientSwingTeam);
-                }
-                
-            }
-            
-        };
-        JXFrame frame = wrapWithScrollingInFrame(table, "model update?");
-        addAction(frame, action);
-        frame.setVisible(true);
-    }
-    
 
     /** 
      * @KEEP this is about testing Mustang sorting.

@@ -23,18 +23,14 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.swing.Action;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
@@ -42,7 +38,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import org.jdesktop.swingx.action.BoundAction;
 import org.jdesktop.swingx.decorator.AlternateRowHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.Filter;
@@ -54,8 +49,6 @@ import org.jdesktop.swingx.decorator.PatternHighlighter;
 import org.jdesktop.swingx.decorator.ShuttleSorter;
 import org.jdesktop.swingx.decorator.SortKey;
 import org.jdesktop.swingx.decorator.SortOrder;
-import org.jdesktop.swingx.decorator.Sorter;
-import org.jdesktop.swingx.table.ColumnControlButton;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.util.AncientSwingTeam;
 import org.jdesktop.swingx.util.ChangeReport;
@@ -93,366 +86,6 @@ public class JXTableUnitTest extends InteractiveTestCase {
     }
 
     /**
-     * Issue #342-swingx: default margins in JXTreeTable.
-     * 
-     * This is not only a treeTable issue: the coupling of 
-     * margins to showing gridlines (and still get a "nice" 
-     * looking selection) is not overly obvious in JTable as
-     * well. Added convenience method to adjust margins to 
-     * 0/1 if hiding/showing grid lines.
-     *
-     */
-    public void testDefaultMargins() {
-        JXTable table = new JXTable(10, 3);
-        // sanity: initial margins are (1, 1), grid on
-        assertEquals(1, table.getRowMargin());
-        assertTrue(table.getShowHorizontalLines());
-        assertEquals(1, table.getColumnMargin());
-        assertTrue(table.getShowVerticalLines());
-        // hide grid
-        boolean show = false;
-        table.setDefaultMargins(show, show);
-        assertEquals(0, table.getRowMargin());
-        assertEquals(show, table.getShowHorizontalLines());
-        assertEquals(0, table.getColumnMargin());
-        assertEquals(show, table.getShowVerticalLines());
-        
-    }
-    
-    /**
-     * Issue ??-swingx: NPE if tableChanged is messaged with a null event.
-     *
-     */
-    public void testNullTableEventNPE() {
-        JXTable table = new JXTable();
-        // don't throw null events
-        table.tableChanged(null);
-        assertFalse(table.isUpdate(null));
-        assertFalse(table.isDataChanged(null));
-        assertTrue(table.isStructureChanged(null));
-        // correct detection of structureChanged
-        TableModelEvent structureChanged = new TableModelEvent(table.getModel(), -1, -1);
-        assertFalse(table.isUpdate(structureChanged));
-        assertFalse(table.isDataChanged(structureChanged));
-        assertTrue(table.isStructureChanged(structureChanged));
-        // correct detection of insert/remove
-        TableModelEvent insert = new TableModelEvent(table.getModel(), 0, 10, -1, TableModelEvent.INSERT);
-        assertFalse(table.isUpdate(insert));
-        assertFalse(table.isDataChanged(insert));
-        assertFalse(table.isStructureChanged(insert));
-        // correct detection of update
-        TableModelEvent update = new TableModelEvent(table.getModel(), 0, 10);
-        assertTrue(table.isUpdate(update));
-        assertFalse(table.isDataChanged(update));
-        assertFalse(table.isStructureChanged(update));
-        // correct detection of dataChanged
-        TableModelEvent dataChanged = new TableModelEvent(table.getModel());
-        assertFalse(table.isUpdate(dataChanged));
-        assertTrue(table.isDataChanged(dataChanged));
-        assertFalse(table.isStructureChanged(dataChanged));
-        
-    }
-    /**
-     * test new mutable columnControl api.
-     *
-     */
-    public void testSetColumnControl() {
-        JXTable table = new JXTable();
-        JComponent columnControl = table.getColumnControl();
-        assertTrue(columnControl instanceof ColumnControlButton);
-        JComponent newControl = new JButton();
-        PropertyChangeReport report = new PropertyChangeReport();
-        table.addPropertyChangeListener(report);
-        table.setColumnControl(newControl);
-        assertSame(newControl, table.getColumnControl());
-        assertEquals(1, report.getEventCount());
-        assertEquals(1, report.getEventCount("columnControl"));
-        assertSame(newControl, report.getLastNewValue("columnControl"));
-    }
-    
-    /**
-     * characterization tests: constructors and exceptions.
-     *
-     */
-    public void testConstructorsWithNullArguments() {
-        try {
-            new JXTable((Object[][]) null, (Object[]) null);
-            fail("null arrays must throw NPE");
-        } catch (NullPointerException e) {
-            // nothing to do - expected
-        } catch (Exception e) {
-            fail("unexpected exception type (expected NPE)" + e);
-        }
-        try {
-            new JXTable((Object[][]) null, new Object[] {  });
-            fail("null arrays must throw NPE");
-        } catch (NullPointerException e) {
-            // nothing to do - expected
-        } catch (Exception e) {
-            fail("unexpected exception type (expected NPE)" + e);
-        }
-        try {
-            new JXTable(new Object[][] {{ }, { }}, (Object[]) null);
-            fail("null arrays throw NPE");
-            
-        } catch (NullPointerException e) {
-            // nothing to do - expected
-            
-        } catch (Exception e) {
-            fail("unexpected exception type (expected NPE)" + e);
-        }
-    }
-    /**
-     * expose JTable.autoStartsEdit.
-     *
-     */
-    public void testAutoStartEdit() {
-        JXTable table = new JXTable(10, 2);
-        assertTrue(table.isAutoStartEditOnKeyStroke());
-        PropertyChangeReport report = new PropertyChangeReport();
-        table.addPropertyChangeListener(report);
-        table.setAutoStartEditOnKeyStroke(false);
-        assertFalse("autoStart must be toggled to false", table.isAutoStartEditOnKeyStroke());
-        // the following assumption is wrong because the old client property key is
-        // different from the method name, leading to two events fired.
-        // assertEquals(1, report.getEventCount());
-        assertEquals(1, report.getEventCount("autoStartEditOnKeyStroke"));
-    }
-    
-    /**
-     * add editable property.
-     *
-     */
-    public void testEditable() {
-        JXTable table = new JXTable(10, 2);
-        assertTrue("default editable must be true", table.isEditable());
-        PropertyChangeReport report = new PropertyChangeReport();
-        table.addPropertyChangeListener(report);
-        table.setEditable(!table.isEditable());
-        assertFalse("editable must be toggled to false", table.isEditable());
-        assertEquals(1, report.getEventCount());
-        assertEquals(1, report.getEventCount("editable"));
-    }
-    
-    /**
-     * test effect of editable on cell editing.
-     *
-     */
-    public void testCellEditable() {
-        JXTable table = new JXTable(10, 2);
-        assertTrue("default table editable must be true", table.isEditable());
-        assertTrue("default cell editable must be true", table.isCellEditable(0, 0));
-        table.setEditable(!table.isEditable());
-        assertFalse("editable must be toggled to false", table.isEditable());
-        assertFalse("each cell must be not editable", table.isCellEditable(0, 0));
-    }
-    
-    /**
-     * 
-     */
-    public void testSetValueCellNotEditable() {
-        JXTable table = new JXTable(10, 2);
-        Object value = table.getValueAt(0, 0);
-        table.setEditable(false);
-        // sanity...
-        assertFalse("each cell must be not editable", table.isCellEditable(0, 0));
-        table.setValueAt("wrong", 0, 0);
-        assertEquals("cell value must not be changed", value, table.getValueAt(0, 0));
-        
-    }
-    /**
-     * Issue #262-swingx: expose terminateEditOnFocusLost as property.
-     * 
-     * setting client property is reflected in getter and results in event firing.
-     *
-     */
-    public void testGetTerminateEditOnFocusLost() {
-       JXTable table = new JXTable();
-       // sanity assert: setting client property set's property
-       PropertyChangeReport report = new PropertyChangeReport();
-       table.addPropertyChangeListener(report);
-       table.putClientProperty("terminateEditOnFocusLost", !table.isTerminateEditOnFocusLost());
-       assertEquals(table.getClientProperty("terminateEditOnFocusLost"), table.isTerminateEditOnFocusLost());
-       assertEquals(1, report.getEventCount());
-       assertEquals(1, report.getEventCount("terminateEditOnFocusLost"));
-    }
-    
-
-    /**
-     * Issue #262-swingx: expose terminateEditOnFocusLost as property.
-     * 
-     * default value is true.
-     * 
-     */
-    public void testInitialTerminateEditOnFocusLost() {
-       JXTable table = new JXTable();
-       assertTrue("terminate edit must be on by default", table.isTerminateEditOnFocusLost());
-    }
-
-    /**
-     * Issue #262-swingx: expose terminateEditOnFocusLost as property.
-     * 
-     * setter is same as setting client property and results in event firing.
-     */
-    public void testSetTerminateEditOnFocusLost() {
-       JXTable table = new JXTable();
-       // sanity assert: setting client property set's property
-       PropertyChangeReport report = new PropertyChangeReport();
-       table.addPropertyChangeListener(report);
-       table.setTerminateEditOnFocusLost(!table.isTerminateEditOnFocusLost());
-       assertEquals(table.getClientProperty("terminateEditOnFocusLost"), table.isTerminateEditOnFocusLost());
-       assertEquals(1, report.getEventCount());
-       assertEquals(1, report.getEventCount("terminateEditOnFocusLost"));
-       assertEquals(Boolean.FALSE, report.getLastNewValue("terminateEditOnFocusLost"));
-    }
-
-    /**
-     * sanity test while cleaning up: 
-     * getColumns() should return the exact same
-     * ordering as getColumns(false);
-     *
-     */
-    public void testColumnSequence() {
-        JXTable table = new JXTable(10, 20);
-        table.getColumnExt(5).setVisible(false);
-        table.getColumnModel().moveColumn(table.getColumnCount() - 1, 0);
-        assertEquals(table.getColumns(), table.getColumns(false));
-    }
-    /**
-     * programmatic sorting of hidden column (through table api).
-     * 
-     */
-    public void testSetSortOrderHiddenColumn() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        Object identifier = "Last Name";
-        TableColumnExt columnExt = table.getColumnExt(identifier);
-        columnExt.setVisible(false);
-        table.setSortOrder(identifier, SortOrder.ASCENDING);
-        assertEquals("sorted column must be at " + identifier, columnExt, table.getSortedColumn());
-        assertEquals("column must be sorted after setting sortOrder on " + identifier, SortOrder.ASCENDING, table.getSortOrder(identifier));
-        Object otherIdentifier = "First Name";
-        table.setSortOrder(otherIdentifier, SortOrder.UNSORTED);
-        assertNull("table must be unsorted after resetting sortOrder on " + otherIdentifier,
-                table.getSortedColumn());
-    }
-
-    /**
-     * added xtable.setSortOrder(Object, SortOrder)
-     * 
-     */
-    public void testSetSortOrderByIdentifier() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        Object identifier = "Last Name";
-        TableColumnExt columnExt = table.getColumnExt(identifier);
-        table.setSortOrder(identifier, SortOrder.ASCENDING);
-        assertEquals("sorted column must be at " + identifier, columnExt, table.getSortedColumn());
-        assertEquals("column must be sorted after setting sortOrder on " + identifier, SortOrder.ASCENDING, table.getSortOrder(identifier));
-        Object otherIdentifier = "First Name";
-        table.setSortOrder(otherIdentifier, SortOrder.UNSORTED);
-        assertNull("table must be unsorted after resetting sortOrder on " + otherIdentifier,
-                table.getSortedColumn());
-    }
-    
-    /**
-     * JXTable has responsibility to respect TableColumnExt
-     * sortable property.
-     * 
-     */
-    public void testSetSortOrderByIdentifierColumnNotSortable() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        Object identifier = "Last Name";
-        TableColumnExt columnX = table.getColumnExt(identifier);
-        //  make column not sortable.
-        columnX.setSortable(false);
-        table.setSortOrder(identifier, SortOrder.ASCENDING);
-        assertEquals("unsortable column must be unsorted", SortOrder.UNSORTED, table.getSortOrder(0));
-    }
-
-    /**
-     * testing new sorter api: 
-     * toggleSortOrder(Object), resetSortOrder.
-     *
-     */
-    public void testToggleSortOrderByIdentifier() {
-        JXTable table = new JXTable(sortableTableModel);
-        Object firstColumn = "First Name";
-        Object secondColumn = "Last Name";
-        assertSame(SortOrder.UNSORTED, table.getSortOrder(secondColumn));
-        table.toggleSortOrder(firstColumn);
-        assertSame(SortOrder.ASCENDING, table.getSortOrder(firstColumn));
-        // sanity: other columns uneffected
-        assertSame(SortOrder.UNSORTED, table.getSortOrder(secondColumn));
-        table.toggleSortOrder(firstColumn);
-        assertSame(SortOrder.DESCENDING, table.getSortOrder(firstColumn));
-        table.resetSortOrder();
-        assertSame(SortOrder.UNSORTED, table.getSortOrder(firstColumn));
-    }
-
-    /**
-     * JXTable has responsibility to respect TableColumnExt
-     * sortable property.
-     * 
-     */
-    public void testToggleSortOrderByIdentifierColumnNotSortable() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        Object identifier = "Last Name";
-        TableColumnExt columnX = table.getColumnExt(identifier);
-        // old way: make column not sortable.
-        columnX.setSortable(false);
-        table.toggleSortOrder(identifier);
-        assertEquals("unsortable column must be unsorted", SortOrder.UNSORTED, table.getSortOrder(identifier));
-       
-    }
-
-    /**
-     * added xtable.setSortOrder(int, SortOrder)
-     * 
-     */
-    public void testSetSortOrder() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        int col = 0;
-        TableColumnExt columnExt = table.getColumnExt(col);
-        table.setSortOrder(col, SortOrder.ASCENDING);
-        assertEquals("sorted column must be at " + col, columnExt, table.getSortedColumn());
-        assertEquals("column must be sorted after setting sortOrder on " + col, SortOrder.ASCENDING, table.getSortOrder(col));
-        int otherColumn = col + 1;
-        table.setSortOrder(otherColumn, SortOrder.UNSORTED);
-        assertNull("table must be unsorted after resetting sortOrder on " + otherColumn,
-                table.getSortedColumn());
-    }
-    
-    /**
-     * JXTable has responsibility to respect TableColumnExt
-     * sortable property.
-     * 
-     */
-    public void testSetSortOrderColumnNotSortable() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        TableColumnExt columnX = table.getColumnExt(0);
-        // old way: make column not sortable.
-        columnX.setSortable(false);
-        table.setSortOrder(0, SortOrder.ASCENDING);
-        assertEquals("unsortable column must be unsorted", SortOrder.UNSORTED, table.getSortOrder(0));
-       
-    }
-
-    /**
-     * JXTable has responsibility to respect TableColumnExt
-     * sortable property.
-     * 
-     */
-    public void testToggleSortOrderColumnNotSortable() {
-        JXTable table = new JXTable(new AncientSwingTeam());
-        TableColumnExt columnX = table.getColumnExt(0);
-        // old way: make column not sortable.
-        columnX.setSortable(false);
-        table.toggleSortOrder(0);
-        assertEquals("unsortable column must be unsorted", SortOrder.UNSORTED, table.getSortOrder(0));
-       
-    }
-   
-    
-    /**
      * JXTable has responsibility to guarantee usage of 
      * TableColumnExt comparator.
      * 
@@ -462,9 +95,13 @@ public class JXTableUnitTest extends InteractiveTestCase {
         TableColumnExt columnX = table.getColumnExt(0);
         columnX.setComparator(Collator.getInstance());
         table.toggleSortOrder(0);
+        // invalid assumption .. only the comparator must be used.
+//        assertEquals("interactive sorter must be same as sorter in column", 
+//                columnX.getSorter(), table.getFilters().getSorter());
         SortKey sortKey = SortKey.getFirstSortKeyForColumn(table.getFilters().getSortController().getSortKeys(), 0);
         assertNotNull(sortKey);
         assertEquals(columnX.getComparator(), sortKey.getComparator());
+       
     }
 
     /**
@@ -480,10 +117,10 @@ public class JXTableUnitTest extends InteractiveTestCase {
     }
     /**
      * testing new sorter api: 
-     * getSortOrder(int), toggleSortOrder(int), resetSortOrder().
+     * getSortOrder(), toggleSortOrder, resetSortOrders.
      *
      */
-    public void testToggleSortOrder() {
+    public void testSortOrder() {
         JXTable table = new JXTable(sortableTableModel);
         assertSame(SortOrder.UNSORTED, table.getSortOrder(0));
         table.toggleSortOrder(0);
@@ -495,7 +132,6 @@ public class JXTableUnitTest extends InteractiveTestCase {
         table.resetSortOrder();
         assertSame(SortOrder.UNSORTED, table.getSortOrder(0));
     }
-    
     /**
      * Issue #256-swingX: viewport - do track height.
      * 
@@ -516,8 +152,8 @@ public class JXTableUnitTest extends InteractiveTestCase {
         frame.setVisible(true);
         assertEquals("table height be equal to viewport", 
                 table.getHeight(), scrollPane.getViewport().getHeight());
-     }
- 
+        
+    }
     /**
      * Issue #256-swingX: viewport - don't track height.
      * 
@@ -541,7 +177,6 @@ public class JXTableUnitTest extends InteractiveTestCase {
                 tablePrefSize.height, table.getHeight());
     }
 
-    
     /**
      * Issue #256-swingx: added fillsViewportHeight property.
      * 
@@ -597,140 +232,6 @@ public class JXTableUnitTest extends InteractiveTestCase {
         
         
     }
-
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * 
-     * 
-     */
-    public void testTrackViewportWidth() {
-        // This test will not work in a headless configuration.
-        if (GraphicsEnvironment.isHeadless()) {
-            LOG.info("cannot run trackViewportWidth - headless environment");
-            return;
-        }
-        JXTable table = new JXTable(10, 2);
-        table.setHorizontalScrollEnabled(true);
-        Dimension tablePrefSize = table.getPreferredSize();
-        JScrollPane scrollPane = new JScrollPane(table);
-        JXFrame frame = wrapInFrame(scrollPane, "");
-        frame.setSize(tablePrefSize.width * 2, tablePrefSize.height);
-        frame.setVisible(true);
-        assertEquals("table width must be equal to viewport", 
-                table.getWidth(), scrollPane.getViewport().getWidth());
-     }
-
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * 
-     *
-     */
-    public void testSetHorizontalEnabled() {
-        JXTable table = new JXTable(10, 2);
-        table.setHorizontalScrollEnabled(true);
-        assertTrue("enhanced resize property must be enabled", 
-                table.isHorizontalScrollEnabled());
-        assertHorizontalActionSelected(table, true);
-    }
-
-    private void assertHorizontalActionSelected(JXTable table, boolean selected) {
-        Action showHorizontal = table.getActionMap().get(
-                JXTable.HORIZONTALSCROLL_ACTION_COMMAND);
-        assertEquals("horizontAction must be selected"  , selected, 
-                ((BoundAction) showHorizontal).isSelected());
-    }
- 
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * test autoResizeOff != intelliResizeOff 
-     * after sequence a) set intelli, b) setAutoResize
-     * 
-     */
-    public void testNotTrackViewportWidth() {
-        // This test will not work in a headless configuration.
-        if (GraphicsEnvironment.isHeadless()) {
-            LOG.info("cannot run trackViewportWidth - headless environment");
-            return;
-        }
-        JXTable table = new JXTable(10, 2);
-        table.setHorizontalScrollEnabled(true);
-        table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
-        Dimension tablePrefSize = table.getPreferredSize();
-        JScrollPane scrollPane = new JScrollPane(table);
-        JXFrame frame = wrapInFrame(scrollPane, "");
-        frame.setSize(tablePrefSize.width * 2, tablePrefSize.height);
-        frame.setVisible(true);
-        assertEquals("table width must not be equal to viewport", 
-               table.getPreferredSize().width, table.getWidth());
-     }
- 
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * test autoResizeOff != intelliResizeOff
-     * 
-     */
-    public void testAutoResizeOffNotHorizontalScrollEnabled() {
-        JXTable table = new JXTable(10, 2);
-        table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
-        // sanity: horizontal action must be selected
-        assertHorizontalActionSelected(table, false);
-        assertFalse("autoResizeOff must not enable enhanced resize", 
-                table.isHorizontalScrollEnabled());
-     }
- 
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * 
-     * testing doc'd behaviour: horizscrollenabled toggles between
-     * enhanced resizeOff and the resizeOn mode which had been active 
-     * when toggling on. 
-     * 
-     */
-    public void testOldAutoResizeOn() {
-        JXTable table = new JXTable(10, 2);
-        int oldAutoResize = table.getAutoResizeMode();
-        table.setHorizontalScrollEnabled(true);
-        table.setHorizontalScrollEnabled(false);
-        assertEquals("old on-mode must be restored", oldAutoResize, table.getAutoResizeMode());
-       }
-    
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * 
-     * testing doc'd behaviour: horizscrollenabled toggles between
-     * enhanced resizeOff and the resizeOn mode which had been active 
-     * when toggling on. Must not restore raw resizeOff mode.
-     * 
-     * 
-     */
-    public void testNotOldAutoResizeOff() {
-        JXTable table = new JXTable(10, 2);
-        int oldAutoResize = table.getAutoResizeMode();
-        table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
-        table.setHorizontalScrollEnabled(true);
-        table.setHorizontalScrollEnabled(false);
-        assertEquals("old on-mode must be restored", oldAutoResize, table.getAutoResizeMode());
-       }
-    /**
-     * Issue #214-swingX: improved auto-resize.
-     * test autoResizeOff != intelliResizeOff 
-     * after sequence a) set intelli, b) setAutoResize
-     * 
-     */
-    public void testAutoResizeOffAfterHorizontalScrollEnabled() {
-        JXTable table = new JXTable(10, 2);
-        table.setHorizontalScrollEnabled(true);
-        // sanity: intelliResizeOff enabled
-        assertTrue(table.isHorizontalScrollEnabled());
-        // sanity: horizontal action must be selected
-        assertHorizontalActionSelected(table, true);
-        table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
-        assertFalse("autoResizeOff must not enable enhanced resize", 
-                table.isHorizontalScrollEnabled());
-        // sanity: horizontal action must be selected
-        assertHorizontalActionSelected(table, false);
-     }
-
     /**
      * Issue 252-swingx: getColumnExt throws ClassCastException if tableColumn
      * is not of type TableColumnExt.
@@ -747,7 +248,6 @@ public class JXTableUnitTest extends InteractiveTestCase {
         TableColumnExt tableColumnExt = table.getColumnExt(0);
         assertNull("getColumnExt must return null on type mismatch", tableColumnExt);
     }
-
 
     /**
      * test contract: getColumnExt(int) throws ArrayIndexOutofBounds with 
@@ -1340,51 +840,7 @@ public class JXTableUnitTest extends InteractiveTestCase {
         table.setFilters(null);
         assertEquals("selected row must be unchanged", 0, table.getSelectedRow());
     }
-
-    /**
-     * Issue #119: Exception if sorter on last column and setting
-     * model with fewer columns.
-     * 
-     * JW: related to #53-swingx - sorter not removed on column removed. 
-     * 
-     * PatternFilter does not throw - checks with modelToView if the 
-     * column is visible and returns false match if not. Hmm...
-     * 
-     * 
-     */
-    public void testFilterInChainOnModelChange() {
-        JXTable table = new JXTable(createAscendingModel(0, 10, 5, true));
-        int columnCount = table.getColumnCount();
-        assertEquals(5, columnCount);
-        Filter filter = new PatternFilter(".*", 0, columnCount - 1);
-        FilterPipeline pipeline = new FilterPipeline(new Filter[] {filter});
-        table.setFilters(pipeline);
-        assertEquals(10, pipeline.getOutputSize());
-        table.setModel(new DefaultTableModel(10, columnCount - 1));
-    }
     
-    /**
-     * Issue #119: Exception if sorter on last column and setting
-     * model with fewer columns.
-     * 
-     * 
-     * JW: related to #53-swingx - sorter not removed on column removed. 
-     * 
-     * Similar if sorter in filter pipeline -- absolutely need mutable
-     * pipeline!!
-     * Filed the latter part as Issue #55-swingx 
-     *
-     */
-    public void testSorterInChainOnModelChange() {
-        JXTable table = new JXTable(new DefaultTableModel(10, 5));
-        int columnCount = table.getColumnCount();
-        Sorter sorter = new ShuttleSorter(columnCount - 1, false);
-        FilterPipeline pipeline = new FilterPipeline(new Filter[] {sorter});
-        table.setFilters(pipeline);
-        table.setModel(new DefaultTableModel(10, columnCount - 1));
-    }
-    
-
     /**
      * Issue #119: Exception if sorter on last column and setting
      * model with fewer columns.
@@ -1974,37 +1430,7 @@ public class JXTableUnitTest extends InteractiveTestCase {
         }
         return model;
     }
-
     
-    /**
-     * returns a tableModel with count rows filled with
-     * ascending integers in first/last column depending on fillLast
-     * starting from startRow.
-     * with columnCount columns
-     * @param startRow the value of the first row
-     * @param rowCount the number of rows
-     * @param columnCount the number of columns
-     * @param fillLast boolean to indicate whether to ill the value in the first
-     *   or last column
-     * @return a configured DefaultTableModel.
-     */
-    protected DefaultTableModel createAscendingModel(int startRow, final int rowCount, 
-            final int columnCount, boolean fillLast) {
-        DefaultTableModel model = new DefaultTableModel(rowCount, columnCount) {
-            public Class getColumnClass(int column) {
-                Object value = rowCount > 0 ? getValueAt(0, column) : null;
-                return value != null ? value.getClass() : super.getColumnClass(column);
-            }
-        };
-        int filledColumn = fillLast ? columnCount - 1 : 0;
-        for (int i = 0; i < model.getRowCount(); i++) {
-            model.setValueAt(new Integer(startRow++), i, filledColumn);
-        }
-        return model;
-    }
-    
-    
-
     /**
      * check if setting to false really disables sortability.
      *

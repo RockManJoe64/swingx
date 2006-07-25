@@ -22,7 +22,6 @@
 package org.jdesktop.swingx.action;
 
 import java.awt.Component;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -32,6 +31,7 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 
 
@@ -243,7 +243,7 @@ public class TargetManager {
 
         // Fall back behavior. Get the component which has focus and search the
         // ActionMaps in the containment hierarchy for matching action.
-        Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        Component comp = FocusManager.getCurrentManager().getPermanentFocusOwner();
         while (comp != null) {
             if (comp instanceof JComponent) {
                 ActionMap map = ((JComponent)comp).getActionMap();

@@ -44,31 +44,6 @@ public class JTableIssues extends InteractiveTestCase {
   }
 
     /**
-     * forum: table does not scroll after setRowSelectionInterval?
-     * 
-     * 
-     */
-    public void interactiveAutoScroll() {
-        final DefaultTableModel model = new DefaultTableModel(50, 2);
-        final JTable table = new JTable(model);
-        table.setAutoscrolls(true);
-        Action action = new AbstractAction("select last row: scrolling?") {
-
-            public void actionPerformed(ActionEvent e) {
-                
-                int selected = table.getRowCount() - 1;
-                if (selected >= 0) {
-                    table.setRowSelectionInterval(selected, selected);
-                }
-            }
-            
-        };
-        JXFrame frame = wrapWithScrollingInFrame(table, "insert at selection");
-        addAction(frame, action);
-        frame.setVisible(true);
-    }
-    
-    /**
      * Issue #272-swingx: inserted row is selected.
      * Not a bug: documented behaviour of DefaultListSelectionModel.
      *
@@ -144,28 +119,6 @@ public class JTableIssues extends InteractiveTestCase {
     }
 
 //---------------------- unit tests 
-    
-    /**
-     * isCellEditable is doc'ed as: if false, setValueAt 
-     * will have no effect.
-     * 
-     * 
-     */
-    public void testSetValueDoNothing() {
-        JTable table = new JTable(10, 3) {
-
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-            
-        };
-        Object value = table.getValueAt(0, 0);
-        // sanity...
-        assertFalse(table.isCellEditable(0, 0));
-        table.setValueAt("wrong", 0, 0);
-        assertEquals("value must not be changed", value, table.getValueAt(0, 0));
-    }
     
     /**
      * Issue #272-swingx: inserted row is selected.

@@ -6,12 +6,26 @@
  */
 package org.jdesktop.swingx;
 
-import org.jdesktop.swingx.util.PropertyChangeReport;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.ComponentOrientation;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.jdesktop.swingx.util.PropertyChangeReport;
 
 /**
  * @author Jeanette Winzenburg
@@ -61,8 +75,7 @@ public class JXTitledPanelTest extends InteractiveTestCase {
         Font deriveFont = panel.getTitleFont().deriveFont(27f);
         panel.setTitleFont(deriveFont);
         assertTrue("panel must notify on titleFont change", report.hasEvents("titleFont"));
-// TODO: Whoever owns this please fix this.  The tests should run clean.        
-//        fail("JXTitledPanelTest must be updated to new api");
+        fail("JXTitledPanelTest must be updated to new api");
 //        panel.setTitleForeground(Color.black);
 //        assertTrue("panel must notify on titleForeground change", report.hasEvents("titleForeground"));
 //        panel.setTitleDarkBackground(Color.black);

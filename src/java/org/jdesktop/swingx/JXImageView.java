@@ -82,8 +82,8 @@ import org.jdesktop.swingx.util.PaintUtils;
  * <p>If the user drags more than one photo at a time into the JXImageView only
  * the first photo will be loaded and shown. Any errors generated internally, 
  * such as dragging in a list of files which are not images, will be reported 
- * to any attached {@link org.jdesktop.swingx.error.ErrorListener} added by the
- * <CODE>{@link #addErrorListener}()</CODE> method.</p>
+ * to any attached {@link ErrorListeners} added by the 
+ * <CODE>{@link addErrorListener}()</CODE> method.</p>
  *
  * @author Joshua Marinacci joshua.marinacci@sun.com
  */
@@ -153,12 +153,10 @@ public class JXImageView extends JXPanel {
      * @param image the new image to set, or null.
      */
     public void setImage(Image image) {
-        Image old = this.getImage();
         this.image = image;
         setImageLocation(null);
         setScale(1.0);
         repaint();
-        firePropertyChange("image",old,this.image);
     }
     
     /**

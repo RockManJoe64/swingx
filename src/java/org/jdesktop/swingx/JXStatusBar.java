@@ -29,6 +29,7 @@ import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import org.jdesktop.swingx.plaf.JXStatusBarAddon;
@@ -101,7 +102,6 @@ public class JXStatusBar extends JXPanel {
      * 
      * @return the StatusBarUI object that renders this component
      */
-    @Override
     public StatusBarUI getUI() {
         return (StatusBarUI) ui;
     }
@@ -125,12 +125,11 @@ public class JXStatusBar extends JXPanel {
      * this component.
      * 
      * @return "StatusBarUI"
-     * @see javax.swing.JComponent#getUIClassID
+     * @see JComponent#getUIClassID
      * @see javax.swing.UIDefaults#getUI
      * @beaninfo expert: true description: A string that specifies the name of
      *           the L&F class.
      */
-    @Override
     public String getUIClassID() {
         return uiClassID;
     }
@@ -142,7 +141,6 @@ public class JXStatusBar extends JXPanel {
      * 
      * @see javax.swing.JComponent#updateUI
      */
-    @Override
     public void updateUI() {
         setUI((StatusBarUI) LookAndFeelAddons
                 .getUI(this, StatusBarUI.class));

@@ -7,32 +7,28 @@
 
 package org.jdesktop.swingx.util;
 
-import java.beans.PropertyChangeEvent;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
-
-import org.jdesktop.swingx.event.TableColumnModelExtListener;
+import javax.swing.event.TableColumnModelListener;
 
 /**
  * A TableColumnListener that stores the received TableColumnEvents.
  */
-public class ColumnModelReport implements TableColumnModelExtListener {
+public class ColumnModelReport implements TableColumnModelListener {
 
     /**
      * Holds a list of all received ValueChangeEvents.
      */
-    private List<TableColumnModelEvent> removedEvents = new LinkedList<TableColumnModelEvent>();
-    private List<TableColumnModelEvent> addedEvents = new LinkedList<TableColumnModelEvent>();
-    private List<TableColumnModelEvent> movedEvents = new LinkedList<TableColumnModelEvent>();
+    private List removedEvents = new LinkedList();
+    private List addedEvents = new LinkedList();
+    private List movedEvents = new LinkedList();
     
-    private List<ListSelectionEvent> selectionEvents = new LinkedList<ListSelectionEvent>();
-    private List<ChangeEvent> changeEvents = new LinkedList<ChangeEvent>();
-    
-    private List<PropertyChangeEvent> columnPropertyEvents = new LinkedList<PropertyChangeEvent>();
+    private List selectionEvents = new LinkedList();
+    private List changeEvents = new LinkedList();
 
 //------------------------ implement TableColumnModelListener    
     public void columnAdded(TableColumnModelEvent e) {
@@ -55,14 +51,30 @@ public class ColumnModelReport implements TableColumnModelExtListener {
         selectionEvents.add(0, e);
 
     }
-    //---------------------- implement TableColumnModelExtListener
+    //---------------------- implement ValueChangeListener
 
 
-    public void columnPropertyChange(PropertyChangeEvent e) {
-        columnPropertyEvents.add(0, e);
-        
+    public int getEventCount() {
+        return addedEvents.size() + removedEvents.size() + movedEvents.size() +
+          changeEvents.size() + selectionEvents.size();
     }
 
+    public boolean hasRemovedEvent() {
+        return !removedEvents.isEmpty();
+    }
+    
+    public TableColumnModelEvent getLastRemoveEvent() {
+        return removedEvents.isEmpty() ? null : (TableColumnModelEvent) removedEvents.get(0);
+     }
+
+    public boolean hasAddedEvent() {
+        return !addedEvents.isEmpty();
+    }
+    
+    public TableColumnModelEvent getLastAddEvent() {
+        return addedEvents.isEmpty() ? null : (TableColumnModelEvent) addedEvents.get(0);
+     }
+    
     public boolean hasEvents() {
         return getEventCount() > 0;
     }
@@ -74,44 +86,5 @@ public class ColumnModelReport implements TableColumnModelExtListener {
         movedEvents.clear();
         changeEvents.clear();
         selectionEvents.clear();
-        columnPropertyEvents.clear();
     }
-
-    public int getEventCount() {
-        return addedEvents.size() + removedEvents.size() + movedEvents.size() +
-          changeEvents.size() + selectionEvents.size() + columnPropertyEvents.size();
-    }
-
-    // -------------- access reported TableModelEvents
-    
-    public boolean hasRemovedEvent() {
-        return !removedEvents.isEmpty();
-    }
-    
-    public TableColumnModelEvent getLastRemoveEvent() {
-        return removedEvents.isEmpty() ? null : removedEvents.get(0);
-     }
-
-    public boolean hasAddedEvent() {
-        return !addedEvents.isEmpty();
-    }
-    
-    public TableColumnModelEvent getLastAddEvent() {
-        return addedEvents.isEmpty() ? null : addedEvents.get(0);
-     }
-
-    //--------------- access reported propertyChangeEvent
-    
-    public boolean hasColumnPropertyEvent() {
-        return !columnPropertyEvents.isEmpty();
-    }
-    
-    public int getColumnPropertyEventCount() {
-        return columnPropertyEvents.size();
-    }
-    public PropertyChangeEvent getLastColumnPropertyEvent() {
-        return columnPropertyEvents.isEmpty() ? null :
-            columnPropertyEvents.get(0);
-    }
-    
 }

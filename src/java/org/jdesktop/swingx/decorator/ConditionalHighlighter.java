@@ -34,7 +34,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     protected int               testColumn = 0;         // always in model coordinates
     protected int               highlightColumn = -1;   // always in model coordinates
 
-    // TODO JW ?? - changed from 255 to 256 to not be "on" by default...
+    // JW ?? - changed from 255 to 256 to not be "on" by default...
     protected int               mask = 256;
 
     public ConditionalHighlighter() {
@@ -66,7 +66,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: JW ??
+     * JW ??
      */
     public void setMask(int alpha) {
         mask = alpha;
@@ -74,8 +74,8 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: JW ??
-     * @return mask
+     * JW ??
+     * @return
      */
     public int getMask() {
         return mask;
@@ -89,7 +89,6 @@ public abstract class ConditionalHighlighter extends Highlighter {
      * @param adapter
      * @return the highlighted component
      */
-    @Override
     public Component highlight(Component renderer, ComponentAdapter adapter) {
         if (needsHighlight(adapter)) {
             return doHighlight(renderer, adapter);
@@ -101,11 +100,11 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: ??
+     * ??
      * 
      * @param renderer
      * @param adapter
-     * @return renderer
+     * @return
      */
     protected Component doMask(Component renderer, ComponentAdapter adapter) {
 
@@ -117,7 +116,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: ??
+     * ??
      */
     protected void maskBackground(Component renderer, ComponentAdapter adapter) {
         Color seed = renderer.getBackground();
@@ -130,7 +129,7 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
 
     /**
-     * TODO: ??
+     * ??
      * @param renderer
      * @param adapter
      */
@@ -146,62 +145,24 @@ public abstract class ConditionalHighlighter extends Highlighter {
     }
    
     @Override
-    @Deprecated
     protected Color computeSelectedForeground(Color seed) {
         return getSelectedForeground() == null ? 
                 seed == null ? null : seed.brighter() : getSelectedForeground();
     }
 
-//------ following methods are the core of the "conditional" notion
-    
-    /**
-     * Returns the index of the column to use for deciding
-     * if the highlight should be on.
-     * 
-     * @return the index of the column to use for deciding about highlighting.
-     *   The index is in model coordinates, -1 denotes any column.
-     *    
-     * @see #setTestColumnIndex(int)
-     *  
-     */
     public int getTestColumnIndex() {
         return testColumn;
     }
 
-    /**
-     * Sets the index of the column to use for deciding
-     * if the highlight should be on.
-     * 
-     * @param columnIndex index of the column to used for deciding about highlighting. 
-     *   The index is in model coordinates, -1 denotes any column.
-     */
     public void setTestColumnIndex(int columnIndex) {
         this.testColumn = columnIndex;
         fireStateChanged();
     }
 
-    /**
-     * Returns the index of the column to highlight if the 
-     * condition is met.
-     * 
-     * @return the index of the column to highlight.
-     *   The index is in model coordinates, -1 denotes any column.
-     *    
-     * @see #setHighlightColumnIndex(int)
-     *  
-     */
     public int getHighlightColumnIndex() {
         return highlightColumn;
     }
 
-    /**
-     * Sets the index of the column to highlight if the 
-     * condition is met.
-     * 
-     * @param columnIndex index of the column to highlight.
-     *   The index is in model coordinates, -1 denotes every column.
-     *  
-     */
     public void setHighlightColumnIndex(int columnIndex) {
         this.highlightColumn = columnIndex;
         fireStateChanged();

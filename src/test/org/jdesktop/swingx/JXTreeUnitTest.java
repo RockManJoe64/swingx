@@ -6,14 +6,6 @@
  */
 package org.jdesktop.swingx;
 
-import java.util.Hashtable;
-import java.util.Vector;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-
-import org.jdesktop.swingx.JXTreeTableUnitTest.InsertTreeTableModel;
-import org.jdesktop.swingx.tree.DefaultXTreeCellEditor;
 import org.jdesktop.swingx.treetable.FileSystemModel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
@@ -27,83 +19,6 @@ public class JXTreeUnitTest extends InteractiveTestCase {
         
     public JXTreeUnitTest() {
         super("JXTree Test");
-    }
-
-    /**
-     * Issue #254-swingx: expandAll doesn't expand if root not shown?
-     *
-     */
-    public void testExpandAllWithInvisible() {
-        final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        final InsertTreeTableModel model = new InsertTreeTableModel(root);
-        int childCount = 5;
-        for (int i = 0; i < childCount; i++) {
-            model.addChild(root);
-        }
-        final JXTree treeTable = new JXTree(model);
-        // sanity...
-        assertTrue(treeTable.isRootVisible());
-        assertEquals("all children visible", childCount + 1, treeTable.getRowCount());
-        treeTable.collapseAll();
-        assertEquals(" all children invisible", 1, treeTable.getRowCount());
-        treeTable.setRootVisible(false);
-        assertEquals("no rows with invisible root", 0, treeTable.getRowCount());
-        treeTable.expandAll();
-        assertTrue(treeTable.getRowCount() > 0);
-        
-    }
-
-    /**
-     * test enhanced getSelectedRows contract: returned 
-     * array != null
-     *
-     */
-    public void testNotNullGetSelectedRows() {
-        JXTree tree = new JXTree(treeTableModel);
-        // sanity: no selection
-        assertEquals(0, tree.getSelectionCount());
-        assertNotNull("getSelectedRows guarantees not null array", tree.getSelectionRows());
-    }
-    
-    /**
-     * test enhanced getSelectedRows contract: returned 
-     * array != null
-     *
-     */
-    public void testNotNullGetSelectedPaths() {
-        JXTree tree = new JXTree(treeTableModel);
-        // sanity: no selection
-        assertEquals(0, tree.getSelectionCount());
-        assertNotNull("getSelectedPaths guarantees not null array", tree.getSelectionPaths());
-    }
-    /**
-     * Issue #221-swingx: actionMap not initialized in JXTreeNode constructor.
-     * Issue #231-swingx: icons lost in editor, enhanced default editor not installed.
-     * 
-     * PENDING: test all constructors!
-     *
-     */
-    public void testInitInConstructors() {
-        assertXTreeInit(new JXTree());
-        assertXTreeInit(new JXTree(new Object[] {}));
-        assertXTreeInit(new JXTree(new Vector()));
-        assertXTreeInit(new JXTree(new Hashtable()));
-        assertXTreeInit(new JXTree(new DefaultMutableTreeNode("dummy"), false));
-        assertXTreeInit(new JXTree(new DefaultMutableTreeNode("dummy")));
-        assertXTreeInit(new JXTree(new DefaultTreeModel(new DefaultMutableTreeNode("dummy"))));
-    }
-
-    /**
-     * @param tree
-     */
-    private void assertXTreeInit(JXTree tree) {
-        assertNotNull("Actions must be initialized", tree.getActionMap().get("find"));
-        assertTrue("Editor must be DefaultXTreeCellEditor", 
-                tree.getCellEditor() instanceof DefaultXTreeCellEditor);
-        // JW: wrong assumption, available for TreeTableModel impl only?
-//        assertNotNull("conversionMethod must be initialized", 
-//                tree.getValueConversionMethod(tree.getModel()));
-//        tree.getValueConversionMethod(tree.getModel());
     }
 
     /** 

@@ -41,7 +41,6 @@ import org.jdesktop.swingx.decorator.Sorter;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.FileSystemModel;
 import org.jdesktop.swingx.util.AncientSwingTeam;
-import org.jdesktop.swingx.util.PropertyChangeReport;
 
 /**
  * @author Jeanette Winzenburg
@@ -56,39 +55,6 @@ public class JXTableIssues extends InteractiveTestCase {
         // TODO Auto-generated constructor stub
     }
 
-    /**
-     * Issue??-swingx: turn off scrollbar doesn't work if the
-     *   table was initially in autoResizeOff mode.
-     *   
-     * Problem with state management.  
-     *
-     */
-    public void testHorizontalScrollEnabled() {
-        JXTable table = new JXTable();
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        assertEquals("horizontalScroll must be on", true, table.isHorizontalScrollEnabled());
-        table.setHorizontalScrollEnabled(false);
-        assertEquals("horizontalScroll must be off", false, table.isHorizontalScrollEnabled());
-    }
-    /**
-     * we have a slight inconsistency in event values: setting the
-     * client property to null means "false" but the event fired
-     * has the newValue null.
-     *
-     * The way out is to _not_ set the client prop manually, always go
-     * through the property setter.
-     */
-    public void testClientPropertyNull() {
-        JXTable table = new JXTable();
-        // sanity assert: setting client property set's property
-        PropertyChangeReport report = new PropertyChangeReport();
-        table.addPropertyChangeListener(report);
-        table.putClientProperty("terminateEditOnFocusLost", null);
-        assertFalse(table.isTerminateEditOnFocusLost());
-        assertEquals(1, report.getEventCount());
-        assertEquals(1, report.getEventCount("terminateEditOnFocusLost"));
-        assertEquals(false, report.getLastNewValue("terminateEditOnFocusLost"));
-    }
     /**
      * JXTable has responsibility to guarantee usage of 
      * TableColumnExt comparator and update the sort if
@@ -179,6 +145,50 @@ public class JXTableIssues extends InteractiveTestCase {
         assertEquals("selection must be cleared", -1, table.getSelectedRow());
         
     }
+    /**
+     * Issue #119: Exception if sorter on last column and setting
+     * model with fewer columns.
+     * 
+     * JW: related to #53-swingx - sorter not removed on column removed. 
+     * 
+     * PatternFilter does not throw - checks with modelToView if the 
+     * column is visible and returns false match if not. Hmm...
+     * 
+     * 
+     */
+    public void testFilterInChainOnModelChange() {
+        JXTable table = new JXTable(createAscendingModel(0, 10, 5, true));
+        int columnCount = table.getColumnCount();
+        assertEquals(5, columnCount);
+        Filter filter = new PatternFilter(".*", 0, columnCount - 1);
+        FilterPipeline pipeline = new FilterPipeline(new Filter[] {filter});
+        table.setFilters(pipeline);
+        assertEquals(10, pipeline.getOutputSize());
+        table.setModel(new DefaultTableModel(10, columnCount - 1));
+    }
+    
+    /**
+     * Issue #119: Exception if sorter on last column and setting
+     * model with fewer columns.
+     * 
+     * 
+     * JW: related to #53-swingx - sorter not removed on column removed. 
+     * 
+     * Similar if sorter in filter pipeline -- absolutely need mutable
+     * pipeline!!
+     * Filed the latter part as Issue #55-swingx 
+     *
+     */
+    public void testSorterInChainOnModelChange() {
+        JXTable table = new JXTable(new DefaultTableModel(10, 5));
+        int columnCount = table.getColumnCount();
+        Sorter sorter = new ShuttleSorter(columnCount - 1, false);
+        FilterPipeline pipeline = new FilterPipeline(new Filter[] {sorter});
+        table.setFilters(pipeline);
+        table.setModel(new DefaultTableModel(10, columnCount - 1));
+    }
+    
+    
     public void testComponentAdapterCoordinates() {
         JXTable table = new JXTable(createAscendingModel(0, 10));
         Object originalFirstRowValue = table.getValueAt(0,0);

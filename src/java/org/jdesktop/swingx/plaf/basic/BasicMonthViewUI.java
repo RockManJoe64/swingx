@@ -1,59 +1,22 @@
 package org.jdesktop.swingx.plaf.basic;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import org.jdesktop.swingx.calendar.DateSpan;
+import org.jdesktop.swingx.calendar.DateUtils;
+import org.jdesktop.swingx.calendar.JXMonthView;
+import org.jdesktop.swingx.plaf.MonthViewUI;
+
+import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.SortedSet;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
-import javax.swing.UIManager;
-import javax.swing.plaf.ComponentUI;
-import org.jdesktop.swingx.DateSelectionListener;
-import org.jdesktop.swingx.DateSelectionModel;
-import org.jdesktop.swingx.calendar.DateUtils;
-import org.jdesktop.swingx.calendar.JXMonthView;
-import org.jdesktop.swingx.calendar.JXMonthView.SelectionMode;
-import org.jdesktop.swingx.event.DateSelectionEvent;
-import org.jdesktop.swingx.plaf.MonthViewUI;
 
 public class BasicMonthViewUI extends MonthViewUI {
-    private static final int LEADING_DAY_OFFSET = 1;
-    private static final int NO_OFFSET = 0;
-    private static final int TRAILING_DAY_OFFSET = -1;
-
-    private static final int WEEKS_IN_MONTH = 6;
     private static final int CALENDAR_SPACING = 10;
-    private static final Point NO_SUCH_CALENDAR = new Point(-1, -1);
 
     /** Formatter used to format the day of the week to a numerical value. */
     protected static final SimpleDateFormat dayOfMonthFormatter = new SimpleDateFormat("d");
@@ -66,20 +29,13 @@ public class BasicMonthViewUI extends MonthViewUI {
     protected int firstDisplayedYear;
     protected long lastDisplayedDate;
     protected long today;
-    protected SortedSet<Date> selection;
+    protected DateSpan selection;
 
     private boolean usingKeyboard = false;
-    /** For interval selections we need to record the date we pivot around. */
-    private long pivotDate = -1;
     private boolean ltr;
     private boolean showingWeekNumber;
     private int arrowPaddingX = 3;
     private int arrowPaddingY = 3;
-    private int boxPaddingX;
-    private int boxPaddingY;
-    private int fullMonthBoxHeight;
-    private int fullBoxWidth;
-    private int fullBoxHeight;
     private int startX;
     private int startY;
     private Dimension dim = new Dimension();
@@ -92,13 +48,11 @@ public class BasicMonthViewUI extends MonthViewUI {
     private Rectangle dirtyRect = new Rectangle();
     private Rectangle bounds = new Rectangle();
     private Font derivedFont;
-    private Color weekOfTheYearForeground;
-    private Color unselectableDayForeground;
 
     /**
      * Date span used by the keyboard actions to track the original selection.
      */
-    private SortedSet<Date> originalDateSpan;
+    private DateSpan originalDateSpan = null;
     private int calendarWidth;
     private int monthBoxHeight;
     private int boxWidth;
@@ -155,8 +109,6 @@ public class BasicMonthViewUI extends MonthViewUI {
             }
         }
         monthView.setDaysOfTheWeek(daysOfTheWeek);
-        monthView.setBoxPaddingX((Integer)UIManager.get("JXMonthView.boxPaddingX"));
-        monthView.setBoxPaddingY((Integer)UIManager.get("JXMonthView.boxPaddingY"));
         monthView.setMonthStringBackground(UIManager.getColor("JXMonthView.monthStringBackground"));
         monthView.setMonthStringForeground(UIManager.getColor("JXMonthView.monthStringForeground"));
         monthView.setDaysOfTheWeekForeground(UIManager.getColor("JXMonthView.daysOfTheWeekForeground"));
@@ -167,8 +119,6 @@ public class BasicMonthViewUI extends MonthViewUI {
                 JXMonthView.class.getResource(UIManager.getString("JXMonthView.monthDownFileName")));
         monthUpImage = new ImageIcon(
                 JXMonthView.class.getResource(UIManager.getString("JXMonthView.monthUpFileName")));
-        weekOfTheYearForeground = UIManager.getColor("JXMonthView.weekOfTheYearForeground");
-        unselectableDayForeground = UIManager.getColor("JXMonthView.unselectableDayForeground");
     }
 
     protected void uninstallDefaults() {}
@@ -199,10 +149,10 @@ public class BasicMonthViewUI extends MonthViewUI {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false), "selectDayInPreviousWeek");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false), "selectDayInNextWeek");
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK, false), "adjustSelectionPreviousDay");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK, false), "adjustSelectionNextDay");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_MASK, false), "adjustSelectionPreviousWeek");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_MASK, false), "adjustSelectionNextWeek");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK, false), "addPreviousDay");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK, false), "addNextDay");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_MASK, false), "addToPreviousWeek");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_MASK, false), "addToNextWeek");
 
         ActionMap actionMap = monthView.getActionMap();
         actionMap.put("acceptSelection", new KeyboardAction(KeyboardAction.ACCEPT_SELECTION));
@@ -213,10 +163,10 @@ public class BasicMonthViewUI extends MonthViewUI {
         actionMap.put("selectDayInPreviousWeek", new KeyboardAction(KeyboardAction.SELECT_DAY_PREVIOUS_WEEK));
         actionMap.put("selectDayInNextWeek", new KeyboardAction(KeyboardAction.SELECT_DAY_NEXT_WEEK));
 
-        actionMap.put("adjustSelectionPreviousDay", new KeyboardAction(KeyboardAction.ADJUST_SELECTION_PREVIOUS_DAY));
-        actionMap.put("adjustSelectionNextDay", new KeyboardAction(KeyboardAction.ADJUST_SELECTION_NEXT_DAY));
-        actionMap.put("adjustSelectionPreviousWeek", new KeyboardAction(KeyboardAction.ADJUST_SELECTION_PREVIOUS_WEEK));
-        actionMap.put("adjustSelectionNextWeek", new KeyboardAction(KeyboardAction.ADJUST_SELECTION_NEXT_WEEK));
+        actionMap.put("addPreviousDay", new KeyboardAction(KeyboardAction.ADD_PREVIOUS_DAY));
+        actionMap.put("addNextDay", new KeyboardAction(KeyboardAction.ADD_NEXT_DAY));
+        actionMap.put("addToPreviousWeek", new KeyboardAction(KeyboardAction.ADD_TO_PREVIOUS_WEEK));
+        actionMap.put("addToNextWeek", new KeyboardAction(KeyboardAction.ADD_TO_NEXT_WEEK));
     }
 
     protected void uninstallKeyboardActions() {}
@@ -229,11 +179,9 @@ public class BasicMonthViewUI extends MonthViewUI {
         monthView.addPropertyChangeListener(propertyChangeListener);
         monthView.addMouseListener(mouseListener);
         monthView.addMouseMotionListener(mouseMotionListener);
-        monthView.getSelectionModel().addDateSelectionListener(getHandler());
     }
 
     protected void uninstallListeners() {
-        monthView.getSelectionModel().removeDateSelectionListener(getHandler());
         monthView.removeMouseMotionListener(mouseMotionListener);
         monthView.removeMouseListener(mouseListener);
         monthView.removePropertyChangeListener(propertyChangeListener);
@@ -342,8 +290,13 @@ public class BasicMonthViewUI extends MonthViewUI {
         //_cal.set(Calendar.DAY_OF_MONTH, 1);
         cal.add(Calendar.MONTH, calCol + (calRow * numCalCols));
 
-        int firstDayViewIndex = getDayOfWeekViewIndex(cal.get(Calendar.DAY_OF_WEEK));
-        int daysToAdd = (row * JXMonthView.DAYS_IN_WEEK) + (col - firstDayViewIndex);
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+        int firstDayIndex = dayOfWeek - monthView.getFirstDayOfWeek();
+        if (firstDayIndex < 0) {
+            firstDayIndex += JXMonthView.DAYS_IN_WEEK;
+        }
+
+        int daysToAdd = (row * JXMonthView.DAYS_IN_WEEK) + (col - firstDayIndex);
         if (daysToAdd < 0 || daysToAdd >
                 (cal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1)) {
             return -1;
@@ -372,23 +325,6 @@ public class BasicMonthViewUI extends MonthViewUI {
     }
 
     /**
-     * Get the view index for the specified day of the week.  This value will range
-     * from 0 to DAYS_IN_WEEK - 1.  For example if the first day of the week was set
-     * to Calendar.MONDAY and we requested the view index for Calendar.TUESDAY the result
-     * would be 1.
-     *
-     * @param dayOfWeek day of the week to calculate view index for, acceptable values are
-     * <code>Calendar.MONDAY</code> - <code>Calendar.SUNDAY</code>
-     * @return view index for the specified day of the week
-     */
-    private int getDayOfWeekViewIndex(int dayOfWeek) {
-        int result = dayOfWeek - monthView.getFirstDayOfWeek();
-        if (result < 0) {
-            result += JXMonthView.DAYS_IN_WEEK;
-        }
-        return result;
-    }
-    /**
      * Returns an index defining which, if any, of the buttons for
      * traversing the month was pressed.  This method should only be
      * called when <code>setTraversable</code> is set to true.
@@ -398,20 +334,30 @@ public class BasicMonthViewUI extends MonthViewUI {
      * @return MONTH_UP, MONTH_DOWN or -1 when no button is selected.
      */
     protected int getTraversableButtonAt(int x, int y) {
-        Point rowCol = getCalRowColAt(x, y);
-        if (NO_SUCH_CALENDAR.equals(rowCol)) {
+        if (ltr ? (startX > x) : (startX < x) || startY > y) {
+            return -1;
+        }
+
+        // Determine which column of calendars we're in.
+        int calCol = (ltr ? (x - startX) : (startX - x)) /
+                (calendarWidth + CALENDAR_SPACING);
+
+        // Determine which row of calendars we're in.
+        int calRow = (y - startY) / (calendarHeight + CALENDAR_SPACING);
+
+        if (calRow > numCalRows - 1 || calCol > numCalCols - 1) {
             return -1;
         }
 
         // See if we're in the month string area.
         y = ((y - startY) -
-            (rowCol.x * (calendarHeight + CALENDAR_SPACING))) - monthView.getBoxPaddingY();
+            (calRow * (calendarHeight + CALENDAR_SPACING))) - monthView.getBoxPaddingY();
         if (y < arrowPaddingY || y > (monthBoxHeight - arrowPaddingY)) {
             return -1;
         }
 
         x = ((ltr ? (x - startX) : (startX - x)) -
-            (rowCol.y * (calendarWidth + CALENDAR_SPACING)));
+            (calCol * (calendarWidth + CALENDAR_SPACING)));
 
         if (x > arrowPaddingX && x < (arrowPaddingX +
                 monthDownImage.getIconWidth() + arrowPaddingX)) {
@@ -425,37 +371,6 @@ public class BasicMonthViewUI extends MonthViewUI {
         }
         return -1;
     }
-
-    /**
-     * Get the row and column for the calendar at the specified coordinates
-     *
-     * @param x x location
-     * @param y y location
-     * @return a new <code>Point</code> object containing the row as the x value
-     * and column as the y value
-     */
-    protected Point getCalRowColAt(int x, int y) {
-        if (ltr ? (startX > x) : (startX < x) || startY > y) {
-            return NO_SUCH_CALENDAR;
-        }
-
-        Point result = new Point();
-        // Determine which row of calendars we're in.
-        result.x = (y - startY) / (calendarHeight + CALENDAR_SPACING);
-
-        // Determine which column of calendars we're in.
-        result.y = (ltr ? (x - startX) : (startX - x)) /
-                (calendarWidth + CALENDAR_SPACING);
-
-        // Make sure the row and column of calendars calculated is being
-        // managed.
-        if (result.x > numCalRows - 1 || result.y > numCalCols -1) {
-            result = NO_SUCH_CALENDAR;
-        }
-
-        return result;
-    }
-
 
     /**
      * Calculates the startX/startY position for centering the calendars
@@ -518,20 +433,20 @@ public class BasicMonthViewUI extends MonthViewUI {
     }
 
     private void calculateDirtyRectForSelection() {
-        if (selection == null || selection.isEmpty()) {
+        if (selection == null) {
             dirtyRect.x = 0;
             dirtyRect.y = 0;
             dirtyRect.width = 0;
             dirtyRect.height = 0;
         } else {
             Calendar cal = monthView.getCalendar();
-            cal.setTime(selection.first());
-            calculateBoundsForDay(dirtyRect, NO_OFFSET);
+            cal.setTimeInMillis(selection.getStart());
+            calculateBoundsForDay(dirtyRect);
             cal.add(Calendar.DAY_OF_MONTH, 1);
 
             Rectangle tmpRect;
-            while (cal.getTimeInMillis() <= selection.last().getTime()) {
-                calculateBoundsForDay(bounds, NO_OFFSET);
+            while (cal.getTimeInMillis() <= selection.getEnd()) {
+                calculateBoundsForDay(bounds);
                 tmpRect = dirtyRect.union(bounds);
                 dirtyRect.x = tmpRect.x;
                 dirtyRect.y = tmpRect.y;
@@ -552,40 +467,12 @@ public class BasicMonthViewUI extends MonthViewUI {
      *
      * @param bounds Bounds of the date to draw in.
      */
-    private void calculateBoundsForDay(Rectangle bounds, int monthOffset) {
+    private void calculateBoundsForDay(Rectangle bounds) {
         Calendar cal = monthView.getCalendar();
         int year = cal.get(Calendar.YEAR);
         int month = cal.get(Calendar.MONTH);
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
         int weekOfMonth = cal.get(Calendar.WEEK_OF_MONTH);
-
-        // If we are calculating the bounds for a leading/trailing day we need to
-        // adjust the month we are in to calculate the bounds correctly.
-        month += monthOffset;
-
-        // If we're showing leading days the week in month needs to be 1 to make the bounds
-        // calculate correctly.
-        if (LEADING_DAY_OFFSET == monthOffset) {
-            weekOfMonth = 1;
-        }
-
-        if (TRAILING_DAY_OFFSET == monthOffset) {
-            // Find which week the last day in the month is.
-            int day = cal.get(Calendar.DAY_OF_MONTH);
-            int weekOffset = cal.get(Calendar.WEEK_OF_MONTH) - 1;
-
-            cal.add(Calendar.DAY_OF_MONTH, -day);
-
-            int lastWeekOfMonth = cal.get(Calendar.WEEK_OF_MONTH);
-            int lastDay = getDayOfWeekViewIndex(cal.get(Calendar.DAY_OF_WEEK));
-            if (lastDay == (JXMonthView.DAYS_IN_WEEK - 1)) {
-                weekOffset++;
-            }
-
-            // Move back to our current day.
-            cal.add(Calendar.DAY_OF_MONTH, day);
-
-            weekOfMonth = lastWeekOfMonth + weekOffset;
-        }
 
         // Determine what row/column we are in.
         int diffMonths = month - firstDisplayedMonth +
@@ -594,7 +481,10 @@ public class BasicMonthViewUI extends MonthViewUI {
         int calColIndex = diffMonths - (calRowIndex * numCalCols);
 
         // Modify the index relative to the first day of the week.
-        bounds.x = getDayOfWeekViewIndex(cal.get(Calendar.DAY_OF_WEEK));
+        bounds.x = dayOfWeek - monthView.getFirstDayOfWeek();
+        if (bounds.x < 0) {
+            bounds.x += JXMonthView.DAYS_IN_WEEK;
+        }
 
         // Offset for location of the day in the week.
         int boxPaddingX = monthView.getBoxPaddingX();
@@ -654,12 +544,19 @@ public class BasicMonthViewUI extends MonthViewUI {
         }
         g.setColor(monthView.getForeground());
 
+        FontMetrics fm = g.getFontMetrics();
+
         // Reset the calendar.
         Calendar cal = monthView.getCalendar();
         cal.setTimeInMillis(firstDisplayedDate);
 
-        // Center the calendars horizontally/vertically in the available space.
+        // Center the calendars vertically in the available space.
+        int y = startY;
         for (int row = 0; row < numCalRows; row++) {
+            // Center the calendars horizontally in the available space.
+            int x = startX;
+            int tmpX, tmpY;
+
             // Check if this row falls in the clip region.
             bounds.x = 0;
             bounds.y = startY +
@@ -669,10 +566,104 @@ public class BasicMonthViewUI extends MonthViewUI {
 
             if (!bounds.intersects(clip)) {
                 cal.add(Calendar.MONTH, numCalCols);
+                y += calendarHeight + CALENDAR_SPACING;
                 continue;
             }
 
             for (int column = 0; column < numCalCols; column++) {
+                String monthName = monthsOfTheYear[cal.get(Calendar.MONTH)];
+                monthName = monthName + " " + cal.get(Calendar.YEAR);
+
+                int boxPaddingX = monthView.getBoxPaddingX();
+                int boxPaddingY = monthView.getBoxPaddingY();
+                bounds.x = (ltr ? x : x - calendarWidth);// + 4; //4px of padding on the left
+                bounds.y = y + boxPaddingY;// + 4; //4px of padding on the top
+                bounds.width = calendarWidth;// - 8; //4px of padding on both sides
+                bounds.height = monthBoxHeight; //4px of padding on top
+
+                if (bounds.intersects(clip)) {
+                    // Paint month name background.
+                    paintMonthStringBackground(g, bounds.x, bounds.y,
+                            bounds.width, bounds.height);
+
+                    // Paint arrow buttons for traversing months if enabled.
+                    if (monthView.isTraversable()) {
+                        tmpX = bounds.x + arrowPaddingX;
+                        tmpY = bounds.y + (bounds.height -
+                            monthDownImage.getIconHeight()) / 2;
+                        g.drawImage(monthDownImage.getImage(),
+                            tmpX, tmpY, null);
+
+                        tmpX = bounds.x + bounds.width - arrowPaddingX -
+                                monthUpImage.getIconWidth();
+                        g.drawImage(monthUpImage.getImage(), tmpX, tmpY, null);
+                    }
+
+                    // Paint month name.
+                    Font oldFont = monthView.getFont();
+                    FontMetrics oldFM = fm;
+                    g.setFont(derivedFont);
+                    fm = monthView.getFontMetrics(derivedFont);
+
+                    g.setColor(monthView.getMonthStringForeground());
+                    tmpX = ltr ?
+                            x + (calendarWidth / 2) -
+                                (fm.stringWidth(monthName) / 2) :
+                            x - (calendarWidth / 2) -
+                                (fm.stringWidth(monthName) / 2) - 1;
+                    tmpY = bounds.y + ((monthBoxHeight - boxHeight) / 2) +
+                            fm.getAscent();
+
+                    g.drawString(monthName, tmpX, tmpY);
+                    g.setFont(oldFont);
+                    fm = oldFM;
+                }
+                g.setColor(monthView.getDaysOfTheWeekForeground());
+
+                bounds.x = ltr ? x : x - calendarWidth;
+                bounds.y = y + boxPaddingY + monthBoxHeight +
+                    boxPaddingY + boxPaddingY;
+                bounds.width = calendarWidth;
+                bounds.height = boxHeight;
+
+                if (bounds.intersects(clip)) {
+                    cal.set(Calendar.DAY_OF_MONTH,
+                            cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+
+                    // Paint short representation of day of the week.
+                    int dayIndex = monthView.getFirstDayOfWeek() - 1;
+                    Font oldFont = g.getFont();
+                    FontMetrics oldFM = fm;
+                    g.setFont(derivedFont);
+                    fm = monthView.getFontMetrics(derivedFont);
+
+                    String[] daysOfTheWeek = monthView.getDaysOfTheWeek();
+                    for (int i = 0; i < JXMonthView.DAYS_IN_WEEK; i++) {
+                        tmpX = ltr ?
+                                x + (i * (boxPaddingX + boxWidth +
+                                    boxPaddingX)) + boxPaddingX +
+                                    (boxWidth / 2) -
+                                    (fm.stringWidth(daysOfTheWeek[dayIndex]) /
+                                    2) :
+                                x - (i * (boxPaddingX + boxWidth +
+                                    boxPaddingX)) - boxPaddingX -
+                                    (boxWidth / 2) -
+                                    (fm.stringWidth(daysOfTheWeek[dayIndex]) /
+                                    2);
+                        if (showingWeekNumber) {
+                            tmpX += boxPaddingX + boxWidth + boxPaddingX;
+                        }
+                        tmpY = bounds.y + fm.getAscent();
+                        g.drawString(daysOfTheWeek[dayIndex], tmpX, tmpY);
+                        dayIndex++;
+                        if (dayIndex == JXMonthView.DAYS_IN_WEEK) {
+                            dayIndex = 0;
+                        }
+                    }
+                    g.setFont(oldFont);
+                    fm = oldFM;
+                }
+
                 // Check if the month to paint falls in the clip.
                 bounds.x = startX +
                         (ltr ?
@@ -688,11 +679,16 @@ public class BasicMonthViewUI extends MonthViewUI {
                 // the calendar forward a month as it would have if paintMonth
                 // was called.
                 if (bounds.intersects(clip)) {
-                    paintMonth(g, bounds.x, bounds.y, bounds.width, bounds.height);
+                    paintMonth(g);
                 } else {
                     cal.add(Calendar.MONTH, 1);
                 }
+
+                x += ltr ?
+                        calendarWidth + CALENDAR_SPACING :
+                        -(calendarWidth + CALENDAR_SPACING);
             }
+            y += calendarHeight + CALENDAR_SPACING;
         }
 
         // Restore the calendar.
@@ -704,121 +700,28 @@ public class BasicMonthViewUI extends MonthViewUI {
     }
 
     /**
-     * Paints a month.  It is assumed the calendar, <code>monthView.getCalendar()</code>, is already set to the
+     * Paints a month.  It is assumed the calendar, _cal, is already set to the
      * first day of the month to be painted.
      *
      * @param g Graphics object.
-     * @param x
-     * @param y
-     * @param width
-     * @param height
      */
-    @SuppressWarnings({"UNUSED_SYMBOL"})
-    private void paintMonth(Graphics g, int x, int y, int width, int height) {
+    private void paintMonth(Graphics g) {
         Calendar cal = monthView.getCalendar();
         int days = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
         Rectangle clip = g.getClipBounds();
         long day;
         int oldWeek = -1;
 
-        // Paint month name background.
-        paintMonthStringBackground(g, x, y,
-                width, boxPaddingY + monthBoxHeight + boxPaddingY);
-
-        // Paint arrow buttons for traversing months if enabled.
-        if (monthView.isTraversable()) {
-            g.drawImage(monthDownImage.getImage(),
-                    x + arrowPaddingX, y + ((fullMonthBoxHeight - monthDownImage.getIconHeight()) / 2), null);
-            g.drawImage(monthUpImage.getImage(), x + width - arrowPaddingX - monthUpImage.getIconWidth(),
-                    y + ((fullMonthBoxHeight - monthDownImage.getIconHeight()) / 2), null);
-        }
-
-        // Paint month name.
-        Font oldFont = monthView.getFont();
-        g.setFont(derivedFont);
-        FontMetrics fm = monthView.getFontMetrics(derivedFont);
-        String monthName = monthsOfTheYear[cal.get(Calendar.MONTH)];
-        monthName = monthName + " " + cal.get(Calendar.YEAR);
-
-        g.setColor(monthView.getMonthStringForeground());
-        int tmpX =
-                x + (calendarWidth / 2) -
-                        (fm.stringWidth(monthName) / 2);
-        int tmpY = y + boxPaddingY + ((monthBoxHeight - boxHeight) / 2) +
-                fm.getAscent();
-        g.drawString(monthName, tmpX, tmpY);
-        g.setFont(oldFont);
-
-        // Paint background of the short names for the days of the week.
-        tmpX = ltr ? x + (showingWeekNumber ? fullBoxWidth : 0) : x;
-        tmpY = y + fullMonthBoxHeight;
-        int tmpWidth = width - (showingWeekNumber ? fullBoxWidth : 0);
-        paintDayOfTheWeekBackground(g, tmpX, tmpY, tmpWidth, fullBoxHeight);
-
-        // Paint short representation of day of the week.
-        int dayIndex = monthView.getFirstDayOfWeek() - 1;
-        g.setFont(derivedFont);
-        g.setColor(monthView.getDaysOfTheWeekForeground());
-        fm = monthView.getFontMetrics(derivedFont);
-        String[] daysOfTheWeek = monthView.getDaysOfTheWeek();
-        for (int i = 0; i < JXMonthView.DAYS_IN_WEEK; i++) {
-            tmpX = ltr ?
-                    x + (i * fullBoxWidth) + boxPaddingX +
-                            (boxWidth / 2) -
-                            (fm.stringWidth(daysOfTheWeek[dayIndex]) /
-                                    2) :
-                    x + width - (i * fullBoxWidth) - boxPaddingX -
-                            (boxWidth / 2) -
-                            (fm.stringWidth(daysOfTheWeek[dayIndex]) /
-                                    2);
-            if (showingWeekNumber) {
-                tmpX += ltr ? fullBoxWidth : -fullBoxWidth;
-            }
-            tmpY = y + fullMonthBoxHeight + boxPaddingY + fm.getAscent();
-            g.drawString(daysOfTheWeek[dayIndex], tmpX, tmpY);
-            dayIndex++;
-            if (dayIndex == JXMonthView.DAYS_IN_WEEK) {
-                dayIndex = 0;
-            }
-        }
-        g.setFont(oldFont);
-
-
-        if (showingWeekNumber) {
-            tmpX = ltr ? x : x + width - fullBoxWidth;
-            paintWeekOfYearBackground(g, tmpX, y + fullMonthBoxHeight + fullBoxHeight, fullBoxWidth,
-                    calendarHeight - (fullMonthBoxHeight + fullBoxHeight));
-        }
-
-        if (monthView.isShowingLeadingDates()) {
-            // Figure out how many days we need to move back for the leading days.
-            int dayOfWeekViewIndex = getDayOfWeekViewIndex(cal.get(Calendar.DAY_OF_WEEK));
-            if (dayOfWeekViewIndex != 0) {
-                // Move the calendar back and paint the leading days
-                cal.add(Calendar.DAY_OF_MONTH, -dayOfWeekViewIndex);
-                for (int i = 0; i < dayOfWeekViewIndex; i++) {
-                    // Paint a day
-                    calculateBoundsForDay(bounds, LEADING_DAY_OFFSET);
-                    day = cal.getTimeInMillis();
-                    paintLeadingDayBackground(g, bounds.x, bounds.y,
-                            bounds.width, bounds.height, day);
-                    paintLeadingDayForeground(g, bounds.x, bounds.y,
-                            bounds.width, bounds.height, day);
-                    cal.add(Calendar.DAY_OF_MONTH, 1);
-                }
-            }
-        }
-
-        int oldY = -1;
         for (int i = 0; i < days; i++) {
-            calculateBoundsForDay(bounds, NO_OFFSET);
+            calculateBoundsForDay(bounds);
+
             // Paint the week numbers if we're displaying them.
-            if (showingWeekNumber && oldY != bounds.y) {
-                oldY = bounds.y;
+            // TODO: add a paint background for the whole area of the week numbers
+            if (showingWeekNumber) {
                 int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
                 if (weekOfYear != oldWeek) {
-                    tmpX = ltr ? x : x + width - fullBoxWidth;
-                    paintWeekOfYearForeground(g, tmpX, bounds.y, fullBoxWidth, fullBoxHeight, weekOfYear);
+                    paintWeekOfYear(g, bounds.x - (monthView.getBoxPaddingX() + boxWidth + monthView.getBoxPaddingY()),
+                            bounds.y, bounds.width, bounds.height, weekOfYear);
                     oldWeek = weekOfYear;
                 }
             }
@@ -833,7 +736,7 @@ public class BasicMonthViewUI extends MonthViewUI {
                     // selected date so we don't have to recalculate it
                     // later when it becomes unselected.  This is only
                     // useful for SINGLE_SELECTION mode.
-                    if (monthView.getSelectionMode() == SelectionMode.SINGLE_SELECTION) {
+                    if (monthView.getSelectionMode() == JXMonthView.SINGLE_SELECTION) {
                         dirtyRect.x = bounds.x;
                         dirtyRect.y = bounds.y;
                         dirtyRect.width = bounds.width;
@@ -841,13 +744,7 @@ public class BasicMonthViewUI extends MonthViewUI {
                     }
                 }
 
-                if (monthView.isUnselectableDate(day)) {
-                    paintUnselectableDayBackground(g, bounds.x, bounds.y,
-                            bounds.width, bounds.height, day);
-                    paintUnselectableDayForeground(g, bounds.x, bounds.y,
-                            bounds.width, bounds.height, day);
-                }
-                else if (monthView.isFlaggedDate(day)) {
+                if (monthView.isFlaggedDate(day)) {
                     paintFlaggedDayBackground(g, bounds.x, bounds.y,
                             bounds.width, bounds.height, day);
                     paintFlaggedDayForeground(g, bounds.x, bounds.y,
@@ -861,42 +758,6 @@ public class BasicMonthViewUI extends MonthViewUI {
             }
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
-
-        if (monthView.isShowingTrailingDates()) {
-            // Figure out how many days we need to paint for trailing days.
-            cal.add(Calendar.DAY_OF_MONTH, -1);
-            int weekOfMonth = cal.get(Calendar.WEEK_OF_MONTH);
-            if (JXMonthView.DAYS_IN_WEEK - 1 == getDayOfWeekViewIndex(cal.get(Calendar.DAY_OF_WEEK))) {
-                weekOfMonth++;
-            }
-            cal.add(Calendar.DAY_OF_MONTH, 1);
-
-            int daysToPaint = JXMonthView.DAYS_IN_WEEK * (WEEKS_IN_MONTH - weekOfMonth);
-            daysToPaint += JXMonthView.DAYS_IN_WEEK - getDayOfWeekViewIndex(cal.get(Calendar.DAY_OF_WEEK));
-            if (daysToPaint != 0) {
-                for (int i = 0; i < daysToPaint; i++) {
-                    // Paint a day
-                    calculateBoundsForDay(bounds, TRAILING_DAY_OFFSET);
-                    day = cal.getTimeInMillis();
-                    paintTrailingDayBackground(g, bounds.x, bounds.y,
-                            bounds.width, bounds.height, day);
-                    paintTrailingDayForeground(g, bounds.x, bounds.y,
-                            bounds.width, bounds.height, day);
-                    cal.add(Calendar.DAY_OF_MONTH, 1);
-                }
-            }
-            // Move the calendar back to the first of the month
-            cal.set(Calendar.DAY_OF_MONTH, 1);
-        }
-    }
-
-    private void paintDayOfTheWeekBackground(Graphics g, int x, int y, int width, int height) {
-        g.drawLine(x + boxPaddingX, y + height - 1, x + width - boxPaddingX, y + height - 1);
-    }
-
-    private void paintWeekOfYearBackground(Graphics g, int x, int y, int width, int height) {
-        x = ltr ? x + width - 1 : x;
-        g.drawLine(x, y + boxPaddingY, x, y + height - boxPaddingY);
     }
 
     /**
@@ -909,12 +770,11 @@ public class BasicMonthViewUI extends MonthViewUI {
      * @param height height of bounding box
      * @param weekOfYear week of the year
      */
-    @SuppressWarnings({"UNUSED_SYMBOL"})
-    private void paintWeekOfYearForeground(Graphics g, int x, int y, int width, int height, int weekOfYear) {
+    private void paintWeekOfYear(Graphics g, int x, int y, int width, int height, int weekOfYear) {
         String str = Integer.toString(weekOfYear);
         FontMetrics fm;
 
-        g.setColor(weekOfTheYearForeground);
+        g.setColor(monthView.getDayForeground(getDayOfTheWeek()));
 
         int boxPaddingX = monthView.getBoxPaddingX();
         int boxPaddingY = monthView.getBoxPaddingY();
@@ -954,6 +814,8 @@ public class BasicMonthViewUI extends MonthViewUI {
 
         Graphics2D g2 = (Graphics2D)g;
         GradientPaint gp = new GradientPaint(x, y + height, new Color(238, 238, 238), x, y, new Color(204, 204, 204));
+        //paint the border
+//        g.setColor(_monthStringBackground);
         g2.setPaint(gp);
         g2.fillRect(x, y, width - 1, height - 1);
         g2.setPaint(new Color(153, 153, 153));
@@ -1066,138 +928,13 @@ public class BasicMonthViewUI extends MonthViewUI {
         g.setFont(oldFont);
     }
 
-    /**
-     * Paint the foreground for the specified unselectable day.
-     *
-     * @param g Graphics object to paint to
-     * @param x x-coordinate of upper left corner
-     * @param y y-coordinate of upper left corner
-     * @param width width of bounding box for the day
-     * @param height height of bounding box for the day
-     * @param date long value representing the flagged day being painted
-     */
-    protected void paintUnselectableDayBackground(Graphics g, int x, int y, int width, int height, long date) {
-        paintDayBackground(g, x, y, width, height, date);
-    }
-
-    /**
-     * Paint the foreground for the specified unselectable day.
-     *
-     * @param g Graphics object to paint to
-     * @param x x-coordinate of upper left corner
-     * @param y y-coordinate of upper left corner
-     * @param width width of bounding box for the day
-     * @param height height of bounding box for the day
-     * @param date long value representing the flagged day being painted
-     */
-    protected void paintUnselectableDayForeground(Graphics g, int x, int y, int width, int height, long date) {
-        paintDayForeground(g, x, y, width, height, date);
-        g.setColor(unselectableDayForeground);
-
-        String numericDay = dayOfMonthFormatter.format(date);
-        FontMetrics fm = monthView.getFontMetrics(derivedFont);
-        width = fm.stringWidth(numericDay);
-        height = fm.getAscent();
-        x = ltr ? x + boxPaddingX + boxWidth - fm.stringWidth(numericDay) :
-                x + boxPaddingX +
-                        boxWidth - fm.stringWidth(numericDay) - 1;
-        y = y + boxPaddingY;
-
-        g.drawLine(x, y, x + width, y + height);
-        g.drawLine(x + 1, y, x + width + 1, y + height);
-        g.drawLine(x + width, y, x, y + height);
-        g.drawLine(x + width - 1, y, x - 1, y + height);
-    }
-
-    /**
-     * Paint the background for the specified leading day.
-     *
-     * @param g Graphics object to paint to
-     * @param x x-coordinate of upper left corner
-     * @param y y-coordinate of upper left corner
-     * @param width width of bounding box for the day
-     * @param height height of bounding box for the day
-     * @param date long value representing the leading day being painted
-     */
-    protected void paintLeadingDayBackground(Graphics g, int x, int y, int width, int height, long date) {
-        paintDayBackground(g, x, y, width, height, date);
-    }
-
-    /**
-     * Paint the foreground for the specified leading day.
-     *
-     * @param g Graphics object to paint to
-     * @param x x-coordinate of upper left corner
-     * @param y y-coordinate of upper left corner
-     * @param width width of bounding box for the day
-     * @param height height of bounding box for the day
-     * @param date long value representing the leading day being painted
-     */
-    protected void paintLeadingDayForeground(Graphics g, int x, int y, int width, int height, long date) {
-        String numericDay = dayOfMonthFormatter.format(date);
-        FontMetrics fm;
-
-        // TODO: Change this to a UI property
-        g.setColor(Color.LIGHT_GRAY);
-
-        int boxPaddingX = monthView.getBoxPaddingX();
-        int boxPaddingY = monthView.getBoxPaddingY();
-
-        fm = g.getFontMetrics();
-        g.drawString(numericDay,
-                ltr ?
-                        x + boxPaddingX +
-                                boxWidth - fm.stringWidth(numericDay) :
-                        x + boxPaddingX +
-                                boxWidth - fm.stringWidth(numericDay) - 1,
-                y + boxPaddingY + fm.getAscent());
-    }
-
-    /**
-     * Paint the background for the specified trailing day.
-     *
-     * @param g Graphics object to paint to
-     * @param x x-coordinate of upper left corner
-     * @param y y-coordinate of upper left corner
-     * @param width width of bounding box for the day
-     * @param height height of bounding box for the day
-     * @param date long value representing the leading day being painted
-     */
-    protected void paintTrailingDayBackground(Graphics g, int x, int y, int width, int height, long date) {
-        paintLeadingDayBackground(g, x, y, width, height, date);
-    }
-
-    /**
-     * Paint the foreground for the specified trailing day.
-     *
-     * @param g Graphics object to paint to
-     * @param x x-coordinate of upper left corner
-     * @param y y-coordinate of upper left corner
-     * @param width width of bounding box for the day
-     * @param height height of bounding box for the day
-     * @param date long value representing the leading day being painted
-     */
-    protected void paintTrailingDayForeground(Graphics g, int x, int y, int width, int height, long date) {
-        paintLeadingDayForeground(g, x, y, width, height, date);
-    }
-
-    private long cleanupDate(long date) {
-        Calendar cal = monthView.getCalendar();
-        cal.setTimeInMillis(date);
-        // We only want to compare the day, month and year
-        // so reset all other values to 0.
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTimeInMillis();
-    }
-
-    private class Handler implements ComponentListener, MouseListener, MouseMotionListener, LayoutManager,
-            PropertyChangeListener, DateSelectionListener {
+    private class Handler implements ComponentListener, MouseListener, MouseMotionListener, LayoutManager, PropertyChangeListener {
         private boolean asKirkWouldSay_FIRE;
         private long startDate;
         private long endDate;
+
+        /** For multiple selection we need to record the date we pivot around. */
+        private long pivotDate = -1;
 
         public void mouseClicked(MouseEvent e) {}
 
@@ -1217,24 +954,18 @@ public class BasicMonthViewUI extends MonthViewUI {
             if (monthView.isTraversable()) {
                 int arrowType = getTraversableButtonAt(e.getX(), e.getY());
                 if (arrowType == JXMonthView.MONTH_DOWN) {
-                    Date lowerBound = monthView.getSelectionModel().getLowerBound();
-                    if (lowerBound == null || lowerBound.getTime() < firstDisplayedDate) {
-                        monthView.setFirstDisplayedDate(DateUtils.getPreviousMonth(firstDisplayedDate));
-                        calculateDirtyRectForSelection();
-                        return;
-                    }
+                    monthView.setFirstDisplayedDate(
+                            DateUtils.getPreviousMonth(monthView.getFirstDisplayedDate()));
+                    return;
                 } else if (arrowType == JXMonthView.MONTH_UP) {
-                    Date upperBound = monthView.getSelectionModel().getUpperBound();
-                    if (upperBound == null || upperBound.getTime() > lastDisplayedDate) {
-                        monthView.setFirstDisplayedDate(DateUtils.getNextMonth(firstDisplayedDate));
-                        calculateDirtyRectForSelection();
-                        return;
-                    }
+                    monthView.setFirstDisplayedDate(
+                            DateUtils.getNextMonth(monthView.getFirstDisplayedDate()));
+                    return;
                 }
             }
 
-            SelectionMode selectionMode = monthView.getSelectionMode();
-            if (selectionMode == SelectionMode.NO_SELECTION) {
+            int selectionMode = monthView.getSelectionMode();
+            if (selectionMode == JXMonthView.NO_SELECTION) {
                 return;
             }
 
@@ -1247,17 +978,33 @@ public class BasicMonthViewUI extends MonthViewUI {
             startDate = selected;
             endDate = selected;
 
-            if (selectionMode == SelectionMode.SINGLE_INTERVAL_SELECTION ||
-                    selectionMode == SelectionMode.WEEK_INTERVAL_SELECTION ||
-                    selectionMode == SelectionMode.MULTIPLE_INTERVAL_SELECTION) {
+            if (selectionMode == JXMonthView.MULTIPLE_SELECTION ||
+                    selectionMode == JXMonthView.WEEK_SELECTION) {
                 pivotDate = selected;
             }
 
-            if (selectionMode == SelectionMode.MULTIPLE_INTERVAL_SELECTION && e.isControlDown()) {
-                monthView.addSelectionInterval(new Date(startDate), new Date(endDate));
-            } else {
-                monthView.setSelectionInterval(new Date(startDate), new Date(endDate));
-            }
+            monthView.setSelectedDateSpan(new DateSpan(startDate, endDate));
+
+//            // Determine the dirty rectangle of the new selected date so we
+//            // draw the bounding box around it.  This dirty rect includes the
+//            // visual border of the selected date.
+//            Calendar cal = monthView.getCalendar();
+//            cal.setTimeInMillis(selected);
+//
+//            calculateBoundsForDay(bounds);
+//            cal.setTimeInMillis(firstDisplayedDate);
+//
+//            // Repaint the old dirty area.
+//            monthView.repaint(dirtyRect);
+//
+//            // Repaint the new dirty area.
+//            monthView.repaint(bounds);
+//
+//            // Update the dirty area.
+//            dirtyRect.x = bounds.x;
+//            dirtyRect.y = bounds.y;
+//            dirtyRect.width = bounds.width;
+//            dirtyRect.height = bounds.height;
 
             // Arm so we fire action performed on mouse release.
             asKirkWouldSay_FIRE = true;
@@ -1281,20 +1028,26 @@ public class BasicMonthViewUI extends MonthViewUI {
             asKirkWouldSay_FIRE = false;
         }
 
-        public void mouseEntered(MouseEvent e) {}
+        public void mouseEntered(MouseEvent e) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
 
-        public void mouseExited(MouseEvent e) {}
+        public void mouseExited(MouseEvent e) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
 
         public void mouseDragged(MouseEvent e) {
             // If we were using the keyboard we aren't anymore.
             setUsingKeyboard(false);
-            SelectionMode selectionMode = monthView.getSelectionMode();
+            int selectionMode = monthView.getSelectionMode();
 
-            if (!monthView.isEnabled() || selectionMode == SelectionMode.NO_SELECTION) {
+            if (!monthView.isEnabled() || selectionMode == JXMonthView.NO_SELECTION) {
                 return;
             }
 
-            long selected = monthView.getDayAt(e.getX(), e.getY());
+            int x = e.getX();
+            int y = e.getY();
+            long selected = monthView.getDayAt(x, y);
 
             if (selected == -1) {
                 return;
@@ -1303,7 +1056,7 @@ public class BasicMonthViewUI extends MonthViewUI {
             long oldStart = startDate;
             long oldEnd = endDate;
 
-            if (selectionMode == SelectionMode.SINGLE_SELECTION) {
+            if (selectionMode == JXMonthView.SINGLE_SELECTION) {
                 if (selected == oldStart) {
                     return;
                 }
@@ -1319,25 +1072,69 @@ public class BasicMonthViewUI extends MonthViewUI {
                 }
             }
 
+            if (selectionMode == JXMonthView.WEEK_SELECTION) {
+                // Do we span a week.
+                long start = (selected > pivotDate) ? pivotDate : selected;
+                long end = (selected > pivotDate) ? selected : pivotDate;
+
+                Calendar cal = monthView.getCalendar();
+                cal.setTimeInMillis(start);
+                int count = 1;
+                while (cal.getTimeInMillis() < end) {
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
+                    count++;
+                }
+
+                if (count > JXMonthView.DAYS_IN_WEEK) {
+                    // Move the start date to the first day of the week.
+                    cal.setTimeInMillis(start);
+                    int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+                    int firstDayOfWeek = monthView.getFirstDayOfWeek();
+                    int daysFromStart = dayOfWeek - firstDayOfWeek;
+                    if (daysFromStart < 0) {
+                        daysFromStart += JXMonthView.DAYS_IN_WEEK;
+                    }
+                    cal.add(Calendar.DAY_OF_MONTH, -daysFromStart);
+
+                    startDate = cal.getTimeInMillis();
+
+                    // Move the end date to the last day of the week.
+                    cal.setTimeInMillis(end);
+                    dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+                    int lastDayOfWeek = firstDayOfWeek - 1;
+                    if (lastDayOfWeek == 0) {
+                        lastDayOfWeek = Calendar.SATURDAY;
+                    }
+                    int daysTillEnd = lastDayOfWeek - dayOfWeek;
+                    if (daysTillEnd < 0) {
+                        daysTillEnd += JXMonthView.DAYS_IN_WEEK;
+                    }
+                    cal.add(Calendar.DAY_OF_MONTH, daysTillEnd);
+                    endDate = cal.getTimeInMillis();
+                }
+            }
+
             if (oldStart == startDate && oldEnd == endDate) {
                 return;
             }
 
-            if (selectionMode == SelectionMode.MULTIPLE_INTERVAL_SELECTION && e.isControlDown()) {
-                monthView.addSelectionInterval(new Date(startDate), new Date(endDate));
-            } else {
-                monthView.setSelectionInterval(new Date(startDate), new Date(endDate));
-            }
+            monthView.setSelectedDateSpan(new DateSpan(startDate, endDate));
 
             // Set trigger.
             asKirkWouldSay_FIRE = true;
         }
 
-        public void mouseMoved(MouseEvent e) {}
+        public void mouseMoved(MouseEvent e) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
 
-        public void addLayoutComponent(String name, Component comp) {}
+        public void addLayoutComponent(String name, Component comp) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
 
-        public void removeLayoutComponent(Component comp) {}
+        public void removeLayoutComponent(Component comp) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
 
         public Dimension preferredLayoutSize(Container parent) {
             layoutContainer(parent);
@@ -1439,19 +1236,14 @@ public class BasicMonthViewUI extends MonthViewUI {
                 boxWidth += Math.ceil(diff / (double)JXMonthView.DAYS_IN_WEEK);
             }
 
-
-            // Keep track of a full box height/width and full month box height
-            fullBoxWidth = boxWidth + boxPaddingX + boxPaddingX;
-            fullBoxHeight = boxHeight + boxPaddingY + boxPaddingY;
-            fullMonthBoxHeight = monthBoxHeight + boxPaddingY + boxPaddingY;
-
             // Keep track of calendar width and height for use later.
-            calendarWidth = fullBoxWidth * JXMonthView.DAYS_IN_WEEK;
+            calendarWidth = (boxWidth + (2 * boxPaddingX)) * JXMonthView.DAYS_IN_WEEK;
             if (showingWeekNumber) {
-                calendarWidth += fullBoxWidth;
+                calendarWidth += (boxWidth + (2 * boxPaddingX));
             }
 
-            calendarHeight = (fullBoxHeight * 7) + fullMonthBoxHeight;
+            calendarHeight = ((boxPaddingY + boxHeight + boxPaddingY) * 7) +
+                    (boxPaddingY + monthBoxHeight + boxPaddingY);
 
             // Calculate minimum width/height for the component.
             int prefRows = monthView.getPreferredRows();
@@ -1473,8 +1265,8 @@ public class BasicMonthViewUI extends MonthViewUI {
             calculateNumDisplayedCals();
             calculateStartPosition();
 
-            if (!monthView.getSelectionModel().isSelectionEmpty()) {
-                long startDate = selection.first().getTime();
+            if (selection != null) {
+                long startDate = selection.getStart();
                 if (startDate > lastDisplayedDate ||
                         startDate < firstDisplayedDate) {
                     // Already does the recalculation for the dirty rect.
@@ -1494,28 +1286,30 @@ public class BasicMonthViewUI extends MonthViewUI {
                 monthView.revalidate();
                 calculateStartPosition();
                 calculateDirtyRectForSelection();
-            } else if (JXMonthView.ENSURE_DATE_VISIBILITY.equals(property)) {
+            } else if ("selectedDates".equals(property)) {
+                selection = (DateSpan)evt.getNewValue();
+                // repaint old dirty region
+                monthView.repaint(dirtyRect);
+                // calculate new dirty region based on selection
                 calculateDirtyRectForSelection();
-            } else if (JXMonthView.SELECTION_MODEL.equals(property)) {
-                DateSelectionModel selectionModel = (DateSelectionModel) evt.getOldValue();
-                selectionModel.removeDateSelectionListener(getHandler());
-                selectionModel = (DateSelectionModel) evt.getNewValue();
-                selectionModel.addDateSelectionListener(getHandler());
-            } else if (JXMonthView.FIRST_DISPLAYED_DATE.equals(property)) {
+                // repaint new selection
+                monthView.repaint(dirtyRect);
+            } else if ("ensureDateVisibility".equals(property)) {
+                calculateDirtyRectForSelection();
+            } else if ("firstDisplayedDate".equals(property)) {
                 firstDisplayedDate = (Long)evt.getNewValue();
-            } else if (JXMonthView.FIRST_DISPLAYED_MONTH.equals(property)) {
+            } else if ("firstDisplayedMonth".equals(property)) {
                 firstDisplayedMonth = (Integer)evt.getNewValue();
-            } else if (JXMonthView.FIRST_DISPLAYED_YEAR.equals(property)) {
+            } else if ("firstDisplayedYear".equals(property)) {
                 firstDisplayedYear = (Integer)evt.getNewValue();
             } else if ("today".equals(property)) {
                 today = (Long)evt.getNewValue();
-            } else if (JXMonthView.BOX_PADDING_X.equals(property) || JXMonthView.BOX_PADDING_Y.equals(property) ||
-                    JXMonthView.TRAVERSABLE.equals(property) || JXMonthView.DAYS_OF_THE_WEEK.equals(property) ||
-                    "border".equals(property) || "font".equals(property) || JXMonthView.WEEK_NUMBER.equals(property)) {
-                boxPaddingX = monthView.getBoxPaddingX();
-                boxPaddingY = monthView.getBoxPaddingY();
-                showingWeekNumber = monthView.isShowingWeekNumber();
+            } else if ("boxPaddingX".equals(property) || "boxPaddingY".equals(property) ||
+                    "traversable".equals(property) || "daysOfTheWeek".equals(property) ||
+                    "border".equals(property) || "font".equals(property)) {
                 monthView.revalidate();
+            } else if ("weekNumber".equals(property)) {
+                showingWeekNumber = monthView.isShowingWeekNumber();
             }
         }
 
@@ -1529,16 +1323,6 @@ public class BasicMonthViewUI extends MonthViewUI {
         public void componentShown(ComponentEvent e) {}
 
         public void componentHidden(ComponentEvent e) {}
-
-        public void valueChanged(DateSelectionEvent ev) {
-            selection = ev.getSelection();
-            // repaint old dirty region
-            monthView.repaint(dirtyRect);
-            // calculate new dirty region based on selection
-            calculateDirtyRectForSelection();
-            // repaint new selection
-            monthView.repaint(dirtyRect);
-        }
     }
 
     /**
@@ -1551,10 +1335,10 @@ public class BasicMonthViewUI extends MonthViewUI {
         public static final int SELECT_NEXT_DAY = 3;
         public static final int SELECT_DAY_PREVIOUS_WEEK = 4;
         public static final int SELECT_DAY_NEXT_WEEK = 5;
-        public static final int ADJUST_SELECTION_PREVIOUS_DAY = 6;
-        public static final int ADJUST_SELECTION_NEXT_DAY = 7;
-        public static final int ADJUST_SELECTION_PREVIOUS_WEEK = 8;
-        public static final int ADJUST_SELECTION_NEXT_WEEK = 9;
+        public static final int ADD_PREVIOUS_DAY = 6;
+        public static final int ADD_NEXT_DAY = 7;
+        public static final int ADD_TO_PREVIOUS_WEEK = 8;
+        public static final int ADD_TO_NEXT_WEEK = 9;
 
         private int action;
 
@@ -1563,33 +1347,30 @@ public class BasicMonthViewUI extends MonthViewUI {
         }
 
         public void actionPerformed(ActionEvent ev) {
-            SelectionMode selectionMode = monthView.getSelectionMode();
+            int selectionMode = monthView.getSelectionMode();
 
-            if (selectionMode != SelectionMode.NO_SELECTION) {
+            // TODO: Modify this to allow keyboard selection even if we don't have a previous selection.
+            if (selection != null && selectionMode != JXMonthView.NO_SELECTION) {
                 if (!isUsingKeyboard()) {
-                    originalDateSpan = monthView.getSelection();
+                    originalDateSpan = monthView.getSelectedDateSpan();
                 }
 
                 if (action >= ACCEPT_SELECTION && action <= CANCEL_SELECTION && isUsingKeyboard()) {
                     if (action == CANCEL_SELECTION) {
                         // Restore the original selection.
-                        if (!originalDateSpan.isEmpty()) {
-                            monthView.setSelectionInterval(originalDateSpan.first(), originalDateSpan.last());
-                        } else {
-                            monthView.clearSelection();
-                        }
+                        monthView.setSelectedDateSpan(originalDateSpan);
                         monthView.postActionEvent();
                     } else {
                         // Accept the keyboard selection.
+                        monthView.setSelectedDateSpan(monthView.getSelectedDateSpan());
                         monthView.postActionEvent();
                     }
                     setUsingKeyboard(false);
                 } else if (action >= SELECT_PREVIOUS_DAY && action <= SELECT_DAY_NEXT_WEEK) {
                     setUsingKeyboard(true);
-                    pivotDate = -1;
                     traverse(action);
-                } else if (selectionMode == SelectionMode.SINGLE_INTERVAL_SELECTION &&
-                        action >= ADJUST_SELECTION_PREVIOUS_DAY && action <= ADJUST_SELECTION_NEXT_WEEK) {
+                } else if (selectionMode >= JXMonthView.MULTIPLE_SELECTION &&
+                        action >= ADD_PREVIOUS_DAY && action <= ADD_TO_NEXT_WEEK) {
                     setUsingKeyboard(true);
                     addToSelection(action);
                 }
@@ -1597,7 +1378,7 @@ public class BasicMonthViewUI extends MonthViewUI {
         }
 
         private void traverse(int action) {
-            long oldStart = selection.isEmpty() ? System.currentTimeMillis() : selection.first().getTime();
+            long oldStart = selection.getStart();
             Calendar cal = monthView.getCalendar();
             cal.setTimeInMillis(oldStart);
             switch (action) {
@@ -1617,8 +1398,7 @@ public class BasicMonthViewUI extends MonthViewUI {
 
             long newStartDate = cal.getTimeInMillis();
             if (newStartDate != oldStart) {
-                final Date startDate = new Date(newStartDate);
-                monthView.setSelectionInterval(startDate, startDate);
+                monthView.setSelectedDateSpan(new DateSpan(newStartDate, newStartDate));
                 monthView.ensureDateVisible(newStartDate);
             }
             // Restore the original time value.
@@ -1633,90 +1413,45 @@ public class BasicMonthViewUI extends MonthViewUI {
          * and we ay need to update this code to act in a way that people expect.
          */
         private void addToSelection(int action) {
-            long newStartDate;
-            long newEndDate;
-            long selectionStart;
-            long selectionEnd;
+            long newStartDate = -1;
+            long newEndDate = -1;
+            long selectionStart = -1;
+            long selectionEnd = -1;
 
-            if (!selection.isEmpty()) {
-                newStartDate = selectionStart = selection.first().getTime();
-                newEndDate = selectionEnd = selection.last().getTime();
-            } else {
-                newStartDate = selectionStart = cleanupDate(System.currentTimeMillis());
-                newEndDate = selectionEnd = newStartDate;
-            }
-
-            if (-1 == pivotDate) {
-                pivotDate = newStartDate;
+            if (selection != null) {
+                newStartDate = selectionStart = selection.getStart();
+                newEndDate = selectionEnd = selection.getEnd();
             }
 
             boolean isForward = true;
 
             Calendar cal = monthView.getCalendar();
             switch (action) {
-                case ADJUST_SELECTION_PREVIOUS_DAY:
-                    if (newEndDate <= pivotDate) {
-                        cal.setTimeInMillis(newStartDate);
-                        cal.add(Calendar.DAY_OF_MONTH, -1);
-                        newStartDate = cal.getTimeInMillis();
-                    } else {
-                        cal.setTimeInMillis(newEndDate);
-                        cal.add(Calendar.DAY_OF_MONTH, -1);
-                        newEndDate = cal.getTimeInMillis();
-                    }
+                case ADD_PREVIOUS_DAY:
+                    cal.setTimeInMillis(selectionStart);
+                    cal.add(Calendar.DAY_OF_MONTH, -1);
+                    newStartDate = cal.getTimeInMillis();
                     isForward = false;
                     break;
-                case ADJUST_SELECTION_NEXT_DAY:
-                    if (newStartDate >= pivotDate) {
-                        cal.setTimeInMillis(newEndDate);
-                        cal.add(Calendar.DAY_OF_MONTH, 1);
-                        newStartDate = pivotDate;
-                        newEndDate = cal.getTimeInMillis();
-                    } else {
-                        cal.setTimeInMillis(newStartDate);
-                        cal.add(Calendar.DAY_OF_MONTH, 1);
-                        newStartDate = cal.getTimeInMillis();
-                    }
+                case ADD_NEXT_DAY:
+                    cal.setTimeInMillis(selectionEnd);
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
+                    newEndDate = cal.getTimeInMillis();
                     break;
-                case ADJUST_SELECTION_PREVIOUS_WEEK:
-                    if (newEndDate <= pivotDate) {
-                        cal.setTimeInMillis(newStartDate);
-                        cal.add(Calendar.DAY_OF_MONTH, -JXMonthView.DAYS_IN_WEEK);
-                        newStartDate = cal.getTimeInMillis();
-                    } else {
-                        cal.setTimeInMillis(newEndDate);
-                        cal.add(Calendar.DAY_OF_MONTH, -JXMonthView.DAYS_IN_WEEK);
-                        long newTime = cal.getTimeInMillis();
-                        if (newTime <= pivotDate) {
-                            newStartDate = newTime;
-                            newEndDate = pivotDate;
-                        } else {
-                            newEndDate = cal.getTimeInMillis();
-                        }
-
-                    }
+                case ADD_TO_PREVIOUS_WEEK:
+                    cal.setTimeInMillis(selectionStart);
+                    cal.add(Calendar.DAY_OF_MONTH, -JXMonthView.DAYS_IN_WEEK);
+                    newStartDate = cal.getTimeInMillis();
                     isForward = false;
                     break;
-                case ADJUST_SELECTION_NEXT_WEEK:
-                    if (newStartDate >= pivotDate) {
-                        cal.setTimeInMillis(newEndDate);
-                        cal.add(Calendar.DAY_OF_MONTH, JXMonthView.DAYS_IN_WEEK);
-                        newEndDate = cal.getTimeInMillis();
-                    } else {
-                        cal.setTimeInMillis(newStartDate);
-                        cal.add(Calendar.DAY_OF_MONTH, JXMonthView.DAYS_IN_WEEK);
-                        long newTime = cal.getTimeInMillis();
-                        if (newTime >= pivotDate) {
-                            newStartDate = pivotDate;
-                            newEndDate = newTime;
-                        } else {
-                            newStartDate = cal.getTimeInMillis();
-                        }
-                    }
+                case ADD_TO_NEXT_WEEK:
+                    cal.setTimeInMillis(selectionEnd);
+                    cal.add(Calendar.DAY_OF_MONTH, JXMonthView.DAYS_IN_WEEK);
+                    newEndDate = cal.getTimeInMillis();
                     break;
             }
             if (newStartDate != selectionStart || newEndDate != selectionEnd) {
-                monthView.setSelectionInterval(new Date(newStartDate), new Date(newEndDate));
+                monthView.setSelectedDateSpan(new DateSpan(newStartDate, newEndDate));
                 monthView.ensureDateVisible(isForward ? newEndDate : newStartDate);
             }
 

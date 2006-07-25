@@ -85,7 +85,7 @@ public class TextContextMenuSource extends ContextMenuSource{
 
 
     /**
-     * @return resource prefix
+     * @return
      */
     protected String getResourcePrefix() {
         return "DefaultEditorKit.";

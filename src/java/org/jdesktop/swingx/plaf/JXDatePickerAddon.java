@@ -18,14 +18,13 @@
  */
 package org.jdesktop.swingx.plaf;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.border.LineBorder;
-import javax.swing.plaf.BorderUIResource;
-import javax.swing.plaf.IconUIResource;
 import org.jdesktop.swingx.JXDatePicker;
+
+import javax.swing.*;
+import javax.swing.plaf.BorderUIResource;
+import javax.swing.border.LineBorder;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author Joshua Outwater
@@ -37,32 +36,23 @@ public class JXDatePickerAddon extends AbstractComponentAddon {
 
     @Override
     protected void addBasicDefaults(LookAndFeelAddons addon, List<Object> defaults) {
-        super.addBasicDefaults(addon, defaults);
-        defaults.addAll(Arrays.asList(new Object[]{
+        defaults.addAll(Arrays.asList(new Object[] {
                 defaults.add(JXDatePicker.uiClassID),
                 defaults.add("org.jdesktop.swingx.plaf.basic.BasicDatePickerUI"),
+                "JXDatePicker.linkFormat",
+                "Today is {0,date, dd MMMM yyyy}",
+                "JXDatePicker.longFormat",
+                "EEE MM/dd/yyyy",
+                "JXDatePicker.mediumFormat",
+                "MM/dd/yyyy",
+                "JXDatePicker.shortFormat",
+                "MM/dd",
                 "JXDatePicker.border",
                 new BorderUIResource(BorderFactory.createCompoundBorder(
-                        LineBorder.createGrayLineBorder(),
-                        BorderFactory.createEmptyBorder(3, 3, 3, 3)))
-        }));
-    }
-
-    @Override
-    protected void addWindowsDefaults(LookAndFeelAddons addon, List<Object> defaults) {
-        super.addWindowsDefaults(addon, defaults);
-        defaults.addAll(Arrays.asList(new Object[] {
-                "JXDatePicker.arrowDown.image",
-                new IconUIResource(new ImageIcon(getClass().getResource("resources/combo-xp.png")))
-        }));
-    }
-
-    @Override
-    protected void addMacDefaults(LookAndFeelAddons addon, List<Object> defaults) {
-        super.addMacDefaults(addon, defaults);
-        defaults.addAll(Arrays.asList(new Object[] {
-                "JXDatePicker.arrowDown.image",
-                new IconUIResource(new ImageIcon(getClass().getResource("resources/combo-osx.png")))
+                    LineBorder.createGrayLineBorder(),
+                    BorderFactory.createEmptyBorder(3, 3, 3, 3))),
+                "JXDatePicker.numColumns",
+                10
         }));
     }
 }

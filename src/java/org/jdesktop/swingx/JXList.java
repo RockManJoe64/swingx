@@ -26,18 +26,21 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
-import java.util.Comparator;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
@@ -47,16 +50,14 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.jdesktop.swingx.action.LinkAction;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
-import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterPipeline;
 import org.jdesktop.swingx.decorator.PipelineEvent;
 import org.jdesktop.swingx.decorator.PipelineListener;
 import org.jdesktop.swingx.decorator.SelectionMapper;
-import org.jdesktop.swingx.decorator.SortController;
 import org.jdesktop.swingx.decorator.SortKey;
-import org.jdesktop.swingx.decorator.SortOrder;
 
 /**
  * JXList
@@ -115,122 +116,30 @@ public class JXList extends JList {
 
     private Searchable searchable;
 
-    private Comparator comparator;
-
-    /**
-    * Constructs a <code>JXList</code> with an empty model and filters disabled.
-    *
-    */                                           
     public JXList() {
-        this(false);
+        init();
     }
 
-    /**
-     * Constructs a <code>JXList</code> that displays the elements in the
-     * specified, non-<code>null</code> model and filters disabled.
-     *
-     * @param dataModel   the data model for this list
-     * @exception IllegalArgumentException   if <code>dataModel</code>
-     *                                           is <code>null</code>
-     */                                           
     public JXList(ListModel dataModel) {
-        this(dataModel, false);
-    }
-
-    /**
-     * Constructs a <code>JXList</code> that displays the elements in
-     * the specified array and filters disabled.
-     *
-     * @param  listData  the array of Objects to be loaded into the data model
-     * @throws IllegalArgumentException   if <code>listData</code>
-     *                                          is <code>null</code>
-     */
-    public JXList(Object[] listData) {
-        this(listData, false);
-    }
-
-    /**
-     * Constructs a <code>JXList</code> that displays the elements in
-     * the specified <code>Vector</code> and filtes disabled.
-     *
-     * @param  listData  the <code>Vector</code> to be loaded into the
-     *          data model
-     * @throws IllegalArgumentException   if <code>listData</code>
-     *                                          is <code>null</code>
-     */
-    public JXList(Vector<?> listData) {
-        this(listData, false);
-    }
-
-
-    /**
-     * Constructs a <code>JXList</code> with an empty model and
-     * filterEnabled property.
-     * 
-     * @param filterEnabled <code>boolean</code> to determine if 
-     *  filtering/sorting is enabled
-     */
-    public JXList(boolean filterEnabled) {
-        init(filterEnabled);
-    }
-
-    /**
-     * Constructs a <code>JXList</code> with the specified model and
-     * filterEnabled property.
-     * 
-     * @param dataModel   the data model for this list
-     * @param filterEnabled <code>boolean</code> to determine if 
-     *          filtering/sorting is enabled
-     * @throws IllegalArgumentException   if <code>dataModel</code>
-     *                                          is <code>null</code>
-     */
-    public JXList(ListModel dataModel, boolean filterEnabled) {
         super(dataModel);
-        init(filterEnabled);
+        init();
     }
 
-    /**
-     * Constructs a <code>JXList</code> that displays the elements in
-     * the specified array and filterEnabled property.
-     *
-     * @param  listData  the array of Objects to be loaded into the data model
-     * @param filterEnabled <code>boolean</code> to determine if filtering/sorting
-     *   is enabled
-     * @throws IllegalArgumentException   if <code>listData</code>
-     *                                          is <code>null</code>
-     */
-    public JXList(Object[] listData, boolean filterEnabled) {
+    public JXList(Object[] listData) {
         super(listData);
-        if (listData == null) 
-           throw new IllegalArgumentException("listData must not be null");
-        init(filterEnabled);
+        init();
     }
 
-    /**
-     * Constructs a <code>JXList</code> that displays the elements in
-     * the specified <code>Vector</code> and filtersEnabled property.
-     *
-     * @param  listData  the <code>Vector</code> to be loaded into the
-     *          data model
-     * @param filterEnabled <code>boolean</code> to determine if filtering/sorting
-     *   is enabled
-     * @throws IllegalArgumentException if <code>listData</code> is <code>null</code>
-     */
-    public JXList(Vector<?> listData, boolean filterEnabled) {
+    public JXList(Vector listData) {
         super(listData);
-        if (listData == null) 
-           throw new IllegalArgumentException("listData must not be null");
-        init(filterEnabled);
+        init();
     }
 
-
-    private void init(boolean filterEnabled) {
-        setFilterEnabled(filterEnabled);
-        
+    private void init() {
         Action findAction = createFindAction();
         getActionMap().put("find", findAction);
-        
-        KeyStroke findStroke = SearchFactory.getInstance().getSearchAccelerator();
+        // JW: this should be handled by the LF!
+        KeyStroke findStroke = KeyStroke.getKeyStroke("control F");
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(findStroke, "find");
         
     }
@@ -254,7 +163,7 @@ public class JXList extends JList {
 
     /**
      * 
-     * @return a not-null Searchable for this editor.
+     * @returns a not-null Searchable for this editor.  
      */
     public Searchable getSearchable() {
         if (searchable == null) {
@@ -303,7 +212,8 @@ public class JXList extends JList {
          * 
          * @param pattern 
          * @param row a valid row index in view coordinates
-         * @return <code>SearchResult</code> if matched otherwise null
+         * @param column a valid column index in view coordinates
+         * @return
          */
         protected SearchResult findMatchAt(Pattern pattern, int row) {
             Object value = getElementAt(row);
@@ -372,7 +282,7 @@ public class JXList extends JList {
     /**
      * creates and returns the RolloverProducer to use with this tree.
      * 
-     * @return <code>RolloverProducer</code> to use with this tree
+     * @return
      */
     protected RolloverProducer createRolloverProducer() {
         RolloverProducer r = new RolloverProducer() {
@@ -396,10 +306,8 @@ public class JXList extends JList {
     }
     /**
      * returns the rolloverEnabled property.
-     *
-     * TODO: why doesn't this just return rolloverEnabled???
-     *
-     * @return true if rollover is enabled
+     * 
+     * @return
      */
     public boolean isRolloverEnabled() {
         return rolloverProducer != null;
@@ -427,6 +335,7 @@ public class JXList extends JList {
         /**
          * something weird: cursor in JList behaves different from JTable?
          * 
+         * @param list
          * @param location
          */
         private void setRolloverCursor(Point location) {
@@ -440,6 +349,7 @@ public class JXList extends JList {
 
         }
 
+        @Override
         protected RolloverRenderer getRolloverRenderer(Point location,
                 boolean prepare) {
             ListCellRenderer renderer = component.getCellRenderer();
@@ -466,135 +376,7 @@ public class JXList extends JList {
 
     }
 
-//--------------------- public sort api
-//    /** 
-//     * Returns the sortable property.
-//     * Here: same as filterEnabled.
-//     * @return true if the table is sortable. 
-//     */
-//    public boolean isSortable() {
-//        return isFilterEnabled();
-//    }
-    /**
-     * Removes the interactive sorter.
-     * 
-     */
-    public void resetSortOrder() {
-        SortController controller = getSortController();
-        if (controller != null) {
-            controller.setSortKeys(null);
-        }
-    }
-
-    /**
-     * 
-     * Toggles the sort order of the items.
-     * <p>
-     * The exact behaviour is defined by the SortController's
-     * toggleSortOrder implementation. Typically a unsorted 
-     * column is sorted in ascending order, a sorted column's
-     * order is reversed. 
-     * <p>
-     * PENDING: where to get the comparator from?
-     * <p>
-     * 
-     * 
-     */
-    public void toggleSortOrder() {
-        SortController controller = getSortController();
-        if (controller != null) {
-            controller.toggleSortOrder(0, getComparator());
-        }
-    }
-
-    /**
-     * Sorts the list using SortOrder. 
-     * 
-     * 
-     * Respects the JXList's sortable and comparator 
-     * properties: routes the comparator to the SortController
-     * and does nothing if !isFilterEnabled(). 
-     * <p>
-     * 
-     * @param sortOrder the sort order to use. If null or SortOrder.UNSORTED, 
-     *   this method has the same effect as resetSortOrder();
-     *    
-     */
-    public void setSortOrder(SortOrder sortOrder) {
-        if ((sortOrder == null) || !sortOrder.isSorted()) {
-            resetSortOrder();
-            return;
-        }
-        SortController sortController = getSortController();
-        if (sortController != null) {
-            SortKey sortKey = new SortKey(sortOrder, 
-                    0, getComparator());    
-            sortController.setSortKeys(Collections.singletonList(sortKey));
-        }
-    }
-
-
-    /**
-     * Returns the SortOrder. 
-     * 
-     * @return the interactive sorter's SortOrder  
-     *  or SortOrder.UNSORTED 
-     */
-    public SortOrder getSortOrder() {
-        SortController sortController = getSortController();
-        if (sortController == null) return SortOrder.UNSORTED;
-        SortKey sortKey = SortKey.getFirstSortKeyForColumn(sortController.getSortKeys(), 
-                0);
-        return sortKey != null ? sortKey.getSortOrder() : SortOrder.UNSORTED;
-    }
-
-    /**
-     * 
-     * @return the comparator used.
-     * @see #setComparator(Comparator)
-     */
-    public Comparator getComparator() {
-        return comparator;
-    }
-    
-    /**
-     * Sets the comparator used. As a side-effect, the 
-     * current sort might be updated. The exact behaviour
-     * is defined in #updateSortAfterComparatorChange. 
-     * 
-     * @param comparator the comparator to use.
-     */
-    public void setComparator(Comparator comparator) {
-        Comparator old = getComparator();
-        this.comparator = comparator;
-        updateSortAfterComparatorChange();
-        firePropertyChange("comparator", old, getComparator());
-    }
-    
-    /**
-     * Updates sort after comparator has changed. 
-     * Here: sets the current sortOrder with the new comparator.
-     *
-     */
-    protected void updateSortAfterComparatorChange() {
-        setSortOrder(getSortOrder());
-        
-    }
-
-    /**
-     * returns the currently active SortController. Will be null if
-     * !isFilterEnabled().
-     * @return the currently active <code>SortController</code> may be null
-     */
-    protected SortController getSortController() {
-//      // this check is for the sake of the very first call after instantiation
-        // doesn't apply for JXList? need to test for filterEnabled?
-        //if (filters == null) return null;
-        if (!isFilterEnabled()) return null;
-        return getFilters().getSortController();
-    }
-    
-    
+   
     // ---------------------------- filters
 
     /**
@@ -616,7 +398,7 @@ public class JXList extends JList {
      * coordinates. If filters are active this number might be
      * less than the number of elements in the underlying model.
      * 
-     * @return number of elements in this list in view coordinates
+     * @return
      */
     public int getElementCount() {
         return getModel().getSize();
@@ -655,7 +437,7 @@ public class JXList extends JList {
      * returns the underlying model. If !isFilterEnabled this will be the same
      * as getModel().
      * 
-     * @return the underlying model
+     * @return
      */
     public ListModel getWrappedModel() {
         return isFilterEnabled() ? wrappingModel.getModel() : getModel();
@@ -671,21 +453,16 @@ public class JXList extends JList {
      * 
      * PENDING: cleanup state transitions!! - currently this can be safely
      * applied once only to enable. Internal state is inconsistent if trying to
-     * disable again. As a temporary emergency measure, this will throw a 
-     * IllegalStateException. 
+     * disable again.
      * 
      * see Issue #2-swinglabs.
      * 
      * @param enabled
-     * @throws IllegalStateException if trying to disable again.
      */
     public void setFilterEnabled(boolean enabled) {
         boolean old = isFilterEnabled();
         if (old == enabled)
             return;
-        if (old == true) 
-            throw new IllegalStateException("must not reset filterEnabled");
-        // JW: filterEnabled must be set before calling super.setModel!
         filterEnabled = enabled;
         if (!old) {
             wrappingModel = new WrappingListModel(getModel());
@@ -698,11 +475,6 @@ public class JXList extends JList {
 
     }
 
-    /**
-     * 
-     * @return a <boolean> indicating if filtering is enabled.
-     * @see #setFilterEnabled(boolean)
-     */
     public boolean isFilterEnabled() {
         return filterEnabled;
     }
@@ -724,7 +496,6 @@ public class JXList extends JList {
      * 
      * 
      */
-    @Override
     public void setModel(ListModel model) {
         if (isFilterEnabled()) {
             wrappingModel.setModel(model);
@@ -735,7 +506,7 @@ public class JXList extends JList {
 
     /**
      * widened access for testing...
-     * @return the selection mapper
+     * @return
      */
     protected SelectionMapper getSelectionMapper() {
         if (selectionMapper == null) {
@@ -744,11 +515,6 @@ public class JXList extends JList {
         return selectionMapper;
     }
 
-    /**
-     * 
-     * @return the <code>FilterPipeline</code> assigned to this list, or
-     *   null if !isFiltersEnabled().
-     */
     public FilterPipeline getFilters() {
         if ((filters == null) && isFilterEnabled()) {
             setFilters(null);
@@ -756,16 +522,10 @@ public class JXList extends JList {
         return filters;
     }
 
-    /** Sets the FilterPipeline for filtering the items of this list, maybe null
-     *  to remove all previously applied filters. 
-     *  
-     *  Note: the current "interactive" sortState is preserved (by 
-     *  internally copying the old sortKeys to the new pipeline, if any). 
-     *  
+    /** Sets the FilterPipeline for filtering table rows. 
      *  PRE: isFilterEnabled()
      * 
-     * @param pipeline the <code>FilterPipeline</code> to use, null removes
-     *   all filters.
+     * @param pipeline the filterPipeline to use.
      * @throws IllegalStateException if !isFilterEnabled()
      */
     public void setFilters(FilterPipeline pipeline) {
@@ -975,11 +735,10 @@ public class JXList extends JList {
          * {@inheritDoc}
          */
         public boolean hasFocus() {
-            /** TODO: Think through printing implications */
+            /** @todo Think through printing implications */
             return list.isFocusOwner() && (row == list.getLeadSelectionIndex());
         }
 
-        @Override
         public int getRowCount() {
             return list.getWrappedModel().getSize();
         }
@@ -1008,7 +767,7 @@ public class JXList extends JList {
          * {@inheritDoc}
          */
         public boolean isSelected() {
-            /** TODO: Think through printing implications */
+            /** @todo Think through printing implications */
             return list.isSelectedIndex(row);
         }
 
@@ -1024,20 +783,11 @@ public class JXList extends JList {
 
     // ------------------------------ renderers
 
-    /**
-     * @return the HighlighterPipeline assigned to the list.
-     * @see #setHighlighters(HighlighterPipeline)
-     */
     public HighlighterPipeline getHighlighters() {
         return highlighters;
     }
 
-    /**
-     * Assigns a HighlighterPipeline to the list. This is a bound property.
-     * 
-     * @param pipeline the HighlighterPipeline to use for renderer
-     *   decoration, maybe null to remove all Highlighters.
-     */
+    /** Assigns a HighlighterPipeline to the table. */
     public void setHighlighters(HighlighterPipeline pipeline) {
         HighlighterPipeline old = getHighlighters();
         if (old != null) {
@@ -1050,46 +800,7 @@ public class JXList extends JList {
         firePropertyChange("highlighters", old, getHighlighters());
     }
 
-    /**
-     * Adds a Highlighter.
-     * 
-     * If the HighlighterPipeline returned from getHighlighters() is null, creates
-     * and sets a new pipeline containing the given Highlighter. Else, appends
-     * the Highlighter to the end of the pipeline.
-     * 
-     * @param highlighter the Highlighter to add - must not be null.
-     * @throws NullPointerException if highlighter is null.
-     */
-    public void addHighlighter(Highlighter highlighter) {
-        HighlighterPipeline pipeline = getHighlighters();
-        if (pipeline == null) {
-           setHighlighters(new HighlighterPipeline(new Highlighter[] {highlighter})); 
-        } else {
-            pipeline.addHighlighter(highlighter);
-        }
-    }
-
-    /**
-     * Removes the Highlighter.
-     * 
-     * Does nothing if the HighlighterPipeline is null or does not contain
-     * the given Highlighter.
-     * 
-     * @param highlighter the Highlighter to remove.
-     */
-    public void removeHighlighter(Highlighter highlighter) {
-        if ((getHighlighters() == null)) return;
-        getHighlighters().removeHighlighter(highlighter);
-    }
-    
-
-    /**
-     * returns the ChangeListener to use with highlighters. Creates one if
-     * necessary.
-     * 
-     * @return != null
-     */
-    protected ChangeListener getHighlighterChangeListener() {
+    private ChangeListener getHighlighterChangeListener() {
         if (highlighterChangeListener == null) {
             highlighterChangeListener = new ChangeListener() {
 
@@ -1110,12 +821,10 @@ public class JXList extends JList {
         return delegatingRenderer;
     }
 
-    @Override
     public ListCellRenderer getCellRenderer() {
         return getDelegatingRenderer();
     }
 
-    @Override
     public void setCellRenderer(ListCellRenderer renderer) {
         // JW: Pending - probably fires propertyChangeEvent with wrong newValue?
         // how about fixedCellWidths?
@@ -1124,7 +833,7 @@ public class JXList extends JList {
         super.setCellRenderer(delegatingRenderer);
     }
 
-    public class DelegatingRenderer implements ListCellRenderer, RolloverRenderer {
+    private class DelegatingRenderer implements ListCellRenderer, RolloverRenderer {
 
         private ListCellRenderer delegateRenderer;
 
@@ -1137,11 +846,6 @@ public class JXList extends JList {
                 delegate = new DefaultListCellRenderer();
             }
             delegateRenderer = delegate;
-        }
-
-        
-        public ListCellRenderer getDelegateRenderer() {
-            return delegateRenderer;
         }
 
         public boolean isEnabled() {
@@ -1191,7 +895,6 @@ public class JXList extends JList {
 
     // --------------------------- updateUI
 
-    @Override
     public void updateUI() {
         super.updateUI();
         updateRendererUI();

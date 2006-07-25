@@ -26,7 +26,6 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
-import org.jdesktop.swingx.JavaBean;
 import org.jdesktop.swingx.util.SwingWorker;
 
 /**
@@ -42,15 +41,15 @@ import org.jdesktop.swingx.util.SwingWorker;
  * @author Bino George
  * @author Shai Almog
  */
-public abstract class LoginService extends JavaBean {
+public abstract class LoginService {
     private Logger LOG = Logger.getLogger(LoginService.class.getName());
     private Vector<LoginListener> listenerList = new Vector<LoginListener>();
     private SwingWorker loginWorker;
     
-    /*
-     * Controls the authentication behaviour to be either
-     * synchronous or asynchronous
-     */
+     /*
+      * Controls the authentication behaviour to be either
+      * synchronous or asynchronous
+      */
     private boolean synchronous;
     private String server;
     
@@ -179,9 +178,7 @@ public abstract class LoginService extends JavaBean {
      * @param synchronous synchronous property
      */
     public void setSynchronous(boolean synchronous) {
-        boolean old = getSynchronous();
         this.synchronous = synchronous;
-        firePropertyChange("synchronous", old, getSynchronous());
     }
     
     /**
@@ -247,8 +244,6 @@ public abstract class LoginService extends JavaBean {
      * @param server The server to set.
      */
     public void setServer(String server) {
-        String old = getServer();
         this.server = server;
-        firePropertyChange("server", old, getServer());
     }
 }

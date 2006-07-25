@@ -20,10 +20,7 @@
  */
 package org.jdesktop.swingx;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -34,9 +31,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import org.jdesktop.swingx.event.TableColumnModelExtListener;
 import org.jdesktop.swingx.table.ColumnHeaderRenderer;
-import org.jdesktop.swingx.table.TableColumnExt;
 
 /**
  * TableHeader with extended functionality if associated Table is of
@@ -53,8 +48,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
  * 
  * @author Jeanette Winzenburg
  */
-public class JXTableHeader extends JTableHeader 
-    implements TableColumnModelExtListener {
+public class JXTableHeader extends JTableHeader {
 
     private SortGestureRecognizer sortGestureRecognizer;
 
@@ -72,7 +66,6 @@ public class JXTableHeader extends JTableHeader
      * 
      * PENDING: who is responsible for synching the columnModel?
      */
-    @Override
     public void setTable(JTable table) {
         super.setTable(table);
 //        setColumnModel(table.getColumnModel());
@@ -85,133 +78,12 @@ public class JXTableHeader extends JTableHeader
         }
     }
 
-    /**
-     * Implementing TableColumnModelExt: listening to column property changes.
-     * Here: triggers a resizeAndRepaint on every propertyChange which
-     * doesn't already fire a "normal" columnModelEvent.
-     * 
-     * @param event change notification from a contained TableColumn.
-     * @see #isColumnEvent(PropertyChangeEvent)
-     * 
-     */
-    public void columnPropertyChange(PropertyChangeEvent event) {
-       if (isColumnEvent(event)) return;
-       resizeAndRepaint(); 
-    }
-    
-    
-    /**
-     * @param event the PropertyChangeEvent received as TableColumnModelExtListener.
-     * @return a boolean to decide whether the same event triggers a
-     *   base columnModelEvent.
-     */
-    protected boolean isColumnEvent(PropertyChangeEvent event) {
-        return "width".equals(event.getPropertyName()) || 
-            "preferredWidth".equals(event.getPropertyName())
-            || "visible".equals(event.getPropertyName());
-    }
-
-    /**
-     * overridden to respect the column tooltip, if available. 
-     * 
-     * @return the column tooltip of the column at the mouse position 
-     *   if not null or super if not available.
-     */
-    @Override
-    public String getToolTipText(MouseEvent event) {
-        String columnToolTipText = getColumnToolTipText(event);
-        return columnToolTipText != null ? columnToolTipText : super.getToolTipText(event);
-    }
-
-    /**
-     * 
-     * @param event the mouseEvent representing the mouse location.
-     * @return the column tooltip of the column below the mouse location,
-     *   or null if not available.
-     */
-    protected String getColumnToolTipText(MouseEvent event) {
-        if (getXTable() == null) return null;
-        int column = columnAtPoint(event.getPoint());
-        if (column < 0) return null;
-        TableColumnExt columnExt = getXTable().getColumnExt(column);
-        return columnExt != null ? columnExt.getToolTipText() : null;
-    }
-    
     public JXTable getXTable() {
         if (!(getTable() instanceof JXTable))
             return null;
         return (JXTable) getTable();
     }
 
-    /**
-     * Returns the TableCellRenderer used for rendering the headerCell
-     * of the column at columnIndex.
-     * 
-     * @param columnIndex the index of the column
-     * @return the renderer.
-     */
-    public TableCellRenderer getCellRenderer(int columnIndex) {
-        TableCellRenderer renderer = getColumnModel().getColumn(columnIndex).getHeaderRenderer();
-        return renderer != null ? renderer : getDefaultRenderer();
-    }
-    
-    /**
-     * Overridden to adjust for a minimum height as returned by
-     * #getMinimumHeight.
-     * 
-     * @inheritDoc
-     */
-    @Override
-    public Dimension getPreferredSize() {
-        Dimension pref = super.getPreferredSize();
-        pref = getPreferredSize(pref);
-        pref.height = getMinimumHeight(pref.height);
-        return pref;
-    }
-    
-    /**
-     * Hack around #334-swingx: super doesnt measure all headerRenderers
-     * for prefSize. This hack does and adjusts the height of the 
-     * given Dimension to be equal to the max fo all renderers.
-     * 
-     * @param pref the adjusted preferred size respecting all renderers
-     *   size requirements.
-     */
-    protected Dimension getPreferredSize(Dimension pref) {
-        int height = pref.height;
-        for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
-            TableCellRenderer renderer = getCellRenderer(i);
-            Component comp = renderer.getTableCellRendererComponent(table, 
-                    getColumnModel().getColumn(i).getHeaderValue(), false, false, -1, i);
-            height = Math.max(height, comp.getPreferredSize().height);
-        }
-        pref.height = height;
-        return pref;
-        
-    }
-
-    /**
-     * Allows to enforce a minimum heigth in the 
-     * getXXSize methods.
-     * 
-     * Here: jumps in if the table's columnControl is visible and
-     *   the input height is 0  - this happens if all
-     *   columns are hidden - and configures the default
-     *   header renderer with a dummy value for measuring.
-     * 
-     * @param height the prefHeigth as calcualated by super.
-     * @return a minimum height for the preferredSize.
-     */
-    protected int getMinimumHeight(int height) {
-        if ((height == 0) && (getXTable() != null) 
-                && getXTable().isColumnControlVisible()){
-            TableCellRenderer renderer = getDefaultRenderer();
-            Component comp = renderer.getTableCellRendererComponent(getTable(), 
-                        "dummy", false, false, -1, -1);
-            height = comp.getPreferredSize().height;
-        }
-        return height;
-    }
     
     public void updateUI() {
         super.updateUI();

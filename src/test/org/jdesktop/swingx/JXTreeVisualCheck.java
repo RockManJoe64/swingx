@@ -24,11 +24,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.event.ActionEvent;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JTree;
@@ -43,43 +41,6 @@ import org.jdesktop.swingx.decorator.RolloverHighlighter;
 import org.jdesktop.swingx.tree.DefaultXTreeCellEditor;
 
 public class JXTreeVisualCheck extends JXTreeUnitTest {
-    private static final Logger LOG = Logger.getLogger(JXTreeVisualCheck.class
-            .getName());
-
-    public static void main(String[] args) {
-//      setSystemLF(true);
-      JXTreeVisualCheck test = new JXTreeVisualCheck();
-      try {
-//          test.runInteractiveTests();
-//          test.runInteractiveTests("interactive.*RToL.*");
-          test.runInteractiveTests("interactive.*Edit.*");
-      } catch (Exception e) {
-          System.err.println("exception when executing interactive tests:");
-          e.printStackTrace();
-      }
-  }
-    
-    /**
-     * visually check if invokesStopCellEditing jumps in on focusLost.
-     *
-     */
-    public void interactiveToggleEditProperties() {
-        final JXTree table = new JXTree();
-        table.setEditable(true);
-        JXFrame frame = wrapWithScrollingInFrame(table, new JButton("something to focus"), 
-                "JXTree: toggle invokesStopEditing ");
-        Action toggleTerminate = new AbstractAction("toggleInvokesStop") {
-
-            public void actionPerformed(ActionEvent e) {
-                table.setInvokesStopCellEditing(!table.getInvokesStopCellEditing());
-                
-            }
-            
-        };
-        addAction(frame, toggleTerminate);
-        frame.setVisible(true);
-        
-    }
 
     /**
      * visualize editing of the hierarchical column, both
@@ -127,14 +88,13 @@ public class JXTreeVisualCheck extends JXTreeUnitTest {
         tree.setCellEditor(new DefaultXTreeCellEditor(tree, renderer));
         JXTree xTree = new JXTree();
         xTree.setEditable(true);
-        // JW: changed xTree to use the xEditor by default
-//        TreeCellRenderer xRenderer = xTree.getCellRenderer();
-//        if (xRenderer instanceof JXTree.DelegatingRenderer) {
-//            TreeCellRenderer delegate = ((JXTree.DelegatingRenderer) xRenderer).getDelegateRenderer();
-//            if (delegate instanceof DefaultTreeCellRenderer) { 
-//                xTree.setCellEditor(new DefaultXTreeCellEditor(xTree, (DefaultTreeCellRenderer) delegate));
-//            }   
-//        }
+        TreeCellRenderer xRenderer = xTree.getCellRenderer();
+        if (xRenderer instanceof JXTree.DelegatingRenderer) {
+            TreeCellRenderer delegate = ((JXTree.DelegatingRenderer) xRenderer).getDelegateRenderer();
+            if (delegate instanceof DefaultTreeCellRenderer) { 
+                xTree.setCellEditor(new DefaultXTreeCellEditor(xTree, (DefaultTreeCellRenderer) delegate));
+            }   
+        }
         final JXFrame frame = wrapWithScrollingInFrame(tree, xTree, "XEditing: compare tree and xtree");
         Action toggleComponentOrientation = new AbstractAction("toggle orientation") {
 
@@ -332,5 +292,16 @@ public class JXTreeVisualCheck extends JXTreeUnitTest {
         frame.setVisible(true);  
     }
 
+    public static void main(String[] args) {
+//        setSystemLF(true);
+        JXTreeVisualCheck test = new JXTreeVisualCheck();
+        try {
+//            test.runInteractiveTests();
+            test.runInteractiveTests("interactive.*RToL.*");
+        } catch (Exception e) {
+            System.err.println("exception when executing interactive tests:");
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -283,14 +283,14 @@ public class JXPanel extends JPanel implements Scrollable {
     }
 
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public GradientPaint getGradientPaint() {
         return gradientPaint;
     }
 
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public void setDrawGradient(boolean b) {
         if (drawGradient != b) {
@@ -303,14 +303,14 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public boolean isDrawGradient() {
         return drawGradient;
     }
     
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public void setGradientTrackWidth(boolean b) {
         if (gradientTrackWidth != b) {
@@ -322,14 +322,14 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public boolean isGradientTrackWidth() {
         return gradientTrackWidth;
     }
     
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public void setGradientTrackHeight(boolean b) {
         if (gradientTrackHeight != b) {
@@ -341,7 +341,7 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     /**
-     * @deprecated See setGradientPaint
+     * @deprected. See setGradientPaint
      */
     public boolean isGradientTrackHeight() {
         return gradientTrackHeight;
@@ -373,7 +373,6 @@ public class JXPanel extends JPanel implements Scrollable {
     /**
      * Overriden paint method to take into account the alpha setting
      */
-    @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D)g;
         Composite oldComp = g2d.getComposite();
@@ -393,7 +392,6 @@ public class JXPanel extends JPanel implements Scrollable {
      * with gradient title borders slowing down repaints -- this could use more
      * extensive analysis.
      */
-    @Override
     protected void paintComponent(Graphics g) {
         if (backgroundPainter != null) {
             backgroundPainter.paint((Graphics2D)g, this);

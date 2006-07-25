@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.jdesktop.swingx;
+package org.jdesktop.swingx.color;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -37,35 +37,25 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.swingx.color.*;
 
 /**
- * A button which allows the user to select a single color. The button has a platform
- * specific look. Ex: on Mac OS X it will mimic an NSColorWell. When the user
- * clicks the button it will open a color chooser set to the current background
- * color of the button. The new selected color will be stored in the background
- * property and can be retrieved using the getBackground() method. As the user is
- * choosing colors within the color chooser the background property will be updated.
- * By listening to this property developers can make other parts of their program
- * update.
+ * TODO may want to promote to a JXColorChooserButton
  *
- * @author joshua.marinacci@sun.com
+ * @author joshy
  */
 public class JXColorSelectionButton extends JButton {
     
-    private JDialog dialog = null;
+    JDialog dialog = null;
     private JColorChooser chooser = null;
     
     /**
      * Creates a new instance of JXColorSelectionButton
      */
     public JXColorSelectionButton() {
-        this(Color.red);
-    }
-    public JXColorSelectionButton(Color col) {
-        setBackground(col);
+        setBackground(Color.red);
         this.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
+                System.out.println("new color selection button");
                 if(dialog == null) {
                     dialog = JColorChooser.createDialog(
                             JXColorSelectionButton.this,
@@ -99,13 +89,13 @@ public class JXColorSelectionButton extends JButton {
         this.setOpaque(false);
         
         try {
-            colorwell = ImageIO.read(this.getClass().getResourceAsStream("/org/jdesktop/swingx/color/colorwell.png"));
+            colorwell = ImageIO.read(this.getClass().getResourceAsStream("colorwell.png"));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
     
-    private BufferedImage colorwell;
+    BufferedImage colorwell;
     
     private class ColorChangeListener implements ChangeListener {
         public JXColorSelectionButton button;
@@ -113,11 +103,12 @@ public class JXColorSelectionButton extends JButton {
             this.button = button;
         }
         public void stateChanged(ChangeEvent changeEvent) {
+            System.out.println("color changed");
             button.setBackground(button.getChooser().getColor());
         }
     }
 
-    protected void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g) {
         Insets ins = new Insets(5,5,5,5);        
         if(colorwell != null) {
             ColorUtil.tileStretchPaint(g, this, colorwell, ins);
@@ -151,10 +142,6 @@ public class JXColorSelectionButton extends JButton {
         frame.setVisible(true);
     }
 
-    /** Get the chooser that is used by this JXColorSelectionButton. This
-     * chooser instance is shared between all invocations of the chooser, but is unique to
-     * this instance of JXColorSelectionButton.
-     */
     public JColorChooser getChooser() {
         if(chooser == null) {
             chooser = new JColorChooser();

@@ -38,11 +38,9 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.jdesktop.swingx.plaf.LookAndFeelAddons;
-import org.jdesktop.swingx.util.Utilities;
 
 /**
  * Factory to create, configure and show application consistent
@@ -98,7 +96,7 @@ public class SearchFactory {
     /** 
      * returns the shared SearchFactory.
      * 
-     * @return the shared <code>SearchFactory</code>
+     * @return
      */
     public static SearchFactory getInstance() {
           if (searchFactory == null) {
@@ -107,19 +105,6 @@ public class SearchFactory {
           return searchFactory;
       }
     
-    /**
-     * 
-     * 
-     * @return the keyStroke to register with a findAction.
-     */
-    public KeyStroke getSearchAccelerator() {
-        // JW: this should be handled by the LF! 
-        // get the accelerator mnemonic from the UIManager
-        String findMnemonic = "F";
-        KeyStroke findStroke = Utilities.stringToKey("D-" + findMnemonic);
-        return findStroke;
-        
-    }
     /**
      * sets the shared SearchFactory.
      * 
@@ -218,7 +203,7 @@ public class SearchFactory {
     /**
      * returns the shared JXFindBar. Creates and configures on 
      * first call.
-     * @return the shared <code>JXFindBar</code>
+     * @return
      */
     public JXFindBar getSharedFindBar() {
         if (findBar == null) {
@@ -254,7 +239,7 @@ public class SearchFactory {
     /**
      * Factory method to create a JXFindBar.
      * 
-     * @return the <code>JXFindBar</code>
+     * @return
      */
     public JXFindBar createFindBar() {
         return new JXFindBar();
@@ -264,7 +249,7 @@ public class SearchFactory {
     /**
      * returns the shared JXFindPanel. Creates and configures on 
      * first call.
-     * @return the shared <code>JXFindPanel</code>
+     * @return
      */
     public JXFindPanel getSharedFindPanel() {
         if (findPanel == null) {
@@ -287,7 +272,7 @@ public class SearchFactory {
     /**
      * Factory method to create a JXFindPanel.
      * 
-     * @return <code>JXFindPanel</code>
+     * @return
      */
     public JXFindPanel createFindPanel() {
         return new JXFindPanel();

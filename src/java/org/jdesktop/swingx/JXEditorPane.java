@@ -50,7 +50,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JList;
-import javax.swing.JPasswordField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
@@ -62,7 +61,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.Segment;
 import javax.swing.text.SimpleAttributeSet;
@@ -209,8 +207,8 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
         map.put(ACTION_CUT, new Actions(ACTION_CUT));
         map.put(ACTION_COPY, new Actions(ACTION_COPY));
         map.put(ACTION_PASTE, new Actions(ACTION_PASTE));
-        
-        KeyStroke findStroke = SearchFactory.getInstance().getSearchAccelerator();
+        // this should be handled by the LF!
+        KeyStroke findStroke = KeyStroke.getKeyStroke("control F");
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(findStroke, "find");
     }
 
@@ -224,19 +222,10 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
     }
 
     /**
-     * Updates the state of the actions in response to an undo/redo operation. <p>
-     * 
+     * Updates the state of the actions in response to an undo/redo operation.
      */
     private void updateActionState() {
         // Update the state of the undo and redo actions
-        // JW: fiddling with actionManager's actions state? I'm pretty sure
-        // we don't want that: the manager will get nuts with multiple
-        // components with different state.
-        // It's up to whatever manager to listen
-        // to our changes and update itself accordingly. Which is not
-        // well supported with the current design ... nobody 
-        // really cares about enabled as it should. 
-        //
         Runnable doEnabled = new Runnable() {
                 public void run() {
                     ActionManager manager = ActionManager.getInstance();
@@ -250,8 +239,6 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
     /**
      * A small class which dispatches actions.
      * TODO: Is there a way that we can make this static?
-     * JW: these if-constructs are totally crazy ... we live in OO world!
-     * 
      */
     private class Actions extends UIAction {
         Actions(String name) {
@@ -299,43 +286,6 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
             }
 
         }
-
-        @Override
-        public boolean isEnabled(Object sender) {
-                String name = getName();
-                if (ACTION_UNDO.equals(name)) {
-                    return isEditable() && undoManager.canUndo();
-                } 
-                if (ACTION_REDO.equals(name)) {
-                    return isEditable() && undoManager.canRedo();
-                } 
-                if (ACTION_PASTE.equals(name)) {
-                    if (!isEditable()) return false;
-                    // is this always possible?
-                    boolean dataOnClipboard = false;
-                    try {
-                        dataOnClipboard = getToolkit()
-                        .getSystemClipboard().getContents(null) != null;
-                    } catch (Exception e) {
-                        // can't do anything - clipboard unaccessible
-                    }
-                    return dataOnClipboard;
-                } 
-                boolean selectedText = getSelectionEnd()
-                    - getSelectionStart() > 0;
-                if (ACTION_CUT.equals(name)) {
-                   return isEditable() && selectedText;
-                }
-                if (ACTION_COPY.equals(name)) {
-                    return selectedText;
-                } 
-                if (ACTION_FIND.equals(name)) {
-                    return getDocument().getLength() > 0;
-                }
-                return true;
-        }
-        
-        
     }
 
     /**
@@ -473,7 +423,7 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
 
     /**
      * 
-     * @return a not-null Searchable for this editor.
+     * @returns a not-null Searchable for this editor.  
      */
     public Searchable getSearchable() {
         if (searchable == null) {
@@ -512,11 +462,9 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
         /**
          * checks if the searchString should be interpreted as empty.
          * here: returns true if string is null or has zero length.
-         *
-         * TODO: This should be in a utility class.
          * 
          * @param searchString
-         * @return true if string is null or has zero length
+         * @return
          */
         protected boolean isEmpty(String searchString) {
             return (searchString == null) || searchString.length() == 0;
@@ -597,8 +545,7 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
          * 
          * @param pattern
          * @param start
-         * @return true if the current match result represents a different
-         * match than the last, false if no match or the same.
+         * @return
          */
         private boolean foundExtendedMatch(Pattern pattern, int start) {
             // JW: logic still needs cleanup...
@@ -643,7 +590,7 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
         /**
          * @param currentResult
          * @param offset
-         * @return the start position of the selected text
+         * @return
          */
         private int updateStateAfterFound(MatchResult currentResult, final int offset) {
             int end = currentResult.end() + offset;
@@ -658,8 +605,7 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
 
         /**
          * @param matcher
-         * @param useFirst whether or not to return after the first match is found.
-         * @return <code>MatchResult</code> or null
+         * @return
          */
         private MatchResult getMatchResult(Matcher matcher, boolean  useFirst) {
             MatchResult currentResult = null;
@@ -706,7 +652,6 @@ public class JXEditorPane extends JEditorPane implements /*Searchable, */Targeta
             Element elem = document.getCharacterElement(dot);
             AttributeSet set = elem.getAttributes();
 
-            // JW: see comment in updateActionState
             ActionManager manager = ActionManager.getInstance();
             manager.setSelected("font-bold", StyleConstants.isBold(set));
             manager.setSelected("font-italic", StyleConstants.isItalic(set));
