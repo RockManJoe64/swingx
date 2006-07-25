@@ -47,7 +47,7 @@ import org.jdesktop.swingx.util.Resize;
 public class TextPainter extends AbstractPainter {
     private Resize resize;
     private String text = "";
-    private Font font;
+    private Font font = null;
     private Paint paint;
     private Point2D location = new Point2D.Double(.0, .0);
     
@@ -57,11 +57,11 @@ public class TextPainter extends AbstractPainter {
     }
     
     public TextPainter(String text) {
-        this(text, new Font("Dialog", Font.PLAIN, 12));
+        this(text, null);
     }
     
     public TextPainter(String text, Font font) {
-        this(text, font, Color.BLACK);
+        this(text, font, null);
     }
     
     public TextPainter(String text, Font font, Paint paint) {
@@ -112,11 +112,19 @@ public class TextPainter extends AbstractPainter {
 
     protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Font font = getFont();
+        if (font == null) {
+            font = component.getFont();
+        }
+        
         if (font != null) {
             g.setFont(font);
         }
         
         Paint paint = getPaint();
+        if(paint == null) {
+            paint = component.getForeground();
+        }
+        
         if (paint != null) {
             g.setPaint(paint);
         }
