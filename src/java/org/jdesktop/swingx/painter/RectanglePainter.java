@@ -4,9 +4,8 @@
  * Created on July 12, 2006, 6:57 PM
  *
  * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * and open the template in the editor. 
  */
-
 package org.jdesktop.swingx.painter;
 
 import java.awt.BasicStroke;
@@ -19,12 +18,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
 
-//import org.jdesktop.swingx.painter.Mask;
 
 /**
  *
  * @author joshua.marinacci@sun.com
+ *
  */
+
 public class RectanglePainter extends AbstractPainter {
     private Paint fillPaint = Color.RED;
     private Paint borderPaint = Color.BLACK;
@@ -36,8 +36,10 @@ public class RectanglePainter extends AbstractPainter {
     
     
     /** Creates a new instance of RectanglePainter */
-    public RectanglePainter() {
+    public RectanglePainter() {        
     }
+    
+    
     
     public RectanglePainter(int top, int left, int bottom, int right,
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
@@ -52,10 +54,12 @@ public class RectanglePainter extends AbstractPainter {
         this.borderPaint = borderPaint;
     }
     
-    protected Shape calculateShape(JComponent component) {
+    
+    
+    protected Shape calculateShape(JComponent component, int width, int height) {
         Shape shape = new Rectangle2D.Double(insets.left, insets.top,
-                    component.getWidth()-insets.left-insets.right,
-                    component.getHeight()-insets.top-insets.bottom);
+                component.getWidth()-insets.left-insets.right,
+                component.getHeight()-insets.top-insets.bottom);
         if(rounded) {
             shape = new RoundRectangle2D.Double(insets.left, insets.top,
                     component.getWidth()-insets.left-insets.right,
@@ -64,7 +68,9 @@ public class RectanglePainter extends AbstractPainter {
         }
         return shape;
     }
-
+    
+    
+    
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Shape shape = calculateShape(component);
         
@@ -80,57 +86,57 @@ public class RectanglePainter extends AbstractPainter {
         // leave the clip to support masking other painters
         g.setClip(shape);
     }
-
+    
     public Paint getFillPaint() {
         return fillPaint;
     }
-
+    
     public void setFillPaint(Paint fillPaint) {
         Paint oldFillPaint = getFillPaint();
         this.fillPaint = fillPaint;
         firePropertyChange("fillPaint",oldFillPaint,fillPaint);
     }
-
+    
     public Paint getBorderPaint() {
         return borderPaint;
     }
-
+    
     public void setBorderPaint(Paint borderPaint) {
         Paint oldBorderPaint = getBorderPaint();
         this.borderPaint = borderPaint;
         firePropertyChange("fillPaint",oldBorderPaint,borderPaint);
     }
-
+    
     public boolean isRounded() {
         return rounded;
     }
-
+    
     public void setRounded(boolean rounded) {
         boolean oldRounded = isRounded();
         this.rounded = rounded;
         firePropertyChange("rounded",oldRounded,rounded);
     }
-
+    
     public Insets getInsets() {
         return insets;
     }
-
+    
     public void setInsets(Insets insets) {
         Insets oldInsets = getInsets();
         this.insets = insets;
         firePropertyChange("insets",oldInsets,insets);
     }
-
+    
     public int getRoundWidth() {
         return roundWidth;
     }
-
+    
     public void setRoundWidth(int roundWidth) {
         int oldRoundWidth = getRoundWidth();
         this.roundWidth = roundWidth;
         firePropertyChange("roundWidth",oldRoundWidth,roundWidth);
     }
-
+    
     public int getRoundHeight() {
         return roundHeight;
     }
@@ -140,26 +146,16 @@ public class RectanglePainter extends AbstractPainter {
         this.roundHeight = roundHeight;
         firePropertyChange("roundHeight",oldRoundHeight,roundHeight);
     }
-
+    
     public double getStrokeWidth() {
         return strokeWidth;
     }
-
+    
     public void setStrokeWidth(double strokeWidth) {
         double oldStrokeWidth = getStrokeWidth();
         this.strokeWidth = strokeWidth;
         firePropertyChange("strokeWidth",oldStrokeWidth,strokeWidth);
     }
-
-    /**
-     * Getter for property maskShape.
-     * @return Value of property maskShape.
-     */
-    /*
-    public Shape getMaskShape(JComponent component) {
-        return calculateShape(component);
-    }
-     */
-
     
 }
+

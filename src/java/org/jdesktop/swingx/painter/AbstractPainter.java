@@ -712,7 +712,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
                 
                 Graphics2D gfx = image.createGraphics();
                 configureGraphics(gfx, component);
-                paintBackground(gfx, component, component.getWidth(), component.getHeight());
+                paintBackground(gfx, component, width, height);
                 gfx.dispose();
 
                 for (Effect effect : effects) {
@@ -725,7 +725,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
                     cachedImage = new SoftReference<BufferedImage>(image);
                 }
             } else {
-                paintBackground(g, component, component.getWidth(), component.getHeight());
+                paintBackground(g, component, width, height);
             }
         }
         
