@@ -19,7 +19,7 @@ public class BackgroundPainterBeanInfo extends BeanInfoSupport {
     
     /** Creates a new instance of BackgroundPainterBeanInfo */
     public BackgroundPainterBeanInfo() {
-        super(BackgroundPainter.class);
+        super(ComponentBackgroundPainter.class);
     }
 
     protected void initialize() {
