@@ -30,12 +30,12 @@ import javax.swing.JComponent;
  *
  * @author rbair
  */
-public class CompoundBackgroundPainter extends AbstractPainter {
+public class ComponentBackgroundPainter extends AbstractPainter {
     
     /**
      * Creates a new CompoundBackgroundPainter
      */
-    public CompoundBackgroundPainter() {
+    public ComponentBackgroundPainter() {
         super();
     }
     
