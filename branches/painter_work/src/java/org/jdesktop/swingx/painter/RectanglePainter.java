@@ -58,12 +58,12 @@ public class RectanglePainter extends AbstractPainter {
     
     protected Shape calculateShape(JComponent component, int width, int height) {
         Shape shape = new Rectangle2D.Double(insets.left, insets.top,
-                component.getWidth()-insets.left-insets.right,
-                component.getHeight()-insets.top-insets.bottom);
+                width-insets.left-insets.right,
+                height-insets.top-insets.bottom);
         if(rounded) {
             shape = new RoundRectangle2D.Double(insets.left, insets.top,
-                    component.getWidth()-insets.left-insets.right,
-                    component.getHeight()-insets.top-insets.bottom,
+                    width-insets.left-insets.right,
+                    height-insets.top-insets.bottom,
                     roundWidth, roundHeight);
         }
         return shape;
@@ -72,7 +72,7 @@ public class RectanglePainter extends AbstractPainter {
     
     
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
-        Shape shape = calculateShape(component);
+        Shape shape = calculateShape(component, width, height);
         
         // background
         g.setPaint(fillPaint);

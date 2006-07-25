@@ -27,7 +27,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.geom.Point2D;
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import org.jdesktop.swingx.util.Resize;
 
 /**
@@ -51,7 +53,7 @@ public class TextPainter extends AbstractPainter {
     
     /** Creates a new instance of TextPainter */
     public TextPainter() {
-        this("Empty Text");
+        this("");
     }
     
     public TextPainter(String text) {
@@ -121,12 +123,20 @@ public class TextPainter extends AbstractPainter {
         
         FontMetrics metrics = g.getFontMetrics(g.getFont());
         String text = getText();
+        if(text == null || "".equals(text)) {
+            if(component instanceof JLabel) {
+                text = ((JLabel)component).getText();
+            }
+            if(component instanceof AbstractButton) {
+                text = ((AbstractButton)component).getText();
+            }
+        }
         
         Point2D location = getLocation();
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();
-        double x = location.getX() * (component.getWidth()-tw);
-        double y = location.getY() * (component.getHeight()-th);
+        double x = location.getX() * (component.getWidth()  - tw);
+        double y = location.getY() * (component.getHeight() - th);
         y += metrics.getAscent();
         
         //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);

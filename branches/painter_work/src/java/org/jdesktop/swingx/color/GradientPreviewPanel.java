@@ -30,7 +30,9 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.List;
 import javax.swing.event.MouseInputAdapter;
+import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.apache.batik.ext.awt.MultipleGradientPaint;
+import org.apache.batik.ext.awt.RadialGradientPaint;
 import org.jdesktop.swingx.JXGradientChooser;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.multislider.Thumb;
@@ -59,6 +61,39 @@ public class GradientPreviewPanel extends JXPanel {
 	repaint();
     }
 
+    public void setGradient(MultipleGradientPaint grad) {
+        if(grad instanceof LinearGradientPaint) {
+            LinearGradientPaint paint = (LinearGradientPaint)grad;
+            this.start = paint.getStartPoint();
+            this.end = paint.getEndPoint();
+        } else {
+            RadialGradientPaint paint = (RadialGradientPaint)grad;
+            this.start = paint.getCenterPoint();
+            this.end = new Point2D.Double(start.getX(),start.getY()+paint.getRadius());
+        }
+        repaint();
+    }
+    
+    public MultipleGradientPaint getGradient() {
+        // calculate the color stops
+        List<Thumb<Color>> stops = picker.getSlider().getModel().getSortedThumbs();
+        int len = stops.size();
+        
+        // set up the data for the gradient
+        float[] fractions = new float[len];
+        Color[] colors = new Color[len];
+        int i = 0;
+        for (Thumb<Color> thumb : stops) {
+            colors[i] = (Color)thumb.getObject();
+            fractions[i] = thumb.getPosition();
+            i++;
+        }
+        
+        // get the final gradient
+        MultipleGradientPaint paint = calculateGradient(fractions, colors);
+        return paint;
+    }
+    
     protected void paintComponent(Graphics g) {
 	try {
 	    Graphics2D g2 = (Graphics2D)g;
@@ -67,22 +102,7 @@ public class GradientPreviewPanel extends JXPanel {
 	    g2.setPaint(checker_texture);
 	    g.fillRect(0,0,getWidth(),getHeight());
 
-	    // calculate the color stops
-	    List<Thumb<Color>> stops = picker.getSlider().getModel().getSortedThumbs();
-	    int len = stops.size();
-
-	    // set up the data for the gradient
-	    float[] fractions = new float[len];
-	    Color[] colors = new Color[len];
-	    int i = 0;
-	    for (Thumb<Color> thumb : stops) {
-		colors[i] = (Color)thumb.getObject();
-		fractions[i] = thumb.getPosition();
-		i++;
-	    }
-
-	    // get the final gradient
-	    MultipleGradientPaint paint = calculateGradient(fractions, colors);
+        Paint paint = getGradient();
 
 	    // fill the area
 	    if(paint != null) {

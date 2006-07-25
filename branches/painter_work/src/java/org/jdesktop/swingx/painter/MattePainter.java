@@ -109,7 +109,7 @@ public class MattePainter extends AbstractPainter {
         Paint p = getPaint();
         if (p != null) {
             g.setPaint(p);
-            g.fillRect(2, 2, width-4, height-4);
+            g.fillRect(0, 0, width, height);
         }
     }
 }
