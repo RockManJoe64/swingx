@@ -23,7 +23,7 @@ import javax.swing.JComponent;
 
 /**
  *
- * @author jm158417
+ * @author joshua.marinacci@sun.com
  */
 public class RectanglePainter extends AbstractPainter {
     private Paint fillPaint = Color.RED;
@@ -38,6 +38,7 @@ public class RectanglePainter extends AbstractPainter {
     /** Creates a new instance of RectanglePainter */
     public RectanglePainter() {
     }
+    
     public RectanglePainter(int top, int left, int bottom, int right,
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
             double strokeWidth, Paint borderPaint) {
@@ -64,7 +65,7 @@ public class RectanglePainter extends AbstractPainter {
         return shape;
     }
 
-    protected void paintBackground(Graphics2D g, JComponent component) {
+    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Shape shape = calculateShape(component);
         
         // background

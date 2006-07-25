@@ -51,6 +51,7 @@ public class TextPainter extends AbstractPainter {
     
     /** Creates a new instance of TextPainter */
     public TextPainter() {
+        this("Empty Text");
     }
     
     public TextPainter(String text) {
@@ -107,7 +108,7 @@ public class TextPainter extends AbstractPainter {
         return location;
     }
 
-    protected void paintBackground(Graphics2D g, JComponent component) {
+    protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Font font = getFont();
         if (font != null) {
             g.setFont(font);

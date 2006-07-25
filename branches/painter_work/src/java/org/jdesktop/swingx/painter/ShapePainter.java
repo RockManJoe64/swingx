@@ -319,7 +319,7 @@ public class ShapePainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component) {
+    public void paintBackground(Graphics2D g, JComponent component, int w, int h) {
         //set the stroke if it is not null
         Stroke s = getStroke();
         if (s != null) {

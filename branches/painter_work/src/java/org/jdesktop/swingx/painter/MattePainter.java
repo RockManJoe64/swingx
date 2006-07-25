@@ -105,7 +105,7 @@ public class MattePainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component) {
+    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Paint p = getPaint();
         if (p != null) {
             g.setPaint(p);

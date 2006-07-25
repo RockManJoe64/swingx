@@ -26,6 +26,7 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
     public AbstractPainterBeanInfo() {
         super(AbstractPainter.class);
     }
+    
     public AbstractPainterBeanInfo(Class clazz) {
         super(clazz);
     }
@@ -35,10 +36,9 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
         
         //set editor for the clip shape
         //set editor for the effects (not sure how to do this one)
+        setHidden(true,"effects");
         //TODO
         
-        //set editor for resizeClip
-        setPropertyEditor(ResizeClipPropertyEditor.class, "resizeClip");
         //set editor for composite (incl. Alpha composites by default)
         setPropertyEditor(CompositePropertyEditor.class, "composite");
         //set editors for the various rendering hints

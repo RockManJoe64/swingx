@@ -68,26 +68,6 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     private boolean inheritAlpha = true;
     /**
-     * Indicates whether the JXPanel should draw a gradient or not
-     * @deprecated Use setBackgroundPainter instead
-     */
-    private boolean drawGradient = false;
-    /**
-     * @deprecated Specify the Resize property on a GradientPainter instead
-     */
-    private boolean gradientTrackWidth = true;
-    /**
-     * @deprecated Specify the Resize property on a GradientPainter instead
-     */
-    private boolean gradientTrackHeight = true;
-    /**
-     * If the JXPanel is to draw a gradient, this paint indicates how it should
-     * be painted
-     * 
-     * @deprecated 
-     */
-    private GradientPaint gradientPaint;
-    /**
      * Specifies the Painter to use for painting the background of this panel.
      * If no painter is specified, the normal painting routine for JPanel
      * is called. Old behavior is also honored for the time being if no
@@ -100,10 +80,6 @@ public class JXPanel extends JPanel implements Scrollable {
      * AFTER applying the insets!
      */
     private Dimension oldSize;
-    /**
-     * The cached gradient image
-     */
-    private BufferedImage cachedGradient;
     
     /** 
      * Creates a new instance of JXPanel
@@ -253,99 +229,7 @@ public class JXPanel extends JPanel implements Scrollable {
     public void setScrollableTracksViewportWidth(boolean scrollableTracksViewportWidth) {
         this.scrollableTracksViewportWidth = scrollableTracksViewportWidth;
     }
-
-    /**
-     * @deprecated To specify a gradient for the panel, use the
-     *             #setBackgroundPainter method, along with a Painter, like
-     *             this:
-     *  <pre><code>
-     *      BasicGradientPainter gradient = 
-     *          new BasicGradientPainter(new GradientPaint(
-     *              new Point2D.Double(0,0),
-     *              Color.WHITE, 
-     *              new Point2D.Double(1,0), 
-     *              UIManager.getColor("control")));
-     *      panel.setBackgroundPainter(gradient);
-     *  </code></pre>
-     *
-     *  There are several predefined gradients that may also be used. For example:
-     *  <pre><code>
-     *      BasicGradientPainter gradient = 
-     *          new BasicGradientPainter(BasicGradientPainter.WHITE_TO_CONTROL_HORIZONTAL);
-     *      panel.setBackgroundPainter(gradient);
-     *  </code></pre>
-     */
-    public void setGradientPaint(GradientPaint paint) {
-        GradientPaint oldPaint = this.gradientPaint;
-        this.gradientPaint = paint;
-        firePropertyChange("gradientPaint", oldPaint, paint);
-        repaint();
-    }
-
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public GradientPaint getGradientPaint() {
-        return gradientPaint;
-    }
-
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public void setDrawGradient(boolean b) {
-        if (drawGradient != b) {
-            boolean old = drawGradient;
-            drawGradient = b;
-            oldSize = getSize();
-            firePropertyChange("drawGradient", old, b);
-            repaint();
-        }
-    }
     
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public boolean isDrawGradient() {
-        return drawGradient;
-    }
-    
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public void setGradientTrackWidth(boolean b) {
-        if (gradientTrackWidth != b) {
-            boolean old = gradientTrackWidth;
-            gradientTrackWidth = b;
-            firePropertyChange("gradientTrackWidth", old, b);
-            repaint();
-        }
-    }
-    
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public boolean isGradientTrackWidth() {
-        return gradientTrackWidth;
-    }
-    
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public void setGradientTrackHeight(boolean b) {
-        if (gradientTrackHeight != b) {
-            boolean old = gradientTrackHeight;
-            gradientTrackHeight = b;
-            firePropertyChange("gradientTrackHeight", old, b);
-            repaint();
-        }
-    }
-    
-    /**
-     * @deprected. See setGradientPaint
-     */
-    public boolean isGradientTrackHeight() {
-        return gradientTrackHeight;
-    }
     
     /**
      * Specifies a Painter to use to paint the background of this JXPanel.
@@ -394,59 +278,9 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     protected void paintComponent(Graphics g) {
         if (backgroundPainter != null) {
-            backgroundPainter.paint((Graphics2D)g, this);
+            backgroundPainter.paint((Graphics2D)g, this, this.getWidth(), this.getHeight());
         } else {
             super.paintComponent(g);
-            if (drawGradient) {
-                Insets insets = getInsets();
-                int width = getWidth() - insets.right - insets.left;
-                int height = getHeight() - insets.top - insets.bottom;
-
-                //TODO need to detect a change in gradient paint as well
-                if (gradientPaint == null || oldSize == null || oldSize.width != width || oldSize.height != height) {
-                    Color c1 = null;//UIManager.getColor("control");
-                    Color c2 = null;//c.darker();
-                    if (gradientPaint == null) {
-                        c1 = getBackground();
-                        c2 = new Color(c1.getRed() - 40, c1.getGreen() - 40, c1.getBlue() - 40);
-                        float x1 = 0f;
-                        float y1 = 0f;
-                        float x2 = width;
-                        float y2 = 0;
-                        boolean cyclic = false;
-                        gradientPaint = new GradientPaint(x1, y1, c1, x2, y2, c2, cyclic);
-                    } else {
-                        //same GP as before, but where the values differed for x1, x2, replace
-                        //x2 with the current width, and where values differed for y1, y2
-                        //replace with current height
-                        GradientPaint gp = gradientPaint;
-                        float x2 = (float)gp.getPoint2().getX();
-                        if (gradientTrackWidth) {
-                            float ratio = (float)width / (float)oldSize.width;
-                            x2 = ((float)gp.getPoint2().getX()) * ratio;
-                        }
-                        float y2 = (float)gp.getPoint2().getY();
-                        if (gradientTrackHeight) {
-                            float ratio = (float)height / (float)oldSize.height;
-                            y2 = ((float)gp.getPoint2().getY()) * ratio;
-                        }
-                        gradientPaint = new GradientPaint((float)gp.getPoint1().getX(),
-                                (float)gp.getPoint1().getY(), gp.getColor1(),
-                                x2, y2, gp.getColor2(),
-                                gp.isCyclic());
-                    }
-
-                    oldSize = new Dimension(width, height);
-                    cachedGradient = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D imgg = (Graphics2D)cachedGradient.getGraphics();
-                    imgg.setPaint(gradientPaint);
-                    imgg.fillRect(0, 0, width, height);
-                }
-
-                // draw the image
-                Graphics2D g2 = (Graphics2D)g;
-                g2.drawImage(cachedGradient, null, insets.left, insets.top);
-            }
         }
     }
 }
