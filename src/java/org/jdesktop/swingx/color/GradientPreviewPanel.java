@@ -102,8 +102,8 @@ public class GradientPreviewPanel extends JXPanel {
 	    g2.setPaint(checker_texture);
 	    g.fillRect(0,0,getWidth(),getHeight());
 
+        
         Paint paint = getGradient();
-
 	    // fill the area
 	    if(paint != null) {
 		g2.setPaint(paint);
@@ -204,6 +204,7 @@ public class GradientPreviewPanel extends JXPanel {
 	    } else {
 		end = evt.getPoint();
 	    }
+            firePropertyChange("gradient",null,getGradient());
 	    repaint();
 	}
     }

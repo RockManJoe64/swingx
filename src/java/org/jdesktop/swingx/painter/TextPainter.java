@@ -115,6 +115,9 @@ public class TextPainter extends AbstractPainter {
         if (font == null) {
             font = component.getFont();
         }
+        if (font == null) {
+            font = new Font("Dialog", Font.PLAIN, 12);
+        }
         
         if (font != null) {
             g.setFont(font);
