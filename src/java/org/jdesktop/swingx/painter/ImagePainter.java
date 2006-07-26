@@ -28,6 +28,7 @@ import java.awt.TexturePaint;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Logger;
@@ -262,6 +263,7 @@ public class ImagePainter extends AbstractPainter {
         return imageScale;
     }
 
+    /*
     public URL getImageURL() {
         return imageURL;
     }
@@ -273,14 +275,35 @@ public class ImagePainter extends AbstractPainter {
         loadImage();
         firePropertyChange("imageURL",old,this.imageURL);
     }
-
+*/
+    
     private void loadImage() {
         try {
-            setImage(ImageIO.read(getImageURL()));
+            File file = new File(getBaseFile(),getImageString());
+            System.out.println("loading: " + file.getCanonicalPath());
+            setImage(ImageIO.read(file));
         } catch (IOException ex) {
             System.out.println("ex: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
 
+    private String imageString;
+
+    public String getImageString() {
+        return imageString;
+    }
+
+    public void setImageString(String imageString) {
+        String old = this.getImageString();
+        this.imageString = imageString;
+        loadImage();
+        firePropertyChange("imageString",old,imageString);
+    }
+    
+    private File getBaseFile() {
+        return baseFile;
+    }
+    
+    public static File baseFile;
 }
