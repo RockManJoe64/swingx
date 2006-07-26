@@ -126,7 +126,7 @@ public class JXGradientChooser extends JXPanel {
     }
     
     public void setGradient(MultipleGradientPaint mgrad) {
-	
+        // removing all thumbs;
         while(slider.getModel().getThumbCount() > 0) {
 	    slider.getModel().removeThumb(0);
 	}
@@ -194,6 +194,7 @@ public class JXGradientChooser extends JXPanel {
         firePropertyChange("gradient",null,getGradient());
         gradientPreview.repaint();
     }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -654,13 +655,14 @@ public class JXGradientChooser extends JXPanel {
 	slider.setThumbRenderer(new GradientThumbRenderer(this, slider));
 	slider.setTrackRenderer(new GradientTrackRenderer(this));
 	slider.addMultiThumbListener(new StopListener(slider));
-//	
 ////	gradient_selector.add(slider, "Center");
+
         gradientPreview.addPropertyChangeListener("gradient", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
                 updateGradientProperty();
             }
         });
+        
     }
 
     private final class ChangeLocationListener implements ChangeListener {
