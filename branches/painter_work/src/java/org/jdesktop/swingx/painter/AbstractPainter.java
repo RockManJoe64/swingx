@@ -110,7 +110,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     /**
      * RenderingHints to apply when painting
      */
-    private transient Map<RenderingHints.Key,Object> renderingHints;
+    private Map<RenderingHints.Key,Object> renderingHints;
     /**
      * A hint as to whether or not to attempt caching the image
      */
