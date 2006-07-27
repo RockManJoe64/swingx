@@ -28,10 +28,10 @@ public class ImagePainterBeanInfo extends AbstractPainterBeanInfo {
     
     protected void initialize() {
         super.initialize();
-        setPropertyEditor(ImageEditor.class,"image");
-        setPropertyEditor(URLEditor.class,"imageURL");
-        setPropertyEditor(StylePropertyEditor.class,"style");
-        setPropertyEditor(Point2DPropertyEditor.class,"imagePosition");
+        //setPropertyEditor(ImageEditor.class,"image");
+        //setPropertyEditor(URLEditor.class,"imageURL");
+        //setPropertyEditor(StylePropertyEditor.class,"style");
+        //setPropertyEditor(Point2DPropertyEditor.class,"imagePosition");
     }
     
     public static final class StylePropertyEditor extends EnumerationValuePropertyEditor {
