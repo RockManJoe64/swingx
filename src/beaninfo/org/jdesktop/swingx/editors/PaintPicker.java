@@ -142,7 +142,6 @@ public class PaintPicker extends javax.swing.JPanel {
             gradientPicker.setGradient((MultipleGradientPaint)paint);
         }
         firePropertyChange("paint", old, selectedPaint);
-        System.out.println("set paint called");
     }
     
     
