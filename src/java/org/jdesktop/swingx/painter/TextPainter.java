@@ -30,6 +30,7 @@ import java.awt.geom.Point2D;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.text.JTextComponent;
 import org.jdesktop.swingx.util.Resize;
 
 /**
@@ -49,7 +50,7 @@ public class TextPainter extends AbstractPainter {
     private String text = "";
     private Font font = null;
     private Paint paint;
-    private Point2D location = new Point2D.Double(.0, .0);
+    private Point2D location = null;//new Point2D.Double(0.5, 0.5);
     
     /** Creates a new instance of TextPainter */
     public TextPainter() {
@@ -116,7 +117,7 @@ public class TextPainter extends AbstractPainter {
             font = component.getFont();
         }
         if (font == null) {
-            font = new Font("Dialog", Font.PLAIN, 12);
+            font = new Font("Dialog", Font.PLAIN, 18);
         }
         
         if (font != null) {
@@ -135,8 +136,8 @@ public class TextPainter extends AbstractPainter {
         FontMetrics metrics = g.getFontMetrics(g.getFont());
         String text = getText();
         if(text == null || "".equals(text)) {
-            if(component instanceof JLabel) {
-                text = ((JLabel)component).getText();
+            if(component instanceof JTextComponent) {
+                text = ((JTextComponent)component).getText();
             }
             if(component instanceof AbstractButton) {
                 text = ((AbstractButton)component).getText();
@@ -144,6 +145,9 @@ public class TextPainter extends AbstractPainter {
         }
         
         Point2D location = getLocation();
+        if(location == null) {
+            location = new Point2D.Double(0.5,0.5);
+        }
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();
         double x = location.getX() * (component.getWidth()  - tw);
@@ -153,5 +157,13 @@ public class TextPainter extends AbstractPainter {
         //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);
         //x -= stringWidth/2;
         g.drawString(text, (float)x, (float)y);
+    }
+
+    private Point2D.Double db = new Point2D.Double(40.0,50.0);
+    public Point2D.Double getDb() {
+        return db;
+    }
+    public void setDb(Point2D.Double db) {
+        this.db = db;
     }
 }
