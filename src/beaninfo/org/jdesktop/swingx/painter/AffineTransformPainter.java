@@ -27,7 +27,7 @@ public class AffineTransformPainter extends AbstractPainter {
     
     /** Creates a new instance of AffineTransformPainter */
     public AffineTransformPainter() {
-        super.setShouldRestoreState(false);
+        super.setClipPreserved(false);
     }
     protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         g.translate(getTranslateX(), getTranslateY());
