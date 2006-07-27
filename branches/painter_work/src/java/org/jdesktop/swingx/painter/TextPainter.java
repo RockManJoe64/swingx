@@ -150,8 +150,8 @@ public class TextPainter extends AbstractPainter {
         }
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();
-        double x = location.getX() * (component.getWidth()  - tw);
-        double y = location.getY() * (component.getHeight() - th);
+        double x = location.getX() * (width  - tw);
+        double y = location.getY() * (height - th);
         y += metrics.getAscent();
         
         //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);
