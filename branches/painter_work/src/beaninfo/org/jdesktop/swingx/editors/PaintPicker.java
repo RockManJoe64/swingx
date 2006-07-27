@@ -41,9 +41,7 @@ public class PaintPicker extends javax.swing.JPanel {
         gradientPicker.addPropertyChangeListener("gradient",new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
                 lastPickerUsed = gradientPicker;
-                Paint old = selectedPaint;
-                selectedPaint = gradientPicker.getGradient();
-                firePropertyChange("paint",old,selectedPaint);
+                setPaint(gradientPicker.getGradient());
             }
         });
         
@@ -129,6 +127,11 @@ public class PaintPicker extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     void setPaint(Paint paint) {
+        if(paint == selectedPaint) {
+            return;
+        }
+        Paint old = selectedPaint;
+        selectedPaint = paint;
         if(paint instanceof Color) {
             tabbedPane.setSelectedComponent(colorPickerParent);
             colorPicker.setColor((Color)paint);
@@ -138,6 +141,8 @@ public class PaintPicker extends javax.swing.JPanel {
             tabbedPane.setSelectedComponent(gradientPicker);
             gradientPicker.setGradient((MultipleGradientPaint)paint);
         }
+        firePropertyChange("paint", old, selectedPaint);
+        System.out.println("set paint called");
     }
     
     
