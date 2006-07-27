@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.batik.ext.awt.MultipleGradientPaint;
 
 /**
  *
@@ -35,7 +36,6 @@ public class Paint2PropertyEditor extends PropertyEditorSupport {
         picker.addPropertyChangeListener("paint",new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
                 paint = picker.getPaint();
-                System.out.println("paint = " + paint);
                 firePropertyChange();
             }
         });
@@ -70,8 +70,7 @@ public class Paint2PropertyEditor extends PropertyEditorSupport {
     
     public void paintValue(Graphics g, Rectangle box) {
         Graphics2D g2 = (Graphics2D)g;
-        System.out.println("paint = " + paint);
-        g2.setPaint(paint);
+        g2.setPaint(picker.getDisplayPaint(box));
         g2.fill(box);
     }
     public boolean isPaintable() {

@@ -404,7 +404,6 @@ public class JXMultiThumbSlider<E> extends JComponent {
         }
 
         public void valueChanged(ThumbDataEvent e) {
-            System.out.println("value changed");
             repaint();
         }
     }
