@@ -9,6 +9,7 @@ package org.jdesktop.swingx.editors;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -142,6 +143,14 @@ public class PaintPicker extends javax.swing.JPanel {
             gradientPicker.setGradient((MultipleGradientPaint)paint);
         }
         firePropertyChange("paint", old, selectedPaint);
+    }
+
+    // return a paint suitable for display in a property sheet preview
+    Paint getDisplayPaint(Rectangle box) {
+        if(getPaint() instanceof MultipleGradientPaint) {
+            return gradientPicker.getFlatGradient(box.getWidth());
+        }
+        return getPaint();
     }
     
     

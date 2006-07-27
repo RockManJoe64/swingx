@@ -100,23 +100,25 @@ public class JXGradientChooser extends JXPanel {
         return gradient;
     }
     
-    public MultipleGradientPaint getFlatGradient() {
+    public MultipleGradientPaint getFlatGradient(double length) {
 	// get the list of colors
 	List<Thumb<Color>> stops = slider.getModel().getSortedThumbs();
-	int len = stops.size();
+        MultipleGradientPaint gp = this.getGradient();
 	
 	// set up the data for the gradient
-	float[] fractions = new float[len];
-	Color[] colors = new Color[len];
-	int i = 0;
+	float[] fractions = gp.getFractions();//new float[len];
+	Color[] colors = gp.getColors();//new Color[len];
+	//int i = 0;
+        /*
 	for(Thumb<Color> thumb : stops) {
 	    colors[i] = (Color)thumb.getObject();
 	    fractions[i] = thumb.getPosition();
 	    i++;
-	}
+	}*/
+        
 	// fill in the gradient
 	Point2D start = new Point2D.Float(0,0);
-	Point2D end = new Point2D.Float(getWidth(),0);
+	Point2D end = new Point2D.Float((float)length,0);
 	MultipleGradientPaint paint = new org.apache.batik.ext.awt.LinearGradientPaint(
 		(float)start.getX(),
 		(float)start.getY(),
@@ -128,25 +130,38 @@ public class JXGradientChooser extends JXPanel {
     
     public void setGradient(MultipleGradientPaint mgrad) {
         if(gradient != mgrad) {
-            /*
-            // removing all thumbs;
-            while(slider.getModel().getThumbCount() > 0) {
-                slider.getModel().removeThumb(0);
-            }
             float[] fracts = mgrad.getFractions();
             Color[] colors = mgrad.getColors();
-            for(int i=0; i<fracts.length; i++) {
-                slider.getModel().addThumb(fracts[i],colors[i]);
-            }
-
-            if(mgrad instanceof RadialGradientPaint) {
-                styleCombo.setSelectedItem(GradientStyle.Radial);
-                gradientPreview.setGradient(mgrad);
+            
+            // update the slider properly
+            if(slider.getModel().getThumbCount() !=
+                    mgrad.getColors().length) {
+                // removing all thumbs;
+                while(slider.getModel().getThumbCount() > 0) {
+                    slider.getModel().removeThumb(0);
+                }
+                // add them back
+                for(int i=0; i<fracts.length; i++) {
+                    slider.getModel().addThumb(fracts[i],colors[i]);
+                }
             } else {
-                styleCombo.setSelectedItem(GradientStyle.Linear);
-                gradientPreview.setGradient(mgrad);
+                for(int i=0; i<fracts.length; i++) {
+                    slider.getModel().getThumbAt(i).setObject(colors[i]);
+                    slider.getModel().getThumbAt(i).setPosition(fracts[i]);
+                }                
             }
-            */
+            if(mgrad instanceof RadialGradientPaint) {
+                if(styleCombo.getSelectedItem() != GradientStyle.Radial) {
+                    styleCombo.setSelectedItem(GradientStyle.Radial);
+                }
+            } else {
+                if(styleCombo.getSelectedItem() != GradientStyle.Linear) {
+                    styleCombo.setSelectedItem(GradientStyle.Linear);
+                }
+            }
+            System.out.println("setting it back");
+            gradientPreview.setGradient(mgrad);
+            //reflectedRadio.setSelected()
             MultipleGradientPaint old = this.getGradient();
             gradient = mgrad;
             firePropertyChange("gradient",old,getGradient());
@@ -536,6 +551,8 @@ public class JXGradientChooser extends JXPanel {
                 recalcGradientFromStops();
             }
         });
+        
+        recalcGradientFromStops();
         
     }
 
