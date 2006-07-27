@@ -54,6 +54,8 @@ import org.apache.batik.ext.awt.RadialGradientPaint;
 import org.jdesktop.swingx.action.AbstractActionExt;
 import org.jdesktop.swingx.color.*;
 import org.jdesktop.swingx.multislider.Thumb;
+import org.jdesktop.swingx.multislider.ThumbDataEvent;
+import org.jdesktop.swingx.multislider.ThumbDataListener;
 import org.jdesktop.swingx.multislider.ThumbListener;
 
 /**
@@ -85,6 +87,7 @@ public class JXGradientChooser extends JXPanel {
     public JRadioButton reflectedRadio;
     public JRadioButton repeatedRadio;
     public JCheckBox reversedCheck;
+    public MultipleGradientPaint gradient;
     
     Paint checker_texture = null;
     
@@ -93,10 +96,8 @@ public class JXGradientChooser extends JXPanel {
 	initComponents2();
     }
     
-    
-        
     public MultipleGradientPaint getGradient() {
-        return gradientPreview.getGradient();
+        return gradient;
     }
     
     public MultipleGradientPaint getFlatGradient() {
@@ -126,25 +127,35 @@ public class JXGradientChooser extends JXPanel {
     }
     
     public void setGradient(MultipleGradientPaint mgrad) {
-        // removing all thumbs;
-        while(slider.getModel().getThumbCount() > 0) {
-	    slider.getModel().removeThumb(0);
-	}
-	float[] fracts = mgrad.getFractions();
-	Color[] colors = mgrad.getColors();
-	for(int i=0; i<fracts.length; i++) {
-	    slider.getModel().addThumb(fracts[i],colors[i]);
-	}
-    
-        if(mgrad instanceof RadialGradientPaint) {
-            styleCombo.setSelectedItem(GradientStyle.Radial);
-            gradientPreview.setGradient(mgrad);
-        } else {
-            styleCombo.setSelectedItem(GradientStyle.Linear);
-            gradientPreview.setGradient(mgrad);
+        if(gradient != mgrad) {
+            /*
+            // removing all thumbs;
+            while(slider.getModel().getThumbCount() > 0) {
+                slider.getModel().removeThumb(0);
+            }
+            float[] fracts = mgrad.getFractions();
+            Color[] colors = mgrad.getColors();
+            for(int i=0; i<fracts.length; i++) {
+                slider.getModel().addThumb(fracts[i],colors[i]);
+            }
+
+            if(mgrad instanceof RadialGradientPaint) {
+                styleCombo.setSelectedItem(GradientStyle.Radial);
+                gradientPreview.setGradient(mgrad);
+            } else {
+                styleCombo.setSelectedItem(GradientStyle.Linear);
+                gradientPreview.setGradient(mgrad);
+            }
+            */
+            MultipleGradientPaint old = this.getGradient();
+            gradient = mgrad;
+            firePropertyChange("gradient",old,getGradient());
+            repaint();
         }
-        
-	repaint();
+    }
+    
+    private void recalcGradientFromStops() {
+        setGradient(gradientPreview.getGradient());
     }
     
     private void updateFromStop(Thumb<Color> thumb) {
@@ -178,8 +189,9 @@ public class JXGradientChooser extends JXPanel {
 	    deleteThumbButton.setEnabled(true);
 	}
         updateDeleteButtons();
-	((GradientPreviewPanel)gradientPreview).repaint();
+        recalcGradientFromStops();
     }
+    
     private void updateDeleteButtons() {
 	if(slider.getModel().getThumbCount() <= 2) {
 	    deleteThumbButton.setEnabled(false);
@@ -190,10 +202,12 @@ public class JXGradientChooser extends JXPanel {
         return slider;
     }
     
+    /*
     private void updateGradientProperty() {
         firePropertyChange("gradient",null,getGradient());
         gradientPreview.repaint();
     }
+     */
     
     
     /** This method is called from within the constructor to
@@ -442,18 +456,6 @@ public class JXGradientChooser extends JXPanel {
 
         gradientPreview.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         gradientPreview.setPreferredSize(new java.awt.Dimension(130, 130));
-        /*
-        org.jdesktop.layout.GroupLayout gradientPreviewLayout = new org.jdesktop.layout.GroupLayout(gradientPreview);
-        gradientPreview.setLayout(gradientPreviewLayout);
-        gradientPreviewLayout.setHorizontalGroup(
-            gradientPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 132, Short.MAX_VALUE)
-        );
-        gradientPreviewLayout.setVerticalGroup(
-            gradientPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 118, Short.MAX_VALUE)
-        );
-         */
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 10.0;
@@ -468,25 +470,6 @@ public class JXGradientChooser extends JXPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(previewPanel, gridBagConstraints);
 
-        /*
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 253, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        pack();
-         */
     }// </editor-fold>    
     private void initComponents2() {
         this.initComponents();
@@ -510,7 +493,6 @@ public class JXGradientChooser extends JXPanel {
         changeColorButton.addPropertyChangeListener("background", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 selectColorForThumb();
-                updateGradientProperty();
             }
         });
         colorLocationSpinner.addChangeListener(new ChangeLocationListener());
@@ -526,114 +508,6 @@ public class JXGradientChooser extends JXPanel {
         reversedCheck.addActionListener(repaintListener);
         gradientPreview.picker = this; //wow, nasty
 
-        /*
-        //configure the panel
-        JXPanel topPanel = new JXPanel(new GridBagLayout());
-        topPanel.setBorder(BorderFactory.createTitledBorder("Gradient"));
-
-        ///////////////// Build and Configure the slider panel/////////////////
-        JXPanel sliderPanel = new JXPanel(new GridBagLayout());
-        slider = new JXMultiThumbSlider<Color>();
-        addThumbButton = new JButton(addThumbAction);
-        deleteThumbButton = new JButton(deleteThumbAction);
-        
-        Insets stdInsets = new Insets(3,3,3,3);
-        sliderPanel.add(slider, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
-        sliderPanel.add(addThumbButton, new GridBagConstraints(0, 1, 1, 1, .5, 0.0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-        sliderPanel.add(deleteThumbButton, new GridBagConstraints(1, 1, 1, 1, .5, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-        
-        topPanel.add(sliderPanel, new GridBagConstraints(0, 0, 3, 1, 1.0, 1.0, GridBagConstraints.PAGE_START, GridBagConstraints.HORIZONTAL, new Insets(7, 7, 12, 7), 0, 0));
-        ///////////////////////////////////////////////////////////////////////
-        
-        //////////////// Build and Configure the top panel ////////////////////
-        JLabel label = new JLabel("Color: #");
-        label.setHorizontalAlignment(SwingConstants.TRAILING);
-        colorField = new JTextField();
-        colorField.setText("000");
-        colorField.setEnabled(false);
-        label.setLabelFor(colorField);
-        changeColorButton = new JXColorSelectionButton();
-        changeColorButton.setText("");
-        changeColorButton.addPropertyChangeListener("background", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                System.out.println("color bg changed");
-                selectColorForThumb();
-            }
-        });
-        topPanel.add(label, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        topPanel.add(colorField, new GridBagConstraints(1, 1, 1, 1, .5, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-        topPanel.add(changeColorButton, new GridBagConstraints(2, 1, 1, 1, .5, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-        
-        label = new JLabel("Location: %");
-        label.setHorizontalAlignment(SwingConstants.TRAILING);
-        colorLocationSpinner = new JSpinner();
-        colorLocationSpinner.setEnabled(false);
-        colorLocationSpinner.addChangeListener(new ChangeLocationListener());
-        label.setLabelFor(colorLocationSpinner);
-        topPanel.add(label, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        topPanel.add(colorLocationSpinner, new GridBagConstraints(1, 2, 1, 1, 1.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-        
-        ChangeAlphaListener changeAlphaListener = new ChangeAlphaListener();
-        label = new JLabel("Opacity: %");
-        label.setHorizontalAlignment(SwingConstants.TRAILING);
-        alphaSpinner = new JSpinner();
-        alphaSpinner.setEnabled(false);
-        ChangeAlphaListener changeAlphaListener = new ChangeAlphaListener();
-        alphaSpinner.addChangeListener(changeAlphaListener);
-        label.setLabelFor(alphaSpinner);
-        alphaSlider = new JSlider();
-        alphaSlider.setEnabled(false);
-        alphaSlider.addChangeListener(changeAlphaListener);
-        topPanel.add(label, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        topPanel.add(alphaSpinner, new GridBagConstraints(1, 3, 1, 1, .5, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-        topPanel.add(alphaSlider, new GridBagConstraints(2, 3, 1, 1, .5, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-        
-        add(topPanel, BorderLayout.NORTH);
-        /////////////////////////////////////////////////////////////////////
-        
-
-        JXPanel previewPanel = new JXPanel(new GridBagLayout());
-        previewPanel.setBorder(BorderFactory.createTitledBorder("Preview"));
-        
-        label = new JLabel("Style:");
-        styleCombo = new JComboBox();
-        RepaintOnEventListener repaintListener = new RepaintOnEventListener();
-	styleCombo.addItemListener(repaintListener);
-	styleCombo.setModel(new DefaultComboBoxModel(GradientStyle.values()));
-        label.setLabelFor(styleCombo);
-        previewPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        previewPanel.add(styleCombo, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
-        label = new JLabel("Type");
-        previewPanel.add(label, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_END, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        
-        ButtonGroup typeGroup = new ButtonGroup();
-        noCycleRadio = new JRadioButton("None");
-        noCycleRadio.setSelected(true);
-        noCycleRadio.addActionListener(repaintListener);
-        typeGroup.add(noCycleRadio);
-        previewPanel.add(noCycleRadio, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
-        reflectedRadio = new JRadioButton("Reflect");
-        reflectedRadio.addActionListener(repaintListener);
-        typeGroup.add(reflectedRadio);
-        previewPanel.add(reflectedRadio, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
-        repeatedRadio = new JRadioButton("Repeat");
-        repeatedRadio.addActionListener(repaintListener);
-        typeGroup.add(repeatedRadio);
-        previewPanel.add(repeatedRadio, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
-        reversedCheck = new JCheckBox("Reverse");
-        reversedCheck.addActionListener(repaintListener);
-        previewPanel.add(reversedCheck, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        
-        gradientPreview = new GradientPreviewPanel();
-        gradientPreview.picker = this; //wow, nasty
-        previewPanel.add(gradientPreview, new GridBagConstraints(2, 0, 1, 5, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-
-        add(previewPanel);
-        */
         
         ///To still refactor below::
 	SpinnerNumberModel alpha_model = new SpinnerNumberModel(100,0,100,1);
@@ -655,47 +529,52 @@ public class JXGradientChooser extends JXPanel {
 	slider.setThumbRenderer(new GradientThumbRenderer(this, slider));
 	slider.setTrackRenderer(new GradientTrackRenderer(this));
 	slider.addMultiThumbListener(new StopListener(slider));
-////	gradient_selector.add(slider, "Center");
 
+        // called when the gradient property of the preview pane changes
         gradientPreview.addPropertyChangeListener("gradient", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-                updateGradientProperty();
+                recalcGradientFromStops();
             }
         });
         
     }
 
+    // called whenever the color location spinner is changed
     private final class ChangeLocationListener implements ChangeListener {
         public void stateChanged(ChangeEvent evt) {
             if(slider.getSelectedIndex() >= 0) {
                 Thumb thumb = slider.getModel().getThumbAt(slider.getSelectedIndex());
                 thumb.setPosition((float)((Integer)colorLocationSpinner.getValue())/100);
-                slider.repaint();
                 updateFromStop(thumb);
-                updateGradientProperty();
             }
         }
     }
     
+    // called when the alpha slider moves
     private final class ChangeAlphaListener implements ChangeListener {
 	public void stateChanged(ChangeEvent changeEvent) {
             if(slider.getSelectedIndex() >= 0) {
+                // get the selected thumb
                 Thumb<Color> thumb = slider.getModel().getThumbAt(slider.getSelectedIndex());
+                // get the new alpha value
                 int alpha = changeEvent.getSource() == alphaSpinner ?
                     (Integer)alphaSpinner.getValue()
                     : alphaSlider.getValue();
                 
+                
+                // calc new color and set it on thumb
 		Color col = (Color)thumb.getObject();
                 col = ColorUtil.setAlpha(col, alpha*255/100);
                 thumb.setObject(col);
 
+                // set the new alpha value on the other alpha control
                 if (changeEvent.getSource() == alphaSpinner) {
                     alphaSlider.setValue(alpha);
                 } else {
                     alphaSpinner.setValue(alpha);
                 }
-		slider.repaint();
-                updateGradientProperty();
+                
+                recalcGradientFromStops();
 	    }
 	}
     }
@@ -770,11 +649,14 @@ public class JXGradientChooser extends JXPanel {
     
     private final class RepaintOnEventListener implements ActionListener, ItemListener {
         public void actionPerformed(ActionEvent e) {
-            updateGradientProperty();
+            //updateGradientProperty();
+            recalcGradientFromStops();
+            System.out.println("the stuff changed");
         }
 
         public void itemStateChanged(ItemEvent e) {
-            updateGradientProperty();
+            recalcGradientFromStops();
+            System.out.println("the stuff changed");
         }
     }
     
@@ -785,8 +667,8 @@ public class JXGradientChooser extends JXPanel {
             color = changeColorButton.getBackground();
             slider.getModel().getThumbAt(index).setObject(color);
             updateFromStop(index, slider.getModel().getThumbAt(index).getPosition(), color);
-            slider.repaint();
-            ((GradientPreviewPanel)gradientPreview).repaint();
+            //slider.repaint();
+            //((GradientPreviewPanel)gradientPreview).repaint();
 	}
     }
     
