@@ -29,7 +29,7 @@ public class RectanglePainter extends AbstractPainter {
     private Paint fillPaint = Color.RED;
     private Paint borderPaint = Color.BLACK;
     private boolean rounded = false;
-    private Insets insets = new Insets(5,5,5,5);
+    private Insets insets = new Insets(0,0,0,0);
     private int roundWidth = 20;
     private int roundHeight = 20;
     private double strokeWidth = 1;
