@@ -25,7 +25,7 @@ public class PinstripePainterBeanInfo extends AbstractPainterBeanInfo {
     protected void initialize() {
         super.initialize();
         setPreferred(true, "angle", "spacing", "paint");
-        setHidden(true, "class", "propertyChangeListeners", "image");
+        setHidden(true, "class", "propertyChangeListeners");
         setPropertyEditor(Paint2PropertyEditor.class, "paint");
     }
 }
