@@ -678,7 +678,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     }
     */
     
-    private boolean shouldRestoreState = true;
+    private boolean clipPreserved = false;
         
     /**
      * @inheritDoc
@@ -689,9 +689,8 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         }
         //saveState(g);
         
-        if(isShouldRestoreState()) {
-            g = (Graphics2D)g.create();
-        }
+        Graphics2D oldGraphics = g;
+        g = (Graphics2D)g.create();
         
         configureGraphics(g, component);
         
@@ -730,9 +729,10 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         }
         
         //restoreState(g);
-        if(isShouldRestoreState()) {
-            g.dispose();
+        if(isClipPreserved()) {
+            oldGraphics.setClip(g.getClip());
         }
+        g.dispose();
     }
     
     /**
@@ -769,13 +769,13 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      */
     protected abstract void paintBackground(Graphics2D g, T component, int width, int height);
 
-    public boolean isShouldRestoreState() {
-        return shouldRestoreState;
+    public boolean isClipPreserved() {
+        return clipPreserved;
     }
 
-    public void setShouldRestoreState(boolean shouldRestoreState) {
-        boolean oldShouldRestoreState = isShouldRestoreState();
-        this.shouldRestoreState = shouldRestoreState;
+    public void setClipPreserved(boolean shouldRestoreState) {
+        boolean oldShouldRestoreState = isClipPreserved();
+        this.clipPreserved = shouldRestoreState;
         firePropertyChange("shouldRestoreState",oldShouldRestoreState,shouldRestoreState);
     }
 
