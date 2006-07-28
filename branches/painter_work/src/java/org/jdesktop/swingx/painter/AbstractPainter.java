@@ -94,7 +94,6 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     private Shape oldClip;
     private Color oldBackground;
     private Color oldColor;
-    private RenderingHints oldRenderingHints;
     
     //--------------------------------------------------- Instance Variables
     /**
@@ -110,7 +109,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     /**
      * RenderingHints to apply when painting
      */
-    private Map<RenderingHints.Key,Object> renderingHints;
+    private RenderingHints renderingHints;
     /**
      * A hint as to whether or not to attempt caching the image
      */
@@ -128,7 +127,8 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * Creates a new instance of AbstractPainter
      */
     public AbstractPainter() {
-        renderingHints = new HashMap<RenderingHints.Key,Object>();
+        //renderingHints = new RenderingHints(null);
+        //renderingHints = new HashMap<RenderingHints.Key,Object>();
     }
     
     /**
@@ -259,7 +259,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getAlphaInterpolation() {
-        return renderingHints.get(RenderingHints.KEY_ALPHA_INTERPOLATION);
+        return getRenderingHints().get(RenderingHints.KEY_ALPHA_INTERPOLATION);
     }
 
     /**
@@ -279,7 +279,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(alphaInterpolation + " is not an acceptable value");
         }
         Object old = getAlphaInterpolation();
-        renderingHints.put(RenderingHints.KEY_ALPHA_INTERPOLATION, alphaInterpolation);
+        getRenderingHints().put(RenderingHints.KEY_ALPHA_INTERPOLATION, alphaInterpolation);
         firePropertyChange("alphaInterpolation", old, getAlphaInterpolation());
     }
 
@@ -293,7 +293,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getAntialiasing() {
-        return renderingHints.get(RenderingHints.KEY_ANTIALIASING);
+        return getRenderingHints().get(RenderingHints.KEY_ANTIALIASING);
     }
 
     /**
@@ -312,7 +312,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(antialiasing + " is not an acceptable value");
         }
         Object old = getAntialiasing();
-        renderingHints.put(RenderingHints.KEY_ANTIALIASING, antialiasing);
+        getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, antialiasing);
         firePropertyChange("antialiasing", old, getAntialiasing());
     }
 
@@ -326,7 +326,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getColorRendering() {
-        return renderingHints.get(RenderingHints.KEY_COLOR_RENDERING);
+        return getRenderingHints().get(RenderingHints.KEY_COLOR_RENDERING);
     }
 
     /**
@@ -345,7 +345,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(colorRendering + " is not an acceptable value");
         }
         Object old = getColorRendering();
-        renderingHints.put(RenderingHints.KEY_COLOR_RENDERING, colorRendering);
+        getRenderingHints().put(RenderingHints.KEY_COLOR_RENDERING, colorRendering);
         firePropertyChange("colorRendering", old, getColorRendering());
     }
 
@@ -359,7 +359,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getDithering() {
-        return renderingHints.get(RenderingHints.KEY_DITHERING);
+        return getRenderingHints().get(RenderingHints.KEY_DITHERING);
     }
 
     /**
@@ -378,7 +378,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(dithering + " is not an acceptable value");
         }
         Object old = getDithering();
-        renderingHints.put(RenderingHints.KEY_DITHERING, dithering);
+        getRenderingHints().put(RenderingHints.KEY_DITHERING, dithering);
         firePropertyChange("dithering", old, getDithering());
     }
 
@@ -392,7 +392,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getFractionalMetrics() {
-        return renderingHints.get(RenderingHints.KEY_FRACTIONALMETRICS);
+        return getRenderingHints().get(RenderingHints.KEY_FRACTIONALMETRICS);
     }
 
     /**
@@ -412,7 +412,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(fractionalMetrics + " is not an acceptable value");
         }
         Object old = getFractionalMetrics();
-        renderingHints.put(RenderingHints.KEY_FRACTIONALMETRICS, fractionalMetrics);
+        getRenderingHints().put(RenderingHints.KEY_FRACTIONALMETRICS, fractionalMetrics);
         firePropertyChange("fractionalMetrics", old, getFractionalMetrics());
     }
 
@@ -426,7 +426,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getInterpolation() {
-        return renderingHints.get(RenderingHints.KEY_INTERPOLATION);
+        return getRenderingHints().get(RenderingHints.KEY_INTERPOLATION);
     }
 
     /**
@@ -445,7 +445,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(interpolation + " is not an acceptable value");
         }
         Object old = getInterpolation();
-        renderingHints.put(RenderingHints.KEY_INTERPOLATION, interpolation);
+        getRenderingHints().put(RenderingHints.KEY_INTERPOLATION, interpolation);
         firePropertyChange("interpolation", old, getInterpolation());
     }
 
@@ -459,7 +459,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getRendering() {
-        return renderingHints.get(RenderingHints.KEY_RENDERING);
+        return getRenderingHints().get(RenderingHints.KEY_RENDERING);
     }
 
     /**
@@ -479,7 +479,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(rendering + " is not an acceptable value");
         }
         Object old = getRendering();
-        renderingHints.put(RenderingHints.KEY_RENDERING, rendering);
+        getRenderingHints().put(RenderingHints.KEY_RENDERING, rendering);
         firePropertyChange("rendering", old, getRendering());
     }
 
@@ -493,7 +493,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getStrokeControl() {
-        return renderingHints.get(RenderingHints.KEY_STROKE_CONTROL);
+        return getRenderingHints().get(RenderingHints.KEY_STROKE_CONTROL);
     }
 
     /**
@@ -513,7 +513,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(strokeControl + " is not an acceptable value");
         }
         Object old = getStrokeControl();
-        renderingHints.put(RenderingHints.KEY_STROKE_CONTROL, strokeControl);
+        getRenderingHints().put(RenderingHints.KEY_STROKE_CONTROL, strokeControl);
         firePropertyChange("strokeControl", old, getStrokeControl());
     }
 
@@ -531,7 +531,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * </ul>
      */
     public Object getTextAntialiasing() {
-        return renderingHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
+        return getRenderingHints().get(RenderingHints.KEY_TEXT_ANTIALIASING);
     }
 
     /**
@@ -555,7 +555,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             throw new IllegalArgumentException(textAntialiasing + " is not an acceptable value");
         }
         Object old = getTextAntialiasing();
-        renderingHints.put(RenderingHints.KEY_TEXT_ANTIALIASING, textAntialiasing);
+        getRenderingHints().put(RenderingHints.KEY_TEXT_ANTIALIASING, textAntialiasing);
         firePropertyChange("textAntialiasing", old, getTextAntialiasing());
     }
 
@@ -563,7 +563,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * @return the rendering hint associated with the given key. May return null
      */
     public Object getRenderingHint(RenderingHints.Key key) {
-        return renderingHints.get(key);
+        return getRenderingHints().get(key);
     }
 
     /**
@@ -597,7 +597,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         } else if (key == RenderingHints.KEY_TEXT_ANTIALIASING) {
             setTextAntialiasing(hint);
         } else {
-            renderingHints.put(key, hint);
+            getRenderingHints().put(key, hint);
         }
     }
 
@@ -605,8 +605,12 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * @return a copy of the map of rendering hints held by this class. This
      *         returned value will never be null
      */
-    public Map<RenderingHints.Key,Object> getRenderingHints() {
-        return new HashMap<RenderingHints.Key,Object>(renderingHints);
+    public RenderingHints getRenderingHints() {
+        if(renderingHints == null) {
+            renderingHints = new RenderingHints(null);
+        }
+        return renderingHints;
+        //return new HashMap<RenderingHints.Key,Object>(renderingHints);
     }
 
     /**
@@ -616,68 +620,15 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * @param renderingHints map of hints. May be null. I null, a new Map of
      * rendering hints will be created
      */
-    public void setRenderingHints(Map<RenderingHints.Key,Object> renderingHints) {
+    public void setRenderingHints(RenderingHints renderingHints) {
         if (renderingHints != null) {
-            this.renderingHints = new HashMap<RenderingHints.Key,Object>(renderingHints);
+            this.renderingHints = renderingHints;
         } else {
-            this.renderingHints = new HashMap<RenderingHints.Key, Object>();
+            this.renderingHints = new RenderingHints(null);
         }
         firePropertyChange("renderingHints", null, getRenderingHints());
     }
-    
-    /**
-     * Saves the state in the given Graphics2D object so that it may be
-     * restored later.
-     *
-     * @param g the Graphics2D object who's state will be saved
-     */
-     /*
-    protected void saveState(Graphics2D g) {
-        oldPaint = g.getPaint();
-        oldFont = g.getFont();
-        oldStroke = g.getStroke();
-        oldTransform = g.getTransform();
-        oldComposite = g.getComposite();
-        oldClip = g.getClip();
-        oldBackground = g.getBackground();
-        oldColor = g.getColor();
         
-        //save off the old rendering hints
-        oldRenderingHints = (RenderingHints)g.getRenderingHints().clone();
-        
-        stateSaved = true;
-    }
-    */
-    
-    /**
-     * Restores previously saved state. A call to saveState must have occured
-     * prior to calling restoreState, or an IllegalStateException will be thrown.
-     * 
-     * @param g the Graphics2D object to restore previously saved state to
-     */
-     /*
-    protected void restoreState(Graphics2D g) {
-        if (!stateSaved) {
-            throw new IllegalStateException("A call to saveState must occur " +
-                    "prior to calling restoreState");
-        }
-        
-        g.setPaint(oldPaint);
-        g.setFont(oldFont);
-        g.setTransform(oldTransform);
-        g.setStroke(oldStroke);
-        g.setComposite(oldComposite);
-        g.setClip(oldClip);
-        g.setBackground(oldBackground);
-        g.setColor(oldColor);
-        
-        //restore the rendering hints
-        g.setRenderingHints(oldRenderingHints);
-        
-        stateSaved = false;
-    }
-    */
-    
     private boolean clipPreserved = false;
         
     /**
@@ -740,7 +691,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
      * composite, and clip
      */
     private void configureGraphics(Graphics2D g, T c) {
-        Map<RenderingHints.Key,Object> hints = getRenderingHints();
+        RenderingHints hints = getRenderingHints();
         //merge these hints with the existing ones, otherwise I won't inherit
         //any of the hints from the Graphics2D
         for (Object key : hints.keySet()) {
