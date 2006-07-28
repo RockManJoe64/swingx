@@ -21,7 +21,6 @@ public class PinstripePainterBeanInfo extends AbstractPainterBeanInfo {
     public PinstripePainterBeanInfo() {
         super(PinstripePainter.class);
     }
-
     protected void initialize() {
         super.initialize();
         setPreferred(true, "angle", "spacing", "paint");
