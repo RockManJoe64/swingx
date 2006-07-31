@@ -159,7 +159,6 @@ public class JXGradientChooser extends JXPanel {
                     styleCombo.setSelectedItem(GradientStyle.Linear);
                 }
             }
-            System.out.println("setting it back");
             gradientPreview.setGradient(mgrad);
             //reflectedRadio.setSelected()
             MultipleGradientPaint old = this.getGradient();

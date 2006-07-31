@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -23,6 +23,7 @@ package org.jdesktop.swingx.painter;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.geom.Point2D;
@@ -46,7 +47,7 @@ import javax.swing.SwingUtilities;
  * the component</li>
  *  <li><b>TILED</b>: draws the image repeatedly across the component, filling the
  * entire background.</li>
- *  <li><b>SCALED</b>: draws the image stretched large enough (or small enough) to 
+ *  <li><b>SCALED</b>: draws the image stretched large enough (or small enough) to
  * cover the entire component. The stretch may not preserve the aspect ratio of the
  * original image.</li>
  *  <li><b>POSITIONED</b>: draws the image at the location specified by the imageLocation
@@ -56,32 +57,18 @@ import javax.swing.SwingUtilities;
  *contain a point with the x and y values between 0 and 1. 0,0 will put the image in the
  *upper left hand corner, 1,1 in the lower right, and 0.5,0.5 in the center. All other values
  *will be interpolated accordingly. For a more
- * complete defintion of the positioning algorithm see the 
+ * complete defintion of the positioning algorithm see the
  * <a href="http://www.w3.org/TR/CSS21/colors.html#propdef-background-position">CSS 2.1 spec</a>.
  * </li>
  * </ul>
  *
  * @author Richard
  */
-public class ImagePainter extends AbstractPainter {
+public class ImagePainter extends PositionedPainter {
     /**
      * Logger to use
      */
     private static final Logger LOG = Logger.getLogger(ImagePainter.class.getName());
-    
-    /**
-     * <p>An enumeration of Styles supported by the ImagePainter. CENTERED indicates
-     * that the image should be centered. If the image is too large for the
-     * canvas area, it will be clipped, but remain centered</p>
-     *
-     * <p>TILED indicates that the image should be painted multiple times, as
-     * a series of tiles</p>
-     *
-     * <p>SCALED indicates that the image should be scaled to fit the canvas area.
-     * The smallest dimension (Math.min(width, height)) will be used to constrain
-     * the image.
-     */
-    public static enum Style {CENTERED, TILED, SCALED, POSITIONED, CSS_POSITIONED};
     
     /**
      * The image to draw
@@ -90,15 +77,10 @@ public class ImagePainter extends AbstractPainter {
     
     private URL imageURL;
     
-    /**
-     * Specifies how to draw the image, i.e. what kind of Style to use
-     * when drawing
-     */
-    private Style style = Style.CENTERED;
     
     /**
-     * Create a new ImagePainter. By default there is no image, and the Style
-     * is set to Style.CENTERED
+     * Create a new ImagePainter. By default there is no image, and the alignment
+     * is centered.
      */
     public ImagePainter() {
         super();
@@ -121,10 +103,11 @@ public class ImagePainter extends AbstractPainter {
      * @param image the image to be painted
      * @param style the style of the image
      */
-    public ImagePainter(Image image, Style style) {
+    public ImagePainter(Image image, HorizontalAlignment horizontal, VerticalAlignment vertical) {
         super();
         this.img = image;
-        this.style = style;
+        this.setVertical(vertical);
+        this.setHorizontal(horizontal);
     }
     
     /**
@@ -151,26 +134,6 @@ public class ImagePainter extends AbstractPainter {
     }
     
     /**
-     * Sets what style to use when painting the image
-     *
-     * @param s The style constant to apply to the image.
-     */
-    public void setStyle(Style s) {
-        if (style != s) {
-            Style oldStyle = style;
-            style = s;
-            firePropertyChange("style", oldStyle, s);
-        }
-    }
-
-    /**
-     * @return the Style used for drawing the image (CENTERED, TILED, etc).
-     */
-    public Style getStyle() {
-        return style;
-    }
-    
-    /**
      * @inheritDoc
      */
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
@@ -184,72 +147,10 @@ public class ImagePainter extends AbstractPainter {
             if (imgWidth == -1 || imgHeight == -1) {
                 //image hasn't completed loading, do nothing
             } else {
-                switch (style) {
-                    case CENTERED:
-                        Rectangle clipRect = g.getClipBounds();
-                        int imageX = (component.getWidth() - imgWidth) / 2;
-                        int imageY = (component.getHeight() - imgHeight) / 2;
-                        Rectangle r = SwingUtilities.computeIntersection(imageX, imageY, imgWidth, imgHeight, clipRect);
-                        if (r.x == 0 && r.y == 0 && (r.width == 0 || r.height == 0)) {
-                            return;
-                        }
-                        //I have my new clipping rectangle "r" in clipRect space.
-                        //It is therefore the new clipRect.
-                        clipRect = r;
-                        //since I have the intersection, all I need to do is adjust the
-                        //x & y values for the image
-                        int txClipX = clipRect.x - imageX;
-                        int txClipY = clipRect.y - imageY;
-                        int txClipW = clipRect.width;
-                        int txClipH = clipRect.height;
-
-                        g.drawImage(img, clipRect.x, clipRect.y, clipRect.x + clipRect.width, clipRect.y + clipRect.height,
-                                txClipX, txClipY, txClipX + txClipW, txClipY + txClipH, null);
-                        break;
-                    case TILED:
-                        if (img instanceof BufferedImage) {
-                            BufferedImage b = (BufferedImage)img;
-                            TexturePaint paint = new TexturePaint(b,
-                                    new Rectangle2D.Double(0, 0, b.getWidth(), b.getHeight()));
-                            g.setPaint(paint);
-                            g.fillRect(0, 0, component.getWidth(), component.getHeight());
-                        } else {
-                            //TODO!
-                            LOG.fine("unimplemented");
-                        }
-                    case SCALED:
-                          g.drawImage(img, 0, 0, component.getWidth(), component.getHeight(), null);
-                        break;
-                    case POSITIONED:
-                          g.drawImage(img, (int)imagePosition.getX(), (int)imagePosition.getY(), 
-                                  (int)(((double)img.getWidth(null))*getImageScale()),
-                                  (int)(((double)img.getHeight(null))*getImageScale()),
-                                  null);
-                        break;
-                    case CSS_POSITIONED:
-                        double x = imagePosition.getX() * (component.getWidth()-img.getWidth(null));
-                        double y = imagePosition.getY() * (component.getHeight()-img.getHeight(null));
-                        g.drawImage(img,(int)x,(int)y,null);
-                        break;
-                    default:
-                        LOG.fine("unimplemented");
-                        g.drawImage(img, 0, 0, null);
-                        break;
-                }
+                Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
+                g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
             }
         }
-    }
-    
-    private Point2D imagePosition = new Point2D.Double(0,0);
-    
-    public void setImagePosition(Point2D imagePosition) {
-        Point2D old = this.getImagePosition();
-        this.imagePosition = imagePosition;
-        firePropertyChange("imagePosition",old,this.imagePosition);
-    }
-    
-    public Point2D getImagePosition() {
-        return imagePosition;
     }
 
     private double imageScale = 1.0;
@@ -262,20 +163,6 @@ public class ImagePainter extends AbstractPainter {
     public double getImageScale() {
         return imageScale;
     }
-
-    /*
-    public URL getImageURL() {
-        return imageURL;
-    }
-
-    public void setImageURL(URL imageURL) {
-        System.out.println("setting image url to : " + imageURL);
-        URL old = getImageURL();
-        this.imageURL = imageURL;
-        loadImage();
-        firePropertyChange("imageURL",old,this.imageURL);
-    }
-*/
     
     private void loadImage() {
         try {
@@ -287,13 +174,13 @@ public class ImagePainter extends AbstractPainter {
             ex.printStackTrace();
         }
     }
-
+    
     private String imageString;
-
+    
     public String getImageString() {
         return imageString;
     }
-
+    
     public void setImageString(String imageString) {
         String old = this.getImageString();
         this.imageString = imageString;
@@ -306,4 +193,5 @@ public class ImagePainter extends AbstractPainter {
     }
     
     public static File baseFile;
+
 }
