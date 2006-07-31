@@ -16,7 +16,7 @@ import org.jdesktop.swingx.editors.Point2DPropertyEditor;
  *
  * @author joshy
  */
-public class TextPainterBeanInfo extends AbstractPainterBeanInfo {
+public class TextPainterBeanInfo extends PositionedPainterBeanInfo {
     
     /** Creates a new instance of TextPainterBeanInfo */
     public TextPainterBeanInfo() {
@@ -26,7 +26,6 @@ public class TextPainterBeanInfo extends AbstractPainterBeanInfo {
     protected void initialize() {
         super.initialize();
         setDisplayName("Text","text");
-        setPropertyEditor(Point2DPropertyEditor.class,"location");
         setPropertyEditor(Paint2PropertyEditor.class,"paint");
     }
     

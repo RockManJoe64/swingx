@@ -26,7 +26,9 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -45,12 +47,10 @@ import org.jdesktop.swingx.util.Resize;
  *
  * @author rbair
  */
-public class TextPainter extends AbstractPainter {
-    private Resize resize;
+public class TextPainter extends PositionedPainter {
     private String text = "";
     private Font font = null;
     private Paint paint;
-    private Point2D location = null;//new Point2D.Double(0.5, 0.5);
     
     /** Creates a new instance of TextPainter */
     public TextPainter() {
@@ -100,18 +100,9 @@ public class TextPainter extends AbstractPainter {
     public Paint getPaint() {
         return paint;
     }
-    
-    public void setLocation(Point2D location) {
-        Point2D old = getLocation();
-        this.location = location == null ? new Point2D.Double(.0, .0) : location;
-        firePropertyChange("location", old, getLocation());
-    }
-    
-    public Point2D getLocation() {
-        return location;
-    }
 
     protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+        // prep the various text attributes
         Font font = getFont();
         if (font == null) {
             font = component.getFont();
@@ -133,7 +124,8 @@ public class TextPainter extends AbstractPainter {
             g.setPaint(paint);
         }
         
-        FontMetrics metrics = g.getFontMetrics(g.getFont());
+        
+        // prep the text
         String text = getText();
         if(text == null || "".equals(text)) {
             if(component instanceof JTextComponent) {
@@ -144,26 +136,22 @@ public class TextPainter extends AbstractPainter {
             }
         }
         
-        Point2D location = getLocation();
-        if(location == null) {
-            location = new Point2D.Double(0.5,0.5);
-        }
+        // get the font metrics
+        FontMetrics metrics = g.getFontMetrics(g.getFont());
+        Rectangle2D rect = metrics.getStringBounds(text,g);
+        //Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
+        //g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
+        
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();
-        double x = location.getX() * (width  - tw);
-        double y = location.getY() * (height - th);
-        y += metrics.getAscent();
+        Rectangle res = calculatePosition(tw, th, width, height);
+        
+        //double x = location.getX() * (width  - tw);
+        //double y = location.getY() * (height - th);
+        //y += metrics.getAscent();
         
         //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);
         //x -= stringWidth/2;
-        g.drawString(text, (float)x, (float)y);
-    }
-
-    private Point2D.Double db = new Point2D.Double(40.0,50.0);
-    public Point2D.Double getDb() {
-        return db;
-    }
-    public void setDb(Point2D.Double db) {
-        this.db = db;
+        g.drawString(text, res.x, res.y += metrics.getAscent());
     }
 }
