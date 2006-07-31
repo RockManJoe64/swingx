@@ -87,9 +87,9 @@ public class IconPainter extends ImagePainter {
     /**
      * @return the image used for painting the background of this panel
      */
-    public Image getImage() {
+    public BufferedImage getImage() {
         if (icon instanceof ImageIcon) {
-            return ((ImageIcon)icon).getImage();
+            return (BufferedImage)((ImageIcon)icon).getImage();
         } else if (icon == null) {
             return null;
         } else {

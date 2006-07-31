@@ -73,9 +73,12 @@ public class ImagePainter extends PositionedPainter {
     /**
      * The image to draw
      */
-    private transient Image img;
+    private transient BufferedImage img;
     
     private URL imageURL;
+    
+    private boolean horizontalRepeat;
+    private boolean verticalRepeat;
     
     
     /**
@@ -92,7 +95,7 @@ public class ImagePainter extends PositionedPainter {
      *
      * @param image the image to be painted
      */
-    public ImagePainter(Image image) {
+    public ImagePainter(BufferedImage image) {
         super();
         this.img = image;
     }
@@ -103,7 +106,7 @@ public class ImagePainter extends PositionedPainter {
      * @param image the image to be painted
      * @param style the style of the image
      */
-    public ImagePainter(Image image, HorizontalAlignment horizontal, VerticalAlignment vertical) {
+    public ImagePainter(BufferedImage image, HorizontalAlignment horizontal, VerticalAlignment vertical) {
         super();
         this.img = image;
         this.setVertical(vertical);
@@ -118,7 +121,7 @@ public class ImagePainter extends PositionedPainter {
      * image to be painted. If the preferred size has not been explicitly set,
      * then the image dimensions will alter the preferred size of the panel.
      */
-    public void setImage(Image image) {
+    public void setImage(BufferedImage image) {
         if (image != img) {
             Image oldImage = img;
             img = image;
@@ -129,7 +132,7 @@ public class ImagePainter extends PositionedPainter {
     /**
      * @return the image used for painting the background of this panel
      */
-    public Image getImage() {
+    public BufferedImage getImage() {
         return img;
     }
     
@@ -148,7 +151,20 @@ public class ImagePainter extends PositionedPainter {
                 //image hasn't completed loading, do nothing
             } else {
                 Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
-                g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
+                if(verticalRepeat || horizontalRepeat) {
+                    TexturePaint tp = new TexturePaint(img,rect);
+                    g.setPaint(tp);
+                    if(verticalRepeat && horizontalRepeat) {
+                        g.setClip(0,0,width,height);
+                    } else if (verticalRepeat) {
+                        g.setClip(rect.x,0,rect.width,height);
+                    } else {
+                        g.setClip(0,rect.y,width,rect.height);
+                    }
+                    g.fillRect(0,0,width,height);
+                } else {
+                    g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
+                }
             }
         }
     }
@@ -193,5 +209,25 @@ public class ImagePainter extends PositionedPainter {
     }
     
     public static File baseFile;
+
+    public boolean isHorizontalRepeat() {
+        return horizontalRepeat;
+    }
+
+    public void setHorizontalRepeat(boolean horizontalRepeat) {
+        boolean old = this.isHorizontalRepeat();
+        this.horizontalRepeat = horizontalRepeat;
+        firePropertyChange("horizontalRepeat",old,this.horizontalRepeat);
+    }
+
+    public boolean isVerticalRepeat() {
+        return verticalRepeat;
+    }
+
+    public void setVerticalRepeat(boolean verticalRepeat) {
+        boolean old = this.isVerticalRepeat();
+        this.verticalRepeat = verticalRepeat;
+        firePropertyChange("verticalRepeat",old,this.verticalRepeat);
+    }
 
 }
