@@ -212,7 +212,6 @@ public class MattePainter extends AbstractPainter {
     private static double calcAngle(Point2D p1, Point2D p2) {
         double x_off = p2.getX() - p1.getX();
         double y_off = p2.getY() - p1.getY();
-        //u.p("off  = " + x_off + " " + y_off);
         double angle = Math.atan(y_off / x_off);
         if (x_off < 0) {
             angle = angle + Math.PI;
