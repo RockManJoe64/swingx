@@ -167,7 +167,6 @@ public class ImagePainter extends PositionedPainter {
                         area.intersect(new Area(new Rectangle(0,rect.y,width,rect.height)));
                         g.setClip(area);//clip.intersection(new Rectangle(0,rect.y,width,rect.height)));
                     }
-                    System.out.println("clip = " + g.getClip());
                     g.setPaint(tp);
                     g.fillRect(0,0,width,height);
                 } else {
@@ -191,9 +190,9 @@ public class ImagePainter extends PositionedPainter {
     
     private void loadImage() {
         try {
-            File file = new File(getBaseFile(),getImageString());
-            System.out.println("loading: " + file.getCanonicalPath());
-            setImage(ImageIO.read(file));
+            URL url = new URL(getBaseURL(),getImageString());
+            System.out.println("loading: " + url.toString());
+            setImage(ImageIO.read(url));
         } catch (IOException ex) {
             System.out.println("ex: " + ex.getMessage());
             ex.printStackTrace();
@@ -213,11 +212,11 @@ public class ImagePainter extends PositionedPainter {
         firePropertyChange("imageString",old,imageString);
     }
     
-    private File getBaseFile() {
-        return baseFile;
+    private URL getBaseURL() {
+        return baseURL;
     }
     
-    public static File baseFile;
+    public static URL baseURL;
 
     public boolean isHorizontalRepeat() {
         return horizontalRepeat;
