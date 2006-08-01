@@ -24,6 +24,9 @@ package org.jdesktop.swingx.painter;
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -182,6 +185,11 @@ public class PinstripePainter extends AbstractPainter {
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         //draws pinstripes at the angle specified in this class
         //and at the given distance apart
+        Shape clip = g.getClip();
+        Area area = new Area(clip);
+        area.intersect(new Area(new Rectangle(0,0,width,height)));
+        g.setClip(area);
+        //g.setClip(clip.intersection(new Rectangle(0,0,width,height)));
         Paint p = getPaint();
         if (p == null) {
             g.setColor(component.getForeground());
@@ -191,8 +199,8 @@ public class PinstripePainter extends AbstractPainter {
         
         g.setStroke(new BasicStroke((float)getStripeWidth()));
 
-        double hypLength = Math.sqrt((component.getWidth() * component.getWidth()) +
-                                   (component.getHeight() * component.getHeight()));
+        double hypLength = Math.sqrt((width * width) +
+                                   (height * height));
 
         double radians = Math.toRadians(getAngle());
         g.rotate(radians);
@@ -206,6 +214,7 @@ public class PinstripePainter extends AbstractPainter {
             Line2D line = new Line2D.Double(x, -hypLength, x, hypLength);
             g.draw(line);
         }
+        g.setClip(clip);
     }
 
     public double getStripeWidth() {

@@ -38,7 +38,7 @@ public class JXButton extends JButton {
         if (backgroundPainter != null) {
             setOpaque(false);
             setContentAreaFilled(false);
-            //setBorder(null);
+            setBorder(null);
         }
         firePropertyChange("backgroundPainter", old, backgroundPainter);
         repaint();
@@ -80,7 +80,7 @@ public class JXButton extends JButton {
                     this.getHeight() - ins.top  - ins.bottom);
             g2.dispose();
         } else {
-            super.paintComponent(g);
+            //super.paintComponent(g);
         }        
     }
     
