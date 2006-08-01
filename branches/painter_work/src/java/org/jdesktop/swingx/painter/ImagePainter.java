@@ -25,7 +25,9 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.TexturePaint;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -151,20 +153,27 @@ public class ImagePainter extends PositionedPainter {
                 //image hasn't completed loading, do nothing
             } else {
                 Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
+                Shape clip = g.getClip();
+                Area area = new Area(clip);
                 if(verticalRepeat || horizontalRepeat) {
                     TexturePaint tp = new TexturePaint(img,rect);
-                    g.setPaint(tp);
                     if(verticalRepeat && horizontalRepeat) {
-                        g.setClip(0,0,width,height);
+                        area.intersect(new Area(new Rectangle(0,0,width,height)));
+                        g.setClip(area);
                     } else if (verticalRepeat) {
-                        g.setClip(rect.x,0,rect.width,height);
+                        area.intersect(new Area(new Rectangle(rect.x,0,rect.width,height)));
+                        g.setClip(area);//clip.intersection(new Rectangle(rect.x,0,rect.width,height)));
                     } else {
-                        g.setClip(0,rect.y,width,rect.height);
+                        area.intersect(new Area(new Rectangle(0,rect.y,width,rect.height)));
+                        g.setClip(area);//clip.intersection(new Rectangle(0,rect.y,width,rect.height)));
                     }
+                    System.out.println("clip = " + g.getClip());
+                    g.setPaint(tp);
                     g.fillRect(0,0,width,height);
                 } else {
                     g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
                 }
+                g.setClip(clip);
             }
         }
     }
