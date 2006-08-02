@@ -18,6 +18,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 package org.jdesktop.swingx;
 
 import org.jdesktop.swingx.editors.Painter2PropertyEditor;
@@ -25,17 +26,18 @@ import org.jdesktop.swingx.editors.PainterPropertyEditor;
 
 /**
  *
- * @author rbair
+ * @author joshy
  */
-public class JXPanelBeanInfo extends BeanInfoSupport {
+public class JXLabelBeanInfo extends BeanInfoSupport {
     
-    public JXPanelBeanInfo() {
-        super(JXPanel.class);
+    /** Creates a new instance of JXLabelBeanInfo */
+    public JXLabelBeanInfo() {
+        super(JXLabel.class);
     }
-
+    
     protected void initialize() {
-        setPreferred(true, "opaque", "alpha", "inheritAlpha", "backgroundPainter");
-        setHidden(true, "drawGradient", "gradientPaint");
+        setPreferred(true, "backgroundPainter","foregroundPainter");
+        //setHidden(true, "drawGradient", "gradientPaint");
         setPropertyEditor(Painter2PropertyEditor.class, "backgroundPainter","foregroundPainter");
     }
 }

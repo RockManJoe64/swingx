@@ -39,6 +39,7 @@ public class Paint2PropertyEditor extends PropertyEditorSupport {
                 firePropertyChange();
             }
         });
+        
     }
     
     public Paint getValue() {
