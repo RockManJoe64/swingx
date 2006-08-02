@@ -34,6 +34,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.text.JTextComponent;
 import org.jdesktop.swingx.util.Resize;
+import org.joshy.util.u;
 
 /**
  * "Paints" text at the given location. The location should be a point where
@@ -127,9 +128,12 @@ public class TextPainter extends PositionedPainter {
         
         // prep the text
         String text = getText();
-        if(text == null || "".equals(text)) {
+        if(text == null || text.trim().equals("")) {
             if(component instanceof JTextComponent) {
                 text = ((JTextComponent)component).getText();
+            }
+            if(component instanceof JLabel) {
+                text = ((JLabel)component).getText();
             }
             if(component instanceof AbstractButton) {
                 text = ((AbstractButton)component).getText();
