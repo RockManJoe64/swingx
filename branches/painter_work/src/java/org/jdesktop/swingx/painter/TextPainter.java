@@ -128,7 +128,7 @@ public class TextPainter extends PositionedPainter {
         
         // prep the text
         String text = getText();
-        if(text == null || text.trim().equals("")) {
+        //make components take priority if(text == null || text.trim().equals("")) {
             if(component instanceof JTextComponent) {
                 text = ((JTextComponent)component).getText();
             }
@@ -138,7 +138,7 @@ public class TextPainter extends PositionedPainter {
             if(component instanceof AbstractButton) {
                 text = ((AbstractButton)component).getText();
             }
-        }
+        //}
         
         // get the font metrics
         FontMetrics metrics = g.getFontMetrics(g.getFont());
