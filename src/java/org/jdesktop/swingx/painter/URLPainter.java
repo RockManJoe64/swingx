@@ -1,5 +1,5 @@
 /*
- * FilePainter.java
+ * URLPainter.java
  *
  * Created on August 2, 2006, 11:39 AM
  *
@@ -22,61 +22,70 @@ import org.joshy.util.u;
  *
  * @author joshy
  */
-public class FilePainter extends CompoundPainter{
-    URL file;
-    /** Creates a new instance of FilePainter */
-    public FilePainter(File file) {
+public class URLPainter extends CompoundPainter{
+    URL url;
+    /**
+     * Creates a new instance of URLPainter
+     */
+    public URLPainter() {
+        this.url = null;
+    }
+    
+    public URLPainter(URL url) {
+        this.url = url;
+    }
+    
+    public URLPainter(File file) {
         try {
-        this.file = file.toURL();
+            this.url = file.toURL();
         } catch (MalformedURLException exception) {
             u.p(exception);
-            this.file = null;
+            this.url = null;
         }
     }
-    
-    public FilePainter() {
         
-    }
-    
-    public FilePainter(String url) {
+    public URLPainter(String url) {
         try {
-            this.file = new URL(url);
+            this.url = new URL(url);
         } catch (MalformedURLException ex) {
             u.p(ex);
-            this.file = null;
+            this.url = null;
         }
     }
-    public FilePainter(Class baseClass, String resource) {
-        file = baseClass.getResource(resource);
+    
+    public URLPainter(Class baseClass, String resource) {
+        url = baseClass.getResource(resource);
     }
     
-    public void setFile(URL file) {
-        URL old = this.file;
-        this.file = file;
-        firePropertyChange("file",old,this.file);
+    public void setURL(URL file) {
+        URL old = this.url;
+        this.url = file;
+        firePropertyChange("file",old,this.url);
     }
-    public URL getFile() {
-        return this.file;
+    
+    public URL getURL() {
+        return this.url;
     }
     
     private boolean loaded = false;
+    
     private void load() {
         try {
             Painter painter;
-            painter = PainterUtil.loadPainter(file);
+            painter = PainterUtil.loadPainter(url);
             this.setPainters(new Painter[] { painter } );
             loaded = true;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-
+    
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         if(!loaded) {
             load();
         }
         super.paintBackground(g, component, width, height);
     }
-   
+    
     
 }

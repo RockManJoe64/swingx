@@ -19,7 +19,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import org.jdesktop.swingx.painter.FilePainter;
+import org.jdesktop.swingx.painter.URLPainter;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.joshy.util.u;
@@ -46,7 +46,7 @@ public class Painter2PropertyEditor extends PropertyEditorSupport {
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
                     File file = picker.getSelectedFile();
-                    painter = new FilePainter(file);
+                    painter = new URLPainter(file);
                     //painter = PainterUtil.loadPainter(file);
                     firePropertyChange();
                     log("loaded the painter: " + painter);
@@ -77,8 +77,8 @@ public class Painter2PropertyEditor extends PropertyEditorSupport {
     }
     
     public String getAsText() {
-        if(painter instanceof FilePainter) {
-            return ((FilePainter)painter).getFile().toString();
+        if(painter instanceof URLPainter) {
+            return ((URLPainter)painter).getURL().toString();
         }
         if(painter != null) {
             return painter.getClass().getName();
@@ -88,10 +88,10 @@ public class Painter2PropertyEditor extends PropertyEditorSupport {
     }
     
     public String getJavaInitializationString() {
-        FilePainter painter = (FilePainter)getValue();
+        URLPainter painter = (URLPainter)getValue();
         return painter == null ? "null" : 
             "new org.jdesktop.swingx.painter.FilePainter(\""+
-                painter.getFile().toString()+"\")";
+                painter.getURL().toString()+"\")";
     }
 
     public boolean supportsCustomEditor() {
