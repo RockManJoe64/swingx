@@ -247,4 +247,30 @@ public class PainterUtil {
             ((JXButton)comp).setForegroundPainter(painter);
         }
     }
+
+    public static Painter getFGP(JComponent comp) {
+        if(comp instanceof JXPanel) {
+            return ((JXPanel)comp).getForegroundPainter();
+        }
+        if(comp instanceof JXLabel) {
+            return ((JXLabel)comp).getForegroundPainter();
+        }
+        if(comp instanceof JXButton) {
+            return ((JXButton)comp).getForegroundPainter();
+        }
+        return null;
+    }
+
+    public static Painter getBGP(JComponent comp) {
+        if(comp instanceof JXPanel) {
+            return ((JXPanel)comp).getBackgroundPainter();
+        }
+        if(comp instanceof JXLabel) {
+            return ((JXLabel)comp).getBackgroundPainter();
+        }
+        if(comp instanceof JXButton) {
+            return ((JXButton)comp).getBackgroundPainter();
+        }
+        return null;
+    }
 }
