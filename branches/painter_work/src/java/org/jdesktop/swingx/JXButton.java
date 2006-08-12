@@ -23,6 +23,11 @@ public class JXButton extends JButton {
     
     /** Creates a new instance of JXButton */
     public JXButton() {
+        super();
+    }
+    
+    public JXButton(String text) {
+        super(text);
     }
     
     private Painter backgroundPainter;

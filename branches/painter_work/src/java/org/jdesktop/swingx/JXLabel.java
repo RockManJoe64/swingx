@@ -25,6 +25,9 @@ public class JXLabel extends JLabel {
     public JXLabel() {
         super();
     }
+    public JXLabel(String text) {
+        super(text);
+    }
     
     private Painter backgroundPainter;
     private Painter foregroundPainter;
