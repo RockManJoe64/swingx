@@ -46,8 +46,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.apache.batik.ext.awt.RadialGradientPaint;
+import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
@@ -213,13 +216,35 @@ public class PainterUtil {
         }
     }
     
-    public static void savePainterToImage(JXPanel testPanel, CompoundPainter compoundPainter, File file) throws IOException {
+    public static void savePainterToImage(JComponent testPanel, CompoundPainter compoundPainter, File file) throws IOException {
         BufferedImage img = new BufferedImage(testPanel.getWidth(),testPanel.getHeight(),
                 BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
-        testPanel.setBackgroundPainter(compoundPainter);
+        setBGP(testPanel,compoundPainter);
         testPanel.paint(g);
         ImageIO.write(img,"png",file);
     }
     
+    public static void setBGP(JComponent comp, Painter painter) {
+        if(comp instanceof JXPanel) {
+            ((JXPanel)comp).setBackgroundPainter(painter);
+        }
+        if(comp instanceof JXLabel) {
+            ((JXLabel)comp).setBackgroundPainter(painter);
+        }
+        if(comp instanceof JXButton) {
+            ((JXButton)comp).setBackgroundPainter(painter);
+        }
+    }
+    public static void setFGP(JComponent comp, Painter painter) {
+        if(comp instanceof JXPanel) {
+            ((JXPanel)comp).setForegroundPainter(painter);
+        }
+        if(comp instanceof JXLabel) {
+            ((JXLabel)comp).setForegroundPainter(painter);
+        }
+        if(comp instanceof JXButton) {
+            ((JXButton)comp).setForegroundPainter(painter);
+        }
+    }
 }
