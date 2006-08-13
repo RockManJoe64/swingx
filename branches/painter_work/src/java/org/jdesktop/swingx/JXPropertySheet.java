@@ -18,21 +18,31 @@ import org.joshy.util.u;
 import org.jdesktop.swingx.propertysheet.*;
 
 
-public class JXPropertySheet extends JTable {
+public class JXPropertySheet extends JXTreeTable {
     public Object bean;
     
     public JXPropertySheet(Object bean) {
         this.bean = bean;
         this.hiddenShown = false;
         this.expertShown = false;
+        this.expertOnly = false;
         setAutoCreateColumnsFromModel(true);
         generateModel();
         setDefaultRenderer(Object.class, new PropertyValueCellRenderer(this));
+        setTreeCellRenderer(new PropertyNameTreeCellRenderer(this));
         setDefaultEditor(Object.class, new PropertyValueCellEditor(this));
+        
+        //setRootVisible(true);
+        setShowsRootHandles(true);
+        setShowHorizontalLines(true);
+        setShowVerticalLines(true);
+        setSortable(true);
+        setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+        getTableHeader().setReorderingAllowed(false);
     }
     
     private void generateModel() {
-        this.setModel(new BeanTableModel(this,bean,stopClass));
+        this.setTreeTableModel(new BeanTableModel(this,bean,stopClass));
     }
     
     /**
@@ -106,6 +116,30 @@ public class JXPropertySheet extends JTable {
         this.stopClass = stopClass;
         generateModel();
         firePropertyChange("stopClass", oldStopClass, stopClass);
+    }
+
+    /**
+     * Holds value of property expertOnly.
+     */
+    private boolean expertOnly;
+
+    /**
+     * Getter for property expertOnly.
+     * @return Value of property expertOnly.
+     */
+    public boolean isExpertOnly() {
+        return this.expertOnly;
+    }
+
+    /**
+     * Setter for property expertOnly.
+     * @param expertOnly New value of property expertOnly.
+     */
+    public void setExpertOnly(boolean expertOnly) {
+        boolean oldExpertOnly = this.expertOnly;
+        this.expertOnly = expertOnly;
+        generateModel();
+        firePropertyChange ("expertOnly", new Boolean (oldExpertOnly), new Boolean (expertOnly));
     }
 
     

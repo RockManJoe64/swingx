@@ -187,6 +187,7 @@ public class JXGradientChooser extends JXPanel {
     }
     
     private void updateFromStop(int thumb, float position, Color color) {
+        p("updating: " + thumb + " " + position + " " + color);
         if(thumb == -1) {
             colorLocationSpinner.setEnabled(false);
             alphaSpinner.setEnabled(false);
@@ -575,7 +576,7 @@ public class JXGradientChooser extends JXPanel {
     // called when the alpha slider moves
     private final class ChangeAlphaListener implements ChangeListener {
         public void stateChanged(ChangeEvent changeEvent) {
-            if(slider.getSelectedIndex() >= 0) {
+            if(slider.getSelectedIndex() >= 0 && !thumbsMoving) {
                 // get the selected thumb
                 Thumb<Color> thumb = slider.getModel().getThumbAt(slider.getSelectedIndex());
                 // get the new alpha value
@@ -610,6 +611,9 @@ public class JXGradientChooser extends JXPanel {
         public void actionPerformed(ActionEvent actionEvent) {
             float pos = 0.2f;
             Color color = Color.black;
+            int num = slider.getModel().addThumb(pos,color);
+            System.out.println("new number = " + num);
+            /*
             for (int i = 0; i < slider.getModel().getThumbCount(); i++) {
                 float pos2 = slider.getModel().getThumbAt(i).getPosition();
                 if (pos2 < pos) {
@@ -619,6 +623,7 @@ public class JXGradientChooser extends JXPanel {
                 updateFromStop(i,pos,color);
                 break;
             }
+             */
             
         }
     }
@@ -647,22 +652,30 @@ public class JXGradientChooser extends JXPanel {
         }
         
         public void thumbMoved(int thumb, float pos) {
+            p("moved: " + thumb + " " + pos);
             Color color = (Color)slider.getModel().getThumbAt(thumb).getObject();
             thumbsMoving = true;
             updateFromStop(thumb,pos,color);
             updateDeleteButtons();
             thumbsMoving = false;
+            
         }
         
         public void thumbSelected(int thumb) {
+            
             if(thumb == -1) {
                 updateFromStop(-1,-1,Color.black);
                 return;
             }
+            thumbsMoving = true;
             float pos = slider.getModel().getThumbAt(thumb).getPosition();
             Color color = (Color)slider.getModel().getThumbAt(thumb).getObject();
+            p("selected = " + thumb + " " + pos + " " + color);
             updateFromStop(thumb,pos,color);
             updateDeleteButtons();
+            slider.repaint();
+            thumbsMoving = false;
+             
         }
         
         public void mousePressed(MouseEvent e) {
@@ -788,6 +801,9 @@ public class JXGradientChooser extends JXPanel {
         return buffer.toString();
     }
     
+    public static void p(String s) {
+        System.out.println(s);
+    }
 }
 
 
