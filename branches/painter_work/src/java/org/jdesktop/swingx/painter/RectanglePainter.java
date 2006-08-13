@@ -4,7 +4,7 @@
  * Created on July 12, 2006, 6:57 PM
  *
  * To change this template, choose Tools | Template Manager
- * and open the template in the editor. 
+ * and open the template in the editor.
  */
 package org.jdesktop.swingx.painter;
 
@@ -25,8 +25,7 @@ import javax.swing.JComponent;
  *
  */
 
-public class RectanglePainter extends AbstractPainter {
-    private Paint fillPaint = Color.RED;
+public class RectanglePainter extends AreaPainter {
     private Paint borderPaint = Color.BLACK;
     private boolean rounded = false;
     private Insets insets = new Insets(0,0,0,0);
@@ -36,7 +35,7 @@ public class RectanglePainter extends AbstractPainter {
     
     
     /** Creates a new instance of RectanglePainter */
-    public RectanglePainter() {        
+    public RectanglePainter() {
     }
     
     
@@ -49,7 +48,7 @@ public class RectanglePainter extends AbstractPainter {
         this.roundWidth = roundWidth;
         this.roundHeight = roundHeight;
         this.rounded = rounded;
-        this.fillPaint = fillPaint;
+        this.setPaint(fillPaint);
         this.strokeWidth = strokeWidth;
         this.borderPaint = borderPaint;
     }
@@ -73,9 +72,14 @@ public class RectanglePainter extends AbstractPainter {
     
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Shape shape = calculateShape(component, width, height);
-        
+        System.out.println("filling with: " + getPaint());
         // background
-        g.setPaint(fillPaint);
+        Paint p = getPaint();
+        if(isSnapPaint()) {
+            p = calculateSnappedPaint(p, width, height);
+        }
+        
+        g.setPaint(p);
         g.fill(shape);
         
         // border
@@ -87,15 +91,6 @@ public class RectanglePainter extends AbstractPainter {
         g.setClip(shape);
     }
     
-    public Paint getFillPaint() {
-        return fillPaint;
-    }
-    
-    public void setFillPaint(Paint fillPaint) {
-        Paint oldFillPaint = getFillPaint();
-        this.fillPaint = fillPaint;
-        firePropertyChange("fillPaint",oldFillPaint,fillPaint);
-    }
     
     public Paint getBorderPaint() {
         return borderPaint;
@@ -140,7 +135,7 @@ public class RectanglePainter extends AbstractPainter {
     public int getRoundHeight() {
         return roundHeight;
     }
-
+    
     public void setRoundHeight(int roundHeight) {
         int oldRoundHeight = getRoundHeight();
         this.roundHeight = roundHeight;

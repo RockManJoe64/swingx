@@ -50,10 +50,6 @@ public class BeanUtils {
         PropertyEditor ed = getPE(pd,bean);
         //u.p("ed = " + ed);
         
-        if(ed != null && ed.isPaintable()) {
-            //u.p("paintable");
-        }
-        
         Method meth = pd.getReadMethod();
         if(meth == null) {
             return "???";
