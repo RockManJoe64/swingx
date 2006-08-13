@@ -51,9 +51,13 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
         setPropertyEditor(RenderingPropertyEditor.class, "rendering");
         setPropertyEditor(StrokeControlPropertyEditor.class, "strokeControl");
         setPropertyEditor(TextAntialiasingPropertyEditor.class, "textAntialiasing");
+        setDisplayName("Use Cache","useCache");
         
         //move some items into "Appearance" and some into "Behavior"
         setCategory("Rendering Hints", "alphaInterpolation", "antialiasing", 
+                "colorRendering", "dithering", "fractionalMetrics", "interpolation",
+                "rendering", "strokeControl", "textAntialiasing");
+        setExpert(true, "alphaInterpolation", 
                 "colorRendering", "dithering", "fractionalMetrics", "interpolation",
                 "rendering", "strokeControl", "textAntialiasing");
         setCategory("Appearance", "clip", "composite", "effects");

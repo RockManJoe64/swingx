@@ -7,6 +7,8 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -20,9 +22,13 @@ import org.jdesktop.swingx.propertysheet.*;
 
 public class JXPropertySheet extends JXTreeTable {
     public Object bean;
+    private List<String> categoryFilter;
+
+    private boolean included = true;
     
     public JXPropertySheet(Object bean) {
         this.bean = bean;
+        categoryFilter = new ArrayList<String>();
         this.hiddenShown = false;
         this.expertShown = false;
         this.expertOnly = false;
@@ -42,7 +48,8 @@ public class JXPropertySheet extends JXTreeTable {
     }
     
     private void generateModel() {
-        this.setTreeTableModel(new BeanTableModel(this,bean,stopClass));
+        this.setTreeTableModel(new BeanTableModel(this, bean, stopClass,
+                included, categoryFilter));
     }
     
     /**
@@ -140,6 +147,22 @@ public class JXPropertySheet extends JXTreeTable {
         this.expertOnly = expertOnly;
         generateModel();
         firePropertyChange ("expertOnly", new Boolean (oldExpertOnly), new Boolean (expertOnly));
+    }
+
+    public void setIncludedCategories(String ... cats) {
+        included = true;
+        for(String cat : cats) {
+            categoryFilter.add(cat);
+        }
+        generateModel();
+    }
+
+    public void setExcludedCategories(String ... cats) {
+        included = false;
+        for(String cat : cats) {
+            categoryFilter.add(cat);
+        }
+        generateModel();
     }
 
     

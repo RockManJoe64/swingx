@@ -14,17 +14,29 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author joshy
  */
 public class BeanUtils {
+    // a cache of editors so we don't have to recreate them, when they might be
+    // expensive to create
+    private static Map<Class,PropertyEditor> editorCache = new HashMap<Class,PropertyEditor>();
+    
     public static PropertyEditor getPE(PropertyDescriptor pd, Object bean) {
         PropertyEditor ed = null;
         
-        if(pd.getPropertyEditorClass() != null) {
-            ed = pd.createPropertyEditor(bean);
+        Class clzz = pd.getPropertyEditorClass();
+        if(clzz != null) {
+            if(editorCache.containsKey(clzz)) {
+                ed = editorCache.get(clzz);
+            } else {
+                ed = pd.createPropertyEditor(bean);
+                editorCache.put(clzz, ed);
+            }
         } else {
             if(pd.getPropertyType() != null) {
                 ed = PropertyEditorManager.findEditor(pd.getPropertyType());
@@ -32,6 +44,8 @@ public class BeanUtils {
         }
         return ed;
     }
+    
+    
     public static Object getPropertyValue(PropertyDescriptor pd, Object bean) {
         PropertyEditor ed = getPE(pd,bean);
         Method meth = pd.getReadMethod();
@@ -46,6 +60,8 @@ public class BeanUtils {
         }
         return null;
     }
+    
+    
     public static String calculateText(PropertyDescriptor pd, Object bean) {
         PropertyEditor ed = getPE(pd,bean);
         //u.p("ed = " + ed);
