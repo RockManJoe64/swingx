@@ -72,7 +72,6 @@ public class RectanglePainter extends AreaPainter {
     
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Shape shape = calculateShape(component, width, height);
-        System.out.println("filling with: " + getPaint());
         // background
         Paint p = getPaint();
         if(isSnapPaint()) {

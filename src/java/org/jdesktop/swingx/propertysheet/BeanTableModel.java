@@ -34,19 +34,22 @@ public class BeanTableModel extends AbstractTreeTableModel {
     }
     
     
-    public BeanTableModel(JXPropertySheet sheet, Object bean, Class stopClass) {
+    public BeanTableModel(JXPropertySheet sheet, Object bean, Class stopClass,
+            boolean included, List categoryFilter) {
         super(bean);
         this.sheet = sheet;
         this.bean = bean;
         
-        Category cat = new Category();
-        cat.name = "Other Properties";
-        cat.props = new ArrayList<PropertyDescriptor>();
-        categoryMap.put(cat.name,cat);
-        this.categories.add(cat);
+        Category catchall = new Category();
+        catchall.name = "Other Properties";
+        catchall.props = new ArrayList<PropertyDescriptor>();
+        categoryMap.put(catchall.name,catchall);
+        this.categories.add(catchall);
         
         
         try {
+            
+            // get the bean info
             d(Introspector.getBeanInfoSearchPath());
             d("looking for bean infos for class: " + bean.getClass());
             String[] paths = { "org.jdesktop.swingx.painter" };
@@ -57,8 +60,9 @@ public class BeanTableModel extends AbstractTreeTableModel {
                 info = Introspector.getBeanInfo(bean.getClass());
             }
             d("bean info = " + info);
-            PropertyDescriptor[] props2;
-            props2 = info.getPropertyDescriptors();
+            
+            // loop through all of the property descriptors
+            PropertyDescriptor[] props2 = info.getPropertyDescriptors();
             for(PropertyDescriptor p : props2) {
                 d("prop desc: " + p);
                 d("ed : " + p.getPropertyEditorClass());
@@ -68,40 +72,68 @@ public class BeanTableModel extends AbstractTreeTableModel {
                 if(p.isHidden() && !sheet.isHiddenShown()) continue;
                 if(p.isExpert() && !sheet.isExpertShown()) continue;
                 
-                // find the current category
-                String catname = null;
-                Enumeration en = p.attributeNames();
-                while(en.hasMoreElements()) {
-                    String att = (String) en.nextElement();
-                    if("category".equals(att)) {
-                        catname = (String) p.getValue(att);
-                    }
-                }
                 
-                // without a category
-                if(catname == null) {
-                    props.add(p);
-                    cat.props.add(p);
-                } else { // with a category
-                    Category catg = null;
-                    // get category if already there
-                    if(categoryMap.containsKey(catname)) {
-                        catg = categoryMap.get(catname);
-                    } else { // else create a new category
-                        catg = new Category();
-                        catg.name = catname;
-                        catg.props = new ArrayList<PropertyDescriptor>();
-                        categoryMap.put(catg.name, catg);
-                        this.categories.add(catg);
+                String catname = findCategory(p);
+                if(included) {
+                    // without a category
+                    if(catname == null) {
+                        //props.add(p);
+                        //catchall.props.add(p);
+                    } else { // with a category
+                        //only add property if it's category is on the list'
+                        if(categoryFilter.contains(catname)) {
+                            Category catg = getCategory(catname);
+                            props.add(p);
+                            catg.props.add(p);
+                        }
                     }
-                    props.add(p);
-                    catg.props.add(p);
+                } else {
+                    // without a category
+                    if(catname == null) {
+                        props.add(p);
+                        catchall.props.add(p);
+                    } else { // with a category
+                        //only add property if it's category is on the list'
+                        if(!categoryFilter.contains(catname)) {
+                            Category catg = getCategory(catname);
+                            props.add(p);
+                            catg.props.add(p);
+                        }
+                    }
                 }
             }
-            
         }  catch (Exception ex) {
             u.p(ex);
         }
+    }
+    
+    private Category getCategory(final String catname) {
+        Category catg = null;
+        // get category if already there
+        if(categoryMap.containsKey(catname)) {
+            catg = categoryMap.get(catname);
+        } else { // else create a new category
+            catg = new Category();
+            catg.name = catname;
+            catg.props = new ArrayList<PropertyDescriptor>();
+            categoryMap.put(catg.name, catg);
+            this.categories.add(catg);
+        }
+        return catg;
+    }
+    
+    private String findCategory(final PropertyDescriptor p) {
+        
+        // find the current category
+        String catname = null;
+        Enumeration en = p.attributeNames();
+        while(en.hasMoreElements()) {
+            String att = (String) en.nextElement();
+            if("category".equals(att)) {
+                catname = (String) p.getValue(att);
+            }
+        }
+        return catname;
     }
     
     
@@ -167,7 +199,6 @@ public class BeanTableModel extends AbstractTreeTableModel {
         }
         if(node instanceof Category) {
             return node;
-            //return "a category name";
         }
         if(node == bean) {
             return "All Properties";
@@ -193,13 +224,13 @@ public class BeanTableModel extends AbstractTreeTableModel {
         }
         if (columnIndex == 1) {
             PropertyDescriptor prop = props.get(propIndex);
-            return prop;//.getName();
-            //return "===";
+            return prop;
         }
         return "blah";
     }
-    
+    /*
     public boolean isCellEditable(int rowIndex, int columnIndex) {
+        u.p("is cell editiable");
         if(columnIndex == 0) {
             return false;
         }
@@ -209,7 +240,7 @@ public class BeanTableModel extends AbstractTreeTableModel {
         if(ed == null) return false;
         if(ed.isPaintable()) return true;
         return true;
-    }
+    }*/
     
     public void setValueAt(Object newValue, Object node, int column) {
         // you can't set the root bean or categories
