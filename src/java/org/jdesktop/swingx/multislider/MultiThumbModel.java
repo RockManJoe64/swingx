@@ -35,7 +35,7 @@ public interface MultiThumbModel<E> extends Iterable<Thumb<E>> {
     public float getMaximumValue();
     public void setMaximumValue(float maximumValue);
     
-    public void addThumb(float value, E obj);
+    public int addThumb(float value, E obj);
     public void insertThumb(float value, E obj, int index);
     public void removeThumb(int index);
     public int getThumbCount();
