@@ -25,7 +25,7 @@ public class RectanglePainterBeanInfo extends AbstractPainterBeanInfo {
     
     protected void initialize() {
         super.initialize();
-        setPropertyEditor(Paint2PropertyEditor.class, "fillPaint", "borderPaint");
+        setPropertyEditor(Paint2PropertyEditor.class, "paint", "borderPaint");
         setPropertyEditor(InsetsEditor.class,"insets");
         setHidden(true,"clip","fractionalMetrics","rendering","interpolation","textAntialiasing",
                 "dithering","colorRendering");
