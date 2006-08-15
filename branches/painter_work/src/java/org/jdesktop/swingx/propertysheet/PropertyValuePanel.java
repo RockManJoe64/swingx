@@ -12,6 +12,7 @@ package org.jdesktop.swingx.propertysheet;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,15 +33,20 @@ public class PropertyValuePanel extends JPanel {
     
     private JLabel paintableEditor;
     private JComponent editor;
-    public PropertyEditor ed;
-    public CustomEditorButton customEditorButton;
+    private PropertyEditor propertyEditor;
+    private CustomEditorButton customEditorButton;
     
     /** Creates a new instance of PropertyValuePanel */
     public PropertyValuePanel() {
         customEditorButton = new CustomEditorButton();
+        customEditorButton.setFocusable(false);
+        customEditorButton.setFocusPainted(false);
+        customEditorButton.setMargin(new Insets(0,0,0,0));
         paintableEditor = new JLabel() {
             public void paintComponent(Graphics g) {
-                ed.paintValue(g, new Rectangle(0, 0, getWidth(), getHeight()));
+                if(getPropertyEditor().isPaintable()) {
+                    getPropertyEditor().paintValue(g, new Rectangle(0, 0, getWidth(), getHeight()));
+                }
                 super.paintComponent(g);
             }
         };
@@ -77,14 +83,29 @@ public class PropertyValuePanel extends JPanel {
         
         public void actionPerformed(ActionEvent e) {
             if(customEditor != null) {
-                JFrame frame = new JFrame("Edit");
+                final JFrame frame = new JFrame("Edit");
                 frame.setLayout(new BorderLayout());
                 frame.add(customEditor,"Center");
-                frame.add(new JButton("Close"),"South");
+                JButton close = new JButton("Close");
+                close.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        frame.setVisible(false);
+                        frame.dispose();
+                    }
+                });
+                frame.add(close, "South");
                 frame.pack();
                 frame.setLocation(WindowUtils.getPointForCentering(frame));
                 frame.setVisible(true);
             }
         }
+    }
+
+    public PropertyEditor getPropertyEditor() {
+        return propertyEditor;
+    }
+
+    public void setPropertyEditor(PropertyEditor propertyEditor) {
+        this.propertyEditor = propertyEditor;
     }
 }

@@ -180,6 +180,11 @@ public class BeanTableModel extends AbstractTreeTableModel {
     // only the 2nd column of prop descriptors are editable
     public boolean isCellEditable(Object node, int column) {
         if(node instanceof PropertyDescriptor && column != 0) {
+            PropertyDescriptor prop = (PropertyDescriptor)node;
+            if(prop.getPropertyType() == null) return false;
+            PropertyEditor ed = BeanUtils.getPE(prop,bean);
+            if(ed == null) return false;
+            if(ed.isPaintable()) return true;
             return true;
         }
         return false;
@@ -269,11 +274,7 @@ public class BeanTableModel extends AbstractTreeTableModel {
         if(meth != null) {
             try {
                 meth.invoke(bean, ed.getValue());
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-            } catch (IllegalAccessException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }

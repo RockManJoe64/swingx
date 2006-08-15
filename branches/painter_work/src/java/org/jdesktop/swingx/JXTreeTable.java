@@ -52,6 +52,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.plaf.UIResource;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
@@ -66,6 +67,7 @@ import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableCellEditor;
 import org.jdesktop.swingx.treetable.TreeTableModel;
+import org.joshy.util.u;
 
 
 /**
@@ -116,7 +118,7 @@ public class JXTreeTable extends JXTable {
      *  {@link #isHierarchical(int) hierarchical} column.
      *  renderer extends JXTree and implements TableCellRenderer
      */
-    private TreeTableCellRenderer renderer;
+    protected TreeTableCellRenderer renderer;
 
     /**
      * Constructs a JXTreeTable using a
@@ -1602,6 +1604,7 @@ public class JXTreeTable extends JXTable {
                 dtcr.setBackgroundSelectionColor(
                     UIManager.getColor("Table.selectionBackground"));
             }
+            
         }
 
         /**
