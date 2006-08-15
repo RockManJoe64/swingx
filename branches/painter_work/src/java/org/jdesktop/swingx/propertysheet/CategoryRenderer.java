@@ -24,7 +24,7 @@ import org.jdesktop.swingx.painter.RectanglePainter;
  * @author joshy
  */
 public class CategoryRenderer extends JXLabel {
-    public static final boolean doBlue = false;
+    public static final boolean doBlue = true;
     /** Creates a new instance of CategoryRenderer */
     public CategoryRenderer() {
         Paint bg = Color.BLUE;

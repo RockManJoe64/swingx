@@ -14,6 +14,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.joshy.util.u;
@@ -44,6 +45,8 @@ public class JXPropertySheet extends JXTreeTable {
         setShowVerticalLines(true);
         setSortable(true);
         setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
         getTableHeader().setReorderingAllowed(false);
     }
     

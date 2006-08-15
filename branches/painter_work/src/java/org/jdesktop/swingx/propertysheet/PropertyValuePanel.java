@@ -17,10 +17,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.swingx.util.WindowUtils;
+import org.joshy.util.u;
 
 /**
  *
@@ -28,25 +30,40 @@ import org.jdesktop.swingx.util.WindowUtils;
  */
 public class PropertyValuePanel extends JPanel {
     
-    private JLabel customEditorLabel;
+    private JLabel paintableEditor;
+    private JComponent editor;
     public PropertyEditor ed;
     public CustomEditorButton customEditorButton;
     
     /** Creates a new instance of PropertyValuePanel */
     public PropertyValuePanel() {
         customEditorButton = new CustomEditorButton();
-        customEditorLabel = new JLabel() {
+        paintableEditor = new JLabel() {
             public void paintComponent(Graphics g) {
                 ed.paintValue(g, new Rectangle(0, 0, getWidth(), getHeight()));
                 super.paintComponent(g);
             }
         };
+        setEditorComponent(paintableEditor);
+    }
+    
+    public void setEditorComponent(JComponent comp) {
+        this.editor = comp;
+        removeAll();
         setLayout(new BorderLayout());
-        add(customEditorLabel,"Center");
+        if(editor == null) {
+            add(paintableEditor);
+        } else {
+            add(editor,"Center");
+        }
         add(customEditorButton,"East");
     }
     
-    class CustomEditorButton extends JButton implements ActionListener {
+    public void setCustomEditor(Component comp) {
+        customEditorButton.setCustomEditor(comp);
+    }
+    
+    private class CustomEditorButton extends JButton implements ActionListener {
         private Component customEditor;
         
         public CustomEditorButton() {

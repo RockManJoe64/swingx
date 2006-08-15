@@ -43,8 +43,6 @@ public class BeanTableModel extends AbstractTreeTableModel {
         Category catchall = new Category();
         catchall.name = "Other Properties";
         catchall.props = new ArrayList<PropertyDescriptor>();
-        categoryMap.put(catchall.name,catchall);
-        this.categories.add(catchall);
         
         
         try {
@@ -104,6 +102,12 @@ public class BeanTableModel extends AbstractTreeTableModel {
             }
         }  catch (Exception ex) {
             u.p(ex);
+        }
+        
+        // only use the catchall category if there is at least one property in it.
+        if(catchall.props.size() > 0) {
+            categoryMap.put(catchall.name,catchall);
+            this.categories.add(catchall);
         }
     }
     
