@@ -54,31 +54,39 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
             PropertyDescriptor prop = (PropertyDescriptor) value;
             Class type = prop.getPropertyType();
             
+            
+            // handle booleans
             if (boolean.class.equals(type)  || Boolean.class.equals(type)) {
                 Object val = BeanUtils.getPropertyValue(prop,bean);
                 JCheckBox cb = new JCheckBox("",false);
-                if(isSelected) {
-                    cb.setBackground(label.getBackground());
-                } else {
-                    cb.setOpaque(false);
-                    cb.setBackground(label.getBackground());
-                }
-                
-                return cb;
+                cb.setBackground(label.getBackground());
+                cb.setOpaque(true);
+                customEditorPanel.setEditorComponent(cb);
+                return customEditorPanel;
             }
             
             
             PropertyEditor pe = BeanUtils.getPE(prop,bean);
             
+            // handle paintable property editors
             if (pe != null && pe.isPaintable()) {
                 customEditorPanel.ed = pe;
+                customEditorPanel.setEditorComponent(null); // reset to paintable
                 this.pd = prop;
                 return customEditorPanel;
             } else {
+                // handle normal property editors
                 customEditorPanel.ed = null;
                 String text = BeanUtils.calculateText(prop, bean);
-                label.setText(text);
-                //label.setText("---");
+                JLabel label2 = new JLabel();
+                label2.setText(text);
+                label2.setBackground(label.getBackground());
+                if(!isSelected) {
+                    label2.setOpaque(false);
+                }
+                label2.setOpaque(true);
+                customEditorPanel.setEditorComponent(label2);
+                return customEditorPanel;
             }
         } else if (value instanceof Category) {
             categoryRend.setText("");
@@ -88,5 +96,5 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
         }
         return label;
     }
-        
+    
 }

@@ -11,6 +11,7 @@ import java.beans.PropertyEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -27,12 +28,10 @@ import org.joshy.util.u;
 public class PropertyValueCellEditor extends DefaultCellEditor {
     private final JXPropertySheet jXPropertySheet;
     private PropertyValuePanel customEditorPanel;
-    private DefaultCellEditor boolEd;
     
     public PropertyValueCellEditor(JXPropertySheet jXPropertySheet) {
         super(new JTextField());
         this.jXPropertySheet = jXPropertySheet;
-        boolEd = new DefaultCellEditor(new JCheckBox());
         
         customEditorPanel = new PropertyValuePanel();
         
@@ -51,28 +50,32 @@ public class PropertyValueCellEditor extends DefaultCellEditor {
         JTextField tf = (JTextField) super.getTableCellEditorComponent(table, value, isSelected, row, column);
         PropertyDescriptor pd = (PropertyDescriptor) value;
         Class type = pd.getPropertyType();
-        u.p("type = " + type);
         // use checkboxes for booleans
         
         if (boolean.class.equals(type)  || Boolean.class.equals(type)) {
-            u.p("it's a boolean");
-            return boolEd.getTableCellEditorComponent(table,value,isSelected,row,column);
+            JCheckBox cb = new JCheckBox("",false);
+            cb.setBackground(tf.getBackground());
+            cb.setOpaque(true);
+            customEditorPanel.setEditorComponent(cb);
+            return customEditorPanel;
         }
         
         PropertyEditor ed = BeanUtils.getPE(pd, jXPropertySheet.bean);
-        u.p("using prop editor: " + ed);
         if(ed != null) {
             if(ed.isPaintable()) {
                 customEditorPanel.ed = ed;
+                customEditorPanel.setEditorComponent(null);
             }
             if(ed.supportsCustomEditor()) {
-                u.p("there's a custom editor on: " + pd.getName());
-                customEditorPanel.customEditorButton.setCustomEditor(ed.getCustomEditor());
+                customEditorPanel.setEditorComponent(null);
+                customEditorPanel.setCustomEditor(ed.getCustomEditor());
                 return customEditorPanel;
             }
         }
+        //customEditorPanel.setCustomEditor(null);
         tf.setText(BeanUtils.calculateText(pd, jXPropertySheet.bean));//ed.getAsText())
-        return tf;
+        customEditorPanel.setEditorComponent(tf);
+        return customEditorPanel;
     }
     
 }
