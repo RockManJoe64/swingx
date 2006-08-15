@@ -12,6 +12,7 @@ import java.beans.PropertyEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.apache.batik.ext.awt.LinearGradientPaint;
@@ -27,7 +28,7 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
     
     private Object bean;
     //private boolean doPaint = false;
-    //private PropertyEditor ed = null;
+    //private PropertyEditor propertyEditor = null;
     private PropertyDescriptor pd = null;
     TableCellRenderer boolRend;
     private PropertyValuePanel customEditorPanel;
@@ -48,7 +49,7 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
         JXPropertySheet sheet = (JXPropertySheet) table;
         bean = sheet.bean;
         
-        customEditorPanel.ed = null;
+        customEditorPanel.setPropertyEditor(null);
         this.pd = null;
         if (value instanceof PropertyDescriptor) {
             PropertyDescriptor prop = (PropertyDescriptor) value;
@@ -57,8 +58,8 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
             
             // handle booleans
             if (boolean.class.equals(type)  || Boolean.class.equals(type)) {
-                Object val = BeanUtils.getPropertyValue(prop,bean);
-                JCheckBox cb = new JCheckBox("",false);
+                Boolean val = (Boolean)BeanUtils.getPropertyValue(prop, bean);
+                JCheckBox cb = new JCheckBox("",val.booleanValue());
                 cb.setBackground(label.getBackground());
                 cb.setOpaque(true);
                 customEditorPanel.setEditorComponent(cb);
@@ -70,13 +71,13 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
             
             // handle paintable property editors
             if (pe != null && pe.isPaintable()) {
-                customEditorPanel.ed = pe;
+                customEditorPanel.setPropertyEditor(pe);
                 customEditorPanel.setEditorComponent(null); // reset to paintable
                 this.pd = prop;
                 return customEditorPanel;
             } else {
                 // handle normal property editors
-                customEditorPanel.ed = null;
+                customEditorPanel.setPropertyEditor(null);
                 String text = BeanUtils.calculateText(prop, bean);
                 JLabel label2 = new JLabel();
                 label2.setText(text);
@@ -90,6 +91,12 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
             }
         } else if (value instanceof Category) {
             categoryRend.setText("");
+            if(isSelected) {
+                //categoryRend.setBackground(UIManager.getColor("Table.selectionBackground"));
+                categoryRend.setOpaque(false);
+            } else {
+                categoryRend.setOpaque(false);
+            }
             return categoryRend;
         } else {
             label.setText(""+value);

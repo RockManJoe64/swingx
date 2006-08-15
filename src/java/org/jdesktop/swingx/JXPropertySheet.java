@@ -1,6 +1,8 @@
 package org.jdesktop.swingx;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
@@ -15,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.joshy.util.u;
@@ -24,7 +27,7 @@ import org.jdesktop.swingx.propertysheet.*;
 public class JXPropertySheet extends JXTreeTable {
     public Object bean;
     private List<String> categoryFilter;
-
+    
     private boolean included = true;
     
     public JXPropertySheet(Object bean) {
@@ -42,12 +45,22 @@ public class JXPropertySheet extends JXTreeTable {
         //setRootVisible(true);
         setShowsRootHandles(true);
         setShowHorizontalLines(true);
-        setShowVerticalLines(true);
+        setShowVerticalLines(false);
         setSortable(true);
         setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
+        //this.setColumnMargin(2);
+        //this.setFillsViewportHeight(true);
+        this.setGridColor(new Color(240,240,255));
+        this.setIntercellSpacing(new Dimension(0,0));
+        this.setSurrendersFocusOnKeystroke(true);
         getTableHeader().setReorderingAllowed(false);
+        BasicTreeUI ui = (BasicTreeUI)this.renderer.getUI();
+        //u.p("indents = " + ui.getLeftChildIndent() + " " + ui.getRightChildIndent());
+        // space from the left of this node's parent's nodes triangle
+        ((BasicTreeUI)this.renderer.getUI()).setLeftChildIndent(0);
+        // space from the right of this node's parent's nodes triangle
+        ((BasicTreeUI)this.renderer.getUI()).setRightChildIndent(0);
     }
     
     private void generateModel() {
@@ -127,12 +140,12 @@ public class JXPropertySheet extends JXTreeTable {
         generateModel();
         firePropertyChange("stopClass", oldStopClass, stopClass);
     }
-
+    
     /**
      * Holds value of property expertOnly.
      */
     private boolean expertOnly;
-
+    
     /**
      * Getter for property expertOnly.
      * @return Value of property expertOnly.
@@ -140,7 +153,7 @@ public class JXPropertySheet extends JXTreeTable {
     public boolean isExpertOnly() {
         return this.expertOnly;
     }
-
+    
     /**
      * Setter for property expertOnly.
      * @param expertOnly New value of property expertOnly.
@@ -149,9 +162,9 @@ public class JXPropertySheet extends JXTreeTable {
         boolean oldExpertOnly = this.expertOnly;
         this.expertOnly = expertOnly;
         generateModel();
-        firePropertyChange ("expertOnly", new Boolean (oldExpertOnly), new Boolean (expertOnly));
+        firePropertyChange("expertOnly", new Boolean(oldExpertOnly), new Boolean(expertOnly));
     }
-
+    
     public void setIncludedCategories(String ... cats) {
         included = true;
         for(String cat : cats) {
@@ -159,7 +172,7 @@ public class JXPropertySheet extends JXTreeTable {
         }
         generateModel();
     }
-
+    
     public void setExcludedCategories(String ... cats) {
         included = false;
         for(String cat : cats) {
@@ -167,7 +180,7 @@ public class JXPropertySheet extends JXTreeTable {
         }
         generateModel();
     }
-
+    
     
     
 }

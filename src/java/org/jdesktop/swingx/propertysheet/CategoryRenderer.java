@@ -10,16 +10,22 @@
 package org.jdesktop.swingx.propertysheet;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Point;
+import javax.swing.BorderFactory;
+import javax.swing.JTree;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicTreeUI;
 import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.painter.RectanglePainter;
+import org.joshy.util.u;
 
 /**
  *
  *
- *http://www.walkersoftware.net/2005/09/09/tiger-trees/
  *
  * @author joshy
  */
@@ -38,8 +44,33 @@ public class CategoryRenderer extends JXLabel {
         RectanglePainter p = new RectanglePainter(0,0,0,0, 10,10, false, bg, 0, border);
         p.setSnapPaint(true);
         if(doBlue) {
-        setBackgroundPainter(p);
-        setForeground(Color.WHITE);
+            setBackgroundPainter(p);
+            setForeground(Color.WHITE);
         }
+    }
+
+    public void configure(JTree tree, boolean expanded, Category cat) {
+        // add these icons back since they will be overriden by my indent hacks
+        BasicTreeUI ui = (BasicTreeUI)tree.getUI();
+        if(expanded) {
+            setIcon(ui.getExpandedIcon());
+        } else {
+            setIcon(ui.getCollapsedIcon());
+        }
+        setText(cat.name);
+    }
+    
+    public Dimension getPreferredSize() {
+        return new Dimension(200,20);
+    }
+    
+    
+    public void paint(Graphics g) {
+        u.p("pref size = " + getPreferredSize());
+        this.setLocation(0,this.getY());
+        u.p("me = " + this);
+        u.p("parent = " + getParent());
+        u.p("parent's parent = " + getParent().getParent());
+        super.paint(g);
     }
 }

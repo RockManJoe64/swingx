@@ -16,6 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import org.joshy.util.u;
 
 /**
  *
@@ -61,6 +62,24 @@ public class BeanUtils {
         return null;
     }
     
+    public static void setPropertyFromText(PropertyDescriptor pd, Object bean, String text) {
+        PropertyEditor ed = getPE(pd,bean);
+        Method meth = pd.getWriteMethod();
+        if(meth == null) {
+            u.p("couldn't write to this bean!!!!");
+            return;
+        }
+        try {
+            u.p("converting text: " + text);
+            ed.setAsText(text);
+            Object value = ed.getValue();
+            u.p("got value: " + value);
+            meth.invoke(bean,value);
+        } catch (Exception ex) {
+            u.p("error writing back to the object");
+        }
+        
+    }
     
     public static String calculateText(PropertyDescriptor pd, Object bean) {
         PropertyEditor ed = getPE(pd,bean);
