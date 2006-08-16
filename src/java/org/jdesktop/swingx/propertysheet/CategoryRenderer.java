@@ -66,11 +66,7 @@ public class CategoryRenderer extends JXLabel {
     
     
     public void paint(Graphics g) {
-        u.p("pref size = " + getPreferredSize());
         this.setLocation(0,this.getY());
-        u.p("me = " + this);
-        u.p("parent = " + getParent());
-        u.p("parent's parent = " + getParent().getParent());
         super.paint(g);
     }
 }

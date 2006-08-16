@@ -11,6 +11,7 @@ package org.jdesktop.swingx.propertysheet;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -42,6 +43,7 @@ public class PropertyValuePanel extends JPanel {
         customEditorButton.setFocusable(false);
         customEditorButton.setFocusPainted(false);
         customEditorButton.setMargin(new Insets(0,0,0,0));
+        customEditorButton.setPreferredSize(new Dimension(20,20));
         paintableEditor = new JLabel() {
             public void paintComponent(Graphics g) {
                 if(getPropertyEditor().isPaintable()) {

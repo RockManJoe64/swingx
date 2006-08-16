@@ -77,7 +77,7 @@ public class PropertyValueCellEditor extends DefaultCellEditor {
                 return new CustomEditorTCE(this, ed, tf);
             }
             if(ed.getTags() != null) {
-                u.p("prop : " + pd.getName() + " supports tags");
+                u.p("prop : '" + pd.getName() + "' supports tags");
                 return new ComboBoxTCE(this, pd, ed, jXPropertySheet.bean, tf);
             }
         }
@@ -92,6 +92,7 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
     private JComboBox cb;
     private PropertyEditor ed;
     private PropertyDescriptor pd;
+    
     public ComboBoxTCE(PropertyValueCellEditor fpvce, PropertyDescriptor pd, PropertyEditor ed, Object bean, JComponent prototype) {
         this.pvce = fpvce;
         String[] vals = ed.getTags();
@@ -100,6 +101,7 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
         this.pd = pd;
         this.bean = bean;
         setEditorComponent(cb);
+        pvce.addCellEditorListener(this);
     }
     
     public void editingStopped(ChangeEvent e) {
@@ -111,6 +113,7 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
     
     
     public void editingCanceled(ChangeEvent e) {
+        u.p("editing canceled");
         cleanup();
     }
     
