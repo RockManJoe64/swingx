@@ -258,6 +258,8 @@ public class BeanTableModel extends AbstractTreeTableModel {
         if(newValue == bean) return;
         if(newValue instanceof Category) return;
         
+        // don't call this anymore because the editors will set the value on
+        // the bean directly, so we don't need to set it here any more.
         //setValueAt(newValue, props.indexOf(node), column);
     }
     
