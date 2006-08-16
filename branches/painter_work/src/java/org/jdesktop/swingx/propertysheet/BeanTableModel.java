@@ -182,7 +182,9 @@ public class BeanTableModel extends AbstractTreeTableModel {
         if(node instanceof PropertyDescriptor && column != 0) {
             PropertyDescriptor prop = (PropertyDescriptor)node;
             if(prop.getPropertyType() == null) return false;
+            if(prop.getWriteMethod() == null) return false;
             PropertyEditor ed = BeanUtils.getPE(prop,bean);
+            u.p("returned editor: " + ed);
             if(ed == null) return false;
             if(ed.isPaintable()) return true;
             return true;
@@ -256,14 +258,16 @@ public class BeanTableModel extends AbstractTreeTableModel {
         if(newValue == bean) return;
         if(newValue instanceof Category) return;
         
-        setValueAt(newValue, props.indexOf(node), column);
+        //setValueAt(newValue, props.indexOf(node), column);
     }
     
     public void setValueAt(Object newValue, int rowIndex, int columnIndex) {
         if(columnIndex != 1) return;
-        
+        u.p("setting " + newValue + " at " + rowIndex + "," + columnIndex);
         PropertyDescriptor prop = props.get(rowIndex);
+        u.p("prop = " + prop.getName());
         PropertyEditor ed = BeanUtils.getPE(prop, bean);
+        u.p("ed = " + ed);
         try {
             ed.setAsText((String)newValue);
         } catch (IllegalArgumentException arg) {
@@ -273,6 +277,7 @@ public class BeanTableModel extends AbstractTreeTableModel {
         Method meth = prop.getWriteMethod();
         if(meth != null) {
             try {
+                System.out.println("invoking: " + ed.getValue() + " on " + meth.getName());
                 meth.invoke(bean, ed.getValue());
             } catch (Exception ex) {
                 ex.printStackTrace();

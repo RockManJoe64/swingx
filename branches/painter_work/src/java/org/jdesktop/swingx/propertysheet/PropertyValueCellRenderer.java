@@ -27,16 +27,14 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
     private final JXPropertySheet jXPropertySheet;
     
     private Object bean;
-    //private boolean doPaint = false;
-    //private PropertyEditor propertyEditor = null;
     private PropertyDescriptor pd = null;
-    TableCellRenderer boolRend;
+    //TableCellRenderer boolRend;
     private PropertyValuePanel customEditorPanel;
     private JXLabel categoryRend;
     
     public PropertyValueCellRenderer(JXPropertySheet jXPropertySheet) {
         this.jXPropertySheet = jXPropertySheet;
-        boolRend = this.jXPropertySheet.getDefaultRenderer(Boolean.class);
+        //boolRend = this.jXPropertySheet.getDefaultRenderer(Boolean.class);
         customEditorPanel = new PropertyValuePanel();
         categoryRend = new CategoryRenderer();
     }
