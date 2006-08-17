@@ -17,6 +17,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.batik.ext.awt.MultipleGradientPaint;
 import org.jdesktop.swingx.JXGradientChooser;
 import org.jdesktop.swingx.color.ColorUtil;
+import org.jdesktop.swingx.color.EyeDropperColorChooserPanel;
 
 /**
  *
@@ -32,6 +33,7 @@ public class PaintPicker extends javax.swing.JPanel {
         
         // set up the color picker
         lastPickerUsed = colorPicker;
+        colorPicker.addChooserPanel(new EyeDropperColorChooserPanel());
         ColorListener colorListener = new ColorListener();
         colorPicker.getSelectionModel().addChangeListener(colorListener);
         alphaSlider.addChangeListener(colorListener);
