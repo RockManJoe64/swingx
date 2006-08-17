@@ -143,8 +143,10 @@ public class JXColorSelectionButton extends JButton {
     }
 
     public JColorChooser getChooser() {
+        System.out.println("jx color selection button");
         if(chooser == null) {
             chooser = new JColorChooser();
+            chooser.addChooserPanel(new EyeDropperColorChooserPanel());
         }
         return chooser;
     }

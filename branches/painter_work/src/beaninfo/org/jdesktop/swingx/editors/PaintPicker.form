@@ -46,13 +46,13 @@
                       <Component id="alphaSlider" pref="551" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="colorPicker" alignment="0" pref="596" max="32767" attributes="0"/>
+                  <Component id="colorPicker" alignment="0" pref="611" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="colorPicker" pref="404" max="32767" attributes="0"/>
+                      <Component id="colorPicker" pref="371" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="alphaSlider" linkSize="1" min="-2" max="-2" attributes="0"/>
