@@ -23,6 +23,7 @@ package org.jdesktop.swingx.editors;
 
 import java.awt.geom.Point2D;
 import java.beans.PropertyEditorSupport;
+import org.joshy.util.u;
 
 /**
  *
@@ -44,51 +45,14 @@ public class Point2DPropertyEditor extends PropertyEditorSupport {
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        //the text could be in many different formats. All of the supported formats are as follows:
-        //(where x and y are doubles of some form)
-        //[x,y]
-        //[x y]
-        //x,y]
-        //[x,y
-        //[ x , y ] or any other arbitrary whitespace
-        // x , y ] or any other arbitrary whitespace
-        //[ x , y  or any other arbitrary whitespace
-        //x,y
-        // x , y (or any other arbitrary whitespace)
-        //x y
-        // (empty space)
-        //null
-        //[]
-        //[ ]
-        //any other value throws an IllegalArgumentException
 
         String originalParam = text;
-
-        if (text != null) {
-            //remove any opening or closing brackets
-            text = text.replace('[', ' ');
-            text = text.replace(']', ' ');
-            text = text.replace(',', ' ');
-            //trim whitespace
-            text = text.trim();
-        }
-
-        //test for the simple case
-        if (text == null || text.equals("") || text.equals("null")) {
-            setValue(null);
-            return;
-        }
-
-        //the first sequence of characters must now be a number. So, parse it out
-        //ending at the first whitespace. Then trim and the remaining value must
-        //be the second number. If there are any problems, throw and IllegalArgumentException
         try {
-            int index = text.indexOf(' ');
-            String firstNumber = text.substring(0, index).trim();
-            String secondNumber = text.substring(index).trim();
-            Point2D.Double val = new Point2D.Double(Double.parseDouble(firstNumber), Double.parseDouble(secondNumber));
+            Point2D val = (Point2D)PropertyEditorUtil.createValueFromString(
+                    text, 2, Point2D.Double.class, double.class);
             setValue(val);
         } catch (Exception e) {
+            u.p(e);
             throw new IllegalArgumentException("The input value " + originalParam + " is not formatted correctly. Please " +
                     "try something of the form [x,y] or [x , y] or [x y]", e);
         }

@@ -44,49 +44,10 @@ public class PointPropertyEditor extends PropertyEditorSupport {
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        //the text could be in many different formats. All of the supported formats are as follows:
-        //(where x and y are doubles of some form)
-        //[x,y]
-        //[x y]
-        //x,y]
-        //[x,y
-        //[ x , y ] or any other arbitrary whitespace
-        // x , y ] or any other arbitrary whitespace
-        //[ x , y  or any other arbitrary whitespace
-        //x,y
-        // x , y (or any other arbitrary whitespace)
-        //x y
-        // (empty space)
-        //null
-        //[]
-        //[ ]
-        //any other value throws an IllegalArgumentException
-
         String originalParam = text;
-
-        if (text != null) {
-            //remove any opening or closing brackets
-            text = text.replace('[', ' ');
-            text = text.replace(']', ' ');
-            text = text.replace(',', ' ');
-            //trim whitespace
-            text = text.trim();
-        }
-
-        //test for the simple case
-        if (text == null || text.equals("") || text.equals("null")) {
-            setValue(null);
-            return;
-        }
-
-        //the first sequence of characters must now be a number. So, parse it out
-        //ending at the first whitespace. Then trim and the remaining value must
-        //be the second number. If there are any problems, throw and IllegalArgumentException
         try {
-            int index = text.indexOf(' ');
-            String firstNumber = text.substring(0, index).trim();
-            String secondNumber = text.substring(index).trim();
-            Point val = new Point(Integer.parseInt(firstNumber), Integer.parseInt(secondNumber));
+            Point val = (Point)PropertyEditorUtil.createValueFromString(
+                    text, 2, Point.class, int.class);
             setValue(val);
         } catch (Exception e) {
             throw new IllegalArgumentException("The input value " + originalParam + " is not formatted correctly. Please " +
@@ -97,37 +58,6 @@ public class PointPropertyEditor extends PropertyEditorSupport {
     public String getAsText() {
         Point point = getValue();
         return point == null ? "[]" : "[" + point.x + ", " + point.y + "]";
-    }
-
-    public static void main(String... args) {
-        test("[1,2]");
-        test("1,2]");
-        test("[1,2");
-        test("[ 1 , 2 ]");
-        test(" 1 , 2 ]");
-        
-        test("[ 1.5 , 1.2");
-        test("1.5,1.2");
-        test(" 1.5 , 1.2 ");
-        test("1.5 1.2");
-        test("");
-        test("null");
-        test("[]");
-        test("[ ]");
-        test("[1.5 1.2]");
-        
-    }
-
-    private static void test(String input) {
-        System.out.print("Input '" + input + "'");
-        try {
-            PointPropertyEditor ed = new PointPropertyEditor();
-            ed.setAsText(input);
-            Point point = ed.getValue();
-            System.out.println(" succeeded: " + point);
-        } catch (Exception e) {
-            System.out.println(" failed: " + e.getMessage());
-        }
     }
 } 
 
