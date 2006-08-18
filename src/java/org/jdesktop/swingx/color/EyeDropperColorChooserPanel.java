@@ -55,7 +55,9 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
         
         magPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                activeColor.setBackground(new Color(((MagnifyingPanel)magPanel).activeColor));
+                Color color = new Color(((MagnifyingPanel)magPanel).activeColor);
+                activeColor.setBackground(color);
+                hexColor.setText(Integer.toHexString(color.getRGB()));
             }
         });
     }
@@ -97,6 +99,7 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
         jLabel1 = new javax.swing.JLabel();
         magPanel = new MagnifyingPanel();
         activeColor = new ColorSelectionButton();
+        hexColor = new javax.swing.JTextField();
 
         eyeDropper.setText("eye");
 
@@ -116,6 +119,8 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
 
         activeColor.setPreferredSize(new java.awt.Dimension(40, 40));
 
+        hexColor.setEditable(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -128,7 +133,9 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
                     .add(layout.createSequentialGroup()
                         .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -139,17 +146,21 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
                 .add(15, 15, 15)
                 .add(eyeDropper)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
-    // Variables declaration - do not mo//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton activeColor;
     private javax.swing.JButton eyeDropper;
+    private javax.swing.JTextField hexColor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel magPanel;
     // End of variables declaration//GEN-END:variables

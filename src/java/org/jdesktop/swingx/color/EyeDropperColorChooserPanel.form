@@ -19,7 +19,10 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="magPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="activeColor" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="hexColor" min="-2" pref="104" max="-2" attributes="0"/>
+                          <Component id="activeColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
@@ -34,9 +37,13 @@
               <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
               <Component id="eyeDropper" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="magPanel" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeColor" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="1">
+                      <Component id="activeColor" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="hexColor" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -88,6 +95,11 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorSelectionButton();"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="hexColor">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
