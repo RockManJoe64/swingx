@@ -99,8 +99,7 @@ public class GlossPainter extends AbstractPainter {
         this.setPaint(paint);
         this.setPosition(position);
         
-        setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
+        setAntialiasing(Antialiasing.On);
     }
 
     /**

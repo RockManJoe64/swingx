@@ -86,9 +86,9 @@ public class PainterUtil {
      */
     
     private static Painter loadPainter(final File in, URL baseURL) throws FileNotFoundException {
-        u.p("loadPainter: " + in.getAbsolutePath() + " " + baseURL.toString());
+        //u.p("loadPainter: " + in.getAbsolutePath() + " " + baseURL.toString());
         Thread.currentThread().setContextClassLoader(PainterUtil.class.getClassLoader());
-        u.p("checking the class: " + MattePainter.class.getName());
+        //u.p("checking the class: " + MattePainter.class.getName());
         XMLDecoder dec = new XMLDecoder(new FileInputStream(in));
         
         dec.setExceptionListener(new ExceptionListener() {
@@ -98,7 +98,7 @@ public class PainterUtil {
         });
         Object obj = dec.readObject();
         setAAOn((Painter)obj);
-        u.p("returning: " + obj);
+        //u.p("returning: " + obj);
         return (Painter)obj;
     }
     
@@ -112,13 +112,14 @@ public class PainterUtil {
             }
         });
         Object obj = dec.readObject();
+        setAAOn((Painter)obj);
         u.p("object = " + obj);
         return (Painter)obj;
     }
     
     public static void setAAOn(Painter painter) {
         if(painter instanceof AbstractPainter) {
-            ((AbstractPainter)painter).setAntialiasing(RenderingHints.VALUE_ANTIALIAS_ON);
+            ((AbstractPainter)painter).setAntialiasing(AbstractPainter.Antialiasing.On);
         }
         if(painter instanceof CompoundPainter) {
             Painter[] pt = ((CompoundPainter)painter).getPainters();

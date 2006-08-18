@@ -52,13 +52,6 @@ import org.jdesktop.swingx.util.Resize;
  * @author rbair
  */
 public class ShapePainter extends PositionedPainter {
-    /**
-     * Different available fill styles. BOTH indicates that both the outline,
-     * and the fill should be painted. This is the default. FILLED indicates that
-     * the shape should be filled, but no outline painted. OUTLINE specifies that
-     * the shape should be outlined, but not filled
-     */
-    public enum Style {BOTH, FILLED, OUTLINE}
     
     /**
      * The Shape to fillPaint. If null, nothing is painted.

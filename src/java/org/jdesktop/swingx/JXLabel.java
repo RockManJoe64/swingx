@@ -12,8 +12,10 @@ package org.jdesktop.swingx;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import org.jdesktop.swingx.painter.Painter;
+import org.joshy.util.u;
 
 /**
  *
@@ -65,20 +67,20 @@ public class JXLabel extends JLabel {
             Graphics2D g2 = (Graphics2D)g.create();
             //Insets ins = this.getBorder().getBorderInsets(this);
             Insets ins = this.getInsets();
-            g2.translate(ins.left, ins.top);
+            //g2.translate(ins.left, ins.top);
             backgroundPainter.paint(g2, this, 
-                    this.getWidth()  - ins.left - ins.right,
-                    this.getHeight() - ins.top  - ins.bottom);
+                    this.getWidth(),
+                    this.getHeight());
             g2.dispose();
         }
         
         if (foregroundPainter != null) {
             Graphics2D g2 = (Graphics2D)g.create();
             Insets ins = this.getInsets();
-            g2.translate(ins.left, ins.top);
+            //g2.translate(ins.left, ins.top);
             foregroundPainter.paint(g2, this, 
-                    this.getWidth()  - ins.left - ins.right,
-                    this.getHeight() - ins.top  - ins.bottom);
+                    this.getWidth(),
+                    this.getHeight());
             g2.dispose();
         } else {
             super.paintComponent(g);
