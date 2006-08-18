@@ -6,9 +6,12 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
- 
+
 package org.jdesktop.swingx.painter;
 
+import org.jdesktop.swingx.EnumerationValue;
+import org.jdesktop.swingx.editors.EnumPropertyEditor;
+import org.jdesktop.swingx.editors.EnumerationValuePropertyEditor;
 import org.jdesktop.swingx.editors.Paint2PropertyEditor;
 import org.netbeans.beaninfo.editors.InsetsEditor;
 
@@ -27,8 +30,17 @@ public class RectanglePainterBeanInfo extends AbstractPainterBeanInfo {
         super.initialize();
         setPropertyEditor(Paint2PropertyEditor.class, "paint", "borderPaint");
         setPropertyEditor(InsetsEditor.class,"insets");
-        setHidden(true,"clip","fractionalMetrics","rendering","interpolation","textAntialiasing",
+        setPropertyEditor(StylePropertyEditor.class,"style");
+        setHidden(true,"clip","fractionalMetrics","rendering",
+                "interpolation","textAntialiasing",
                 "dithering","colorRendering");
     }
+    
+    public static final class StylePropertyEditor extends EnumPropertyEditor {
+        public StylePropertyEditor() {
+            super(RectanglePainter.Style.class);
+        }
+    }
+    
     
 }

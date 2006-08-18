@@ -17,6 +17,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
+import org.joshy.util.u;
 
 
 /**
@@ -32,6 +33,10 @@ public class RectanglePainter extends AreaPainter {
     private int roundWidth = 20;
     private int roundHeight = 20;
     private double strokeWidth = 1;
+    /**
+     * Indicates whether the shape should be filled or outlined, or both
+     */
+    private Style style = Style.BOTH;
     
     
     /** Creates a new instance of RectanglePainter */
@@ -55,6 +60,26 @@ public class RectanglePainter extends AreaPainter {
     
     
     
+    /**
+     * The shape can be filled or simply stroked (outlined), or both. By default,
+     * the shape is both filled and stroked. This property specifies the strategy to
+     * use.
+     *
+     * @param s the Style to use. If null, Style.BOTH is used
+     */
+    public void setStyle(Style s) {
+        Style old = getStyle();
+        this.style = s == null ? Style.BOTH : s;
+        firePropertyChange("style", old, getStyle());
+    }
+    
+    /**
+     * @return the Style used
+     */
+    public Style getStyle() {
+        return style;
+    }
+    
     protected Shape calculateShape(JComponent component, int width, int height) {
         Shape shape = new Rectangle2D.Double(insets.left, insets.top,
                 width-insets.left-insets.right,
@@ -72,7 +97,33 @@ public class RectanglePainter extends AreaPainter {
     
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Shape shape = calculateShape(component, width, height);
+        switch (getStyle()) {
+            case BOTH:
+                drawBackground(g,shape,width,height);
+                drawBorder(g,shape,width,height);
+                break;
+            case FILLED:
+                drawBackground(g,shape,width,height);
+                break;
+            case OUTLINE:
+                drawBorder(g,shape,width,height);
+                break;
+            case NONE:
+                break;
+        }
+        
         // background
+        // border
+        // leave the clip to support masking other painters
+        g.setClip(shape);
+    }
+    
+    private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
+        g.setPaint(borderPaint);
+        g.setStroke(new BasicStroke((float)strokeWidth));
+        g.draw(shape);
+    }
+    private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
         Paint p = getPaint();
         if(isSnapPaint()) {
             p = calculateSnappedPaint(p, width, height);
@@ -80,16 +131,7 @@ public class RectanglePainter extends AreaPainter {
         
         g.setPaint(p);
         g.fill(shape);
-        
-        // border
-        g.setPaint(borderPaint);
-        g.setStroke(new BasicStroke((float)strokeWidth));
-        g.draw(shape);
-        
-        // leave the clip to support masking other painters
-        g.setClip(shape);
     }
-    
     
     public Paint getBorderPaint() {
         return borderPaint;

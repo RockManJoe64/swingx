@@ -13,12 +13,14 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.awt.geom.Point2D;
 import org.apache.batik.ext.awt.LinearGradientPaint;
+import org.joshy.util.u;
 
 /**
  *
  * @author joshy
  */
 public abstract class AreaPainter extends AbstractPainter {
+
     /**
      * The paint to use
      */
