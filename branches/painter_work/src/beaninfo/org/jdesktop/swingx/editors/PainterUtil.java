@@ -43,6 +43,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.imageio.ImageIO;
@@ -97,7 +99,7 @@ public class PainterUtil {
             }
         });
         Object obj = dec.readObject();
-        setAAOn((Painter)obj);
+        //setAAOn((Painter)obj);
         //u.p("returning: " + obj);
         return (Painter)obj;
     }
@@ -112,7 +114,7 @@ public class PainterUtil {
             }
         });
         Object obj = dec.readObject();
-        setAAOn((Painter)obj);
+        //setAAOn((Painter)obj);
         u.p("object = " + obj);
         return (Painter)obj;
     }
@@ -130,17 +132,20 @@ public class PainterUtil {
     }
     
     static public void savePainterToFile(Painter compoundPainter, File file) throws IOException {
- 	//System.setErr(null);
+        //System.setErr(null);
         u.p("writing out to: " + file.getCanonicalPath());
         setTransient(ImagePainter.class, "image");
         //setTransient(CompoundPainter.class,"antialiasing");
-        setTransient(AbstractPainter.class,"antialiasing");
-        setTransient(AbstractPainter.class,"renderingHints");
+        //setTransient(AbstractPainter.class,"antialiasing");
+        //setTransient(AbstractPainter.class,"renderingHints");
         //setPropertyDelegate();
         
         XMLEncoder e = new XMLEncoder(new FileOutputStream(file));
         //e.setPersistenceDelegate(AbstractPainter.class, new AbstractPainterDelegate());
         //e.setPersistenceDelegate(RenderingHints.class, new RenderingHintsDelegate());
+        e.setPersistenceDelegate(AbstractPainter.Antialiasing.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(AbstractPainter.Interpolation.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(AbstractPainter.FractionalMetrics.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(GradientPaint.class, new GradientPaintDelegate());
         e.setPersistenceDelegate(Arc2D.Float.class, new Arc2DDelegate());
         e.setPersistenceDelegate(Arc2D.Double.class, new Arc2DDelegate());
@@ -187,7 +192,30 @@ public class PainterUtil {
         }
     }
     
-    
+    static class TypeSafeEnumPersistenceDelegate extends PersistenceDelegate {
+        protected boolean mutatesTo( Object oldInstance, Object newInstance ) {
+            return oldInstance == newInstance;
+        }
+        
+        protected Expression instantiate( Object oldInstance, Encoder out ) {
+            Class type = oldInstance.getClass();
+            if ( !Modifier.isPublic( type.getModifiers() ) )
+                throw new IllegalArgumentException( "Could not instantiate instance of non-public class: " + oldInstance );
+            
+            for ( Field field : type.getFields() ) {
+                int mod = field.getModifiers();
+                if ( Modifier.isPublic( mod ) && Modifier.isStatic( mod ) && Modifier.isFinal( mod ) && ( type == field.getDeclaringClass() ) ) {
+                    try {
+                        if ( oldInstance == field.get( null ) )
+                            return new Expression( oldInstance, field, "get", new Object[]{null} );
+                    } catch ( IllegalAccessException exception ) {
+                        throw new IllegalArgumentException( "Could not get value of the field: " + field, exception );
+                    }
+                }
+            }
+            throw new IllegalArgumentException( "Could not instantiate value: " + oldInstance );
+        }
+    }
     public static final class RenderingHintsDelegate extends PersistenceDelegate {
         protected Expression instantiate(Object oldInstance, Encoder out) {
             //u.p("rh inst");
@@ -248,7 +276,7 @@ public class PainterUtil {
             ((JXButton)comp).setForegroundPainter(painter);
         }
     }
-
+    
     public static Painter getFGP(JComponent comp) {
         if(comp instanceof JXPanel) {
             return ((JXPanel)comp).getForegroundPainter();
@@ -261,7 +289,7 @@ public class PainterUtil {
         }
         return null;
     }
-
+    
     public static Painter getBGP(JComponent comp) {
         if(comp instanceof JXPanel) {
             return ((JXPanel)comp).getBackgroundPainter();
