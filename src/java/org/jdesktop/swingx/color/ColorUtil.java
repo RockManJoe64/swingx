@@ -193,4 +193,14 @@ public class ColorUtil {
                     null);
     }
 
+    public static Color setSaturation(Color color, float saturation) {
+        int alpha = color.getAlpha();
+        
+        float[] cols = Color.RGBtoHSB(color.getRed(),color.getGreen(),color.getBlue(),null);
+        cols[1] = saturation;
+        Color c2 = color.getHSBColor(cols[0],cols[1],cols[2]);
+        
+        return setAlpha(c2,alpha);
+    }
+
 }
