@@ -9,10 +9,12 @@ package org.jdesktop.swingx.color;
 import colorzoo.swing.ColorSelectionButton;
 import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -38,6 +40,8 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     public EyeDropperColorChooserPanel() {
         initComponents();
         MouseInputAdapter mia = new MouseInputAdapter() {
+            public void mousePressed(MouseEvent evt) {
+            }
             public void mouseDragged(MouseEvent evt) {
                 Point pt = evt.getPoint();
                 SwingUtilities.convertPointToScreen(pt,evt.getComponent());
@@ -45,13 +49,18 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
             }
             public void mouseReleased(MouseEvent evt) {
                 Color newColor = new Color(((MagnifyingPanel)magPanel).activeColor);
-                //firePropertyChange("selectedColor",oldColor,newColor);
                 oldColor = newColor;
-                getColorSelectionModel().setSelectedColor(oldColor);//(Color)evt.getNewValue());
+                getColorSelectionModel().setSelectedColor(oldColor);
             }
         };
         eyeDropper.addMouseListener(mia);
         eyeDropper.addMouseMotionListener(mia);
+        try {
+            eyeDropper.setIcon(new ImageIcon(getClass().getResource("mag.png")));
+            eyeDropper.setText("");
+        } catch (Exception ex) {
+            
+        }
         
         magPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -96,14 +105,12 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         eyeDropper = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
         magPanel = new MagnifyingPanel();
         activeColor = new ColorSelectionButton();
         hexColor = new javax.swing.JTextField();
+        jTextArea1 = new javax.swing.JTextArea();
 
         eyeDropper.setText("eye");
-
-        jLabel1.setText("Click and drag the 'eye' button to select a color from the screen.");
 
         magPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         org.jdesktop.layout.GroupLayout magPanelLayout = new org.jdesktop.layout.GroupLayout(magPanel);
@@ -121,6 +128,14 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
 
         hexColor.setEditable(false);
 
+        jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
+        jTextArea1.setLineWrap(true);
+        jTextArea1.setRows(5);
+        jTextArea1.setText("Drag the magnifying glass to select a color from the screen.");
+        jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setOpaque(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -129,29 +144,30 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(eyeDropper)
-                    .add(jLabel1)
-                    .add(layout.createSequentialGroup()
-                        .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jTextArea1, 0, 0, Short.MAX_VALUE)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .add(15, 15, 15)
+                .add(jTextArea1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(eyeDropper)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
                         .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -161,24 +177,24 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     private javax.swing.JButton activeColor;
     private javax.swing.JButton eyeDropper;
     private javax.swing.JTextField hexColor;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel magPanel;
     // End of variables declaration//GEN-END:variables
     
     public void updateChooser() {
     }
-
+    
     protected void buildChooser() {
     }
-
+    
     public String getDisplayName() {
         return "Cool Chooser";
     }
-
+    
     public Icon getSmallDisplayIcon() {
         return new ImageIcon();
     }
-
+    
     public Icon getLargeDisplayIcon() {
         return new ImageIcon();
     }
