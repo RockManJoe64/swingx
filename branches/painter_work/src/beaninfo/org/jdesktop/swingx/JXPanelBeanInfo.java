@@ -36,6 +36,6 @@ public class JXPanelBeanInfo extends BeanInfoSupport {
     protected void initialize() {
         setPreferred(true, "opaque", "alpha", "inheritAlpha", "backgroundPainter");
         setHidden(true, "drawGradient", "gradientPaint");
-        setPropertyEditor(Painter2PropertyEditor.class, "backgroundPainter","foregroundPainter");
+        //setPropertyEditor(Painter2PropertyEditor.class, "backgroundPainter","foregroundPainter");
     }
 }

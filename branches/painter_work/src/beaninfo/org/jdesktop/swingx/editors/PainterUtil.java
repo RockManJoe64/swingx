@@ -60,6 +60,8 @@ import org.jdesktop.swingx.painter.ImagePainter;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.editors.PainterPropertyEditor.*;
+import org.jdesktop.swingx.painter.PositionedPainter;
+import org.jdesktop.swingx.painter.RectanglePainter;
 import org.joshy.util.u;
 
 /**
@@ -141,11 +143,18 @@ public class PainterUtil {
         //setPropertyDelegate();
         
         XMLEncoder e = new XMLEncoder(new FileOutputStream(file));
-        //e.setPersistenceDelegate(AbstractPainter.class, new AbstractPainterDelegate());
-        //e.setPersistenceDelegate(RenderingHints.class, new RenderingHintsDelegate());
+        
+        // serialize the enums
         e.setPersistenceDelegate(AbstractPainter.Antialiasing.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(AbstractPainter.Interpolation.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(AbstractPainter.FractionalMetrics.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(RectanglePainter.Style.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(PositionedPainter.HorizontalAlignment.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(PositionedPainter.VerticalAlignment.class, new TypeSafeEnumPersistenceDelegate());
+        
+        
+        e.setPersistenceDelegate(AbstractPainter.class, new AbstractPainterDelegate());
+        e.setPersistenceDelegate(RenderingHints.class, new RenderingHintsDelegate());
         e.setPersistenceDelegate(GradientPaint.class, new GradientPaintDelegate());
         e.setPersistenceDelegate(Arc2D.Float.class, new Arc2DDelegate());
         e.setPersistenceDelegate(Arc2D.Double.class, new Arc2DDelegate());
