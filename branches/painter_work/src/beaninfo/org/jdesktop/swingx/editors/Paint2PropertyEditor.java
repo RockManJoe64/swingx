@@ -47,7 +47,6 @@ public class Paint2PropertyEditor extends PropertyEditorSupport {
     }
 
     public void setValue(Object object) {
-        //System.out.println("set value called : " + object);
         paint = (Paint)object;
         picker.setPaint(paint);
         super.setValue(object);
