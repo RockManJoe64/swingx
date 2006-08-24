@@ -31,9 +31,6 @@ public class RectanglePainterBeanInfo extends AbstractPainterBeanInfo {
         setPropertyEditor(Paint2PropertyEditor.class, "paint", "borderPaint");
         setPropertyEditor(InsetsEditor.class,"insets");
         setPropertyEditor(StylePropertyEditor.class,"style");
-        setHidden(true,"clip","fractionalMetrics","rendering",
-                "interpolation","textAntialiasing",
-                "dithering","colorRendering");
     }
     
     public static final class StylePropertyEditor extends EnumPropertyEditor {

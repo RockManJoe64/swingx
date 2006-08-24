@@ -38,6 +38,6 @@ public class JXLabelBeanInfo extends BeanInfoSupport {
     protected void initialize() {
         setPreferred(true, "backgroundPainter","foregroundPainter");
         //setHidden(true, "drawGradient", "gradientPaint");
-        setPropertyEditor(Painter2PropertyEditor.class, "backgroundPainter","foregroundPainter");
+        //setPropertyEditor(Painter2PropertyEditor.class, "backgroundPainter","foregroundPainter");
     }
 }

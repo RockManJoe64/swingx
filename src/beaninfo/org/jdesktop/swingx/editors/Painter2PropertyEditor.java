@@ -33,7 +33,7 @@ public class Painter2PropertyEditor extends PropertyEditorSupport {
     JFileChooser picker;
     
     void log(String str) {
-        JOptionPane.showMessageDialog(picker,str);
+        //JOptionPane.showMessageDialog(picker,str);
         u.p(str);
     }
     /** Creates a new instance of Painter2PropertyEditor */
