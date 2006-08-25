@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
@@ -23,17 +25,17 @@ import javax.swing.JTextField;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import org.jdesktop.swingx.JXPropertySheet;
+import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.util.WindowUtils;
 import org.joshy.util.u;
 
 
 public class PropertyValueCellEditor extends DefaultCellEditor {
-    private final JXPropertySheet jXPropertySheet;
+    private final BeanProvider jXPropertySheet;
     private PropertyValuePanel customEditorPanel;
-    private JTextField editorTextField;
     private PropertyDescriptor pd;
     private Object bean;
-
+    
     //override to enable single click editing
     public boolean isCellEditable(EventObject evt) {
         if(evt instanceof MouseEvent) {
@@ -44,29 +46,28 @@ public class PropertyValueCellEditor extends DefaultCellEditor {
         return super.isCellEditable(evt);
     }
     
-
-    public PropertyValueCellEditor(JXPropertySheet jXPropertySheet) {
+    
+    public PropertyValueCellEditor(BeanProvider jXPropertySheet) {
         super(new JTextField());
         this.jXPropertySheet = jXPropertySheet;
-        editorTextField = new JTextField();
-        
         customEditorPanel = new PropertyValuePanel();
     }
     
     
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        u.p("creatying an editor");
+        // u.p("creatying an editor");
         JComponent tf = (JComponent) super.getTableCellEditorComponent(table, value, isSelected, row, column);
         pd = (PropertyDescriptor) value;
         Class type = pd.getPropertyType();
         
         // use checkboxes for booleans
         if (boolean.class.equals(type)  || Boolean.class.equals(type)) {
-            return new BooleanTCE(this, pd, jXPropertySheet.bean, tf);
+            return new BooleanTCE(this, pd, jXPropertySheet.getBean(), tf,
+                    (JXPropertySheet2)jXPropertySheet);
         }
         
         
-        PropertyEditor ed = BeanUtils.getPE(pd, jXPropertySheet.bean);
+        PropertyEditor ed = BeanUtils.getPE(pd, jXPropertySheet.getBean());
         // handle paintable PEs and PEs with custom editors
         if(ed != null) {
             if(ed.isPaintable()) {
@@ -74,15 +75,19 @@ public class PropertyValueCellEditor extends DefaultCellEditor {
                 customEditorPanel.setEditorComponent(null);
             }
             if(ed.supportsCustomEditor()) {
-                return new CustomEditorTCE(this, ed, tf);
+//                u.p("using a custom editor for: " + pd.getName());
+                return new CustomEditorTCE(this, pd, ed, jXPropertySheet.getBean(), tf,
+                        (JXPropertySheet2)jXPropertySheet);
             }
             if(ed.getTags() != null) {
-                u.p("prop : '" + pd.getName() + "' supports tags");
-                return new ComboBoxTCE(this, pd, ed, jXPropertySheet.bean, tf);
+//                u.p("prop : '" + pd.getName() + "' supports tags");
+                return new ComboBoxTCE(this, pd, ed, jXPropertySheet.getBean(), tf,
+                        (JXPropertySheet2)jXPropertySheet);
             }
         }
         
-        return new PropertyEditorTCE(this, pd, jXPropertySheet.bean, tf);
+        return new PropertyEditorTCE(this, pd, jXPropertySheet.getBean(), tf,
+                (JXPropertySheet2)jXPropertySheet);
     }
 }
 
@@ -92,9 +97,13 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
     private JComboBox cb;
     private PropertyEditor ed;
     private PropertyDescriptor pd;
-    
-    public ComboBoxTCE(PropertyValueCellEditor fpvce, PropertyDescriptor pd, PropertyEditor ed, Object bean, JComponent prototype) {
+    private JXPropertySheet2 sheet;
+    public ComboBoxTCE(PropertyValueCellEditor fpvce,
+            PropertyDescriptor pd, PropertyEditor ed,
+            Object bean, JComponent prototype,
+            final JXPropertySheet2 sheet) {
         this.pvce = fpvce;
+        this.sheet = sheet;
         String[] vals = ed.getTags();
         cb = new JComboBox(vals);
         this.ed = ed;
@@ -102,18 +111,38 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
         this.bean = bean;
         setEditorComponent(cb);
         pvce.addCellEditorListener(this);
+        u.p("creating a combo box editor");
+        cb.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent focusEvent) {
+            }
+            public void focusLost(FocusEvent focusEvent) {
+//                u.p("lost");
+                cleanup();
+            }
+        });
+        cb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+//                u.p("action event");
+                setBeanValue();
+            }
+        });
     }
     
-    public void editingStopped(ChangeEvent e) {
-        u.p("editing stopped");
+    private void setBeanValue() {
         String value = (String)cb.getSelectedItem();
         BeanUtils.setPropertyFromText(pd, bean, value);
-        cleanup();
+        sheet.fireChangeEvent();
     }
     
+    // i don't think this is ever called
+    public void editingStopped(ChangeEvent e) {
+        setBeanValue();
+        cleanup();
+        u.p("editing stopped");
+    }
     
+    // or this!!!
     public void editingCanceled(ChangeEvent e) {
-        u.p("editing canceled");
         cleanup();
     }
     
@@ -129,9 +158,19 @@ class BooleanTCE extends PropertyValuePanel implements CellEditorListener {
     private PropertyDescriptor pd;
     private Object bean;
     private PropertyValueCellEditor pvce;
-    public BooleanTCE(PropertyValueCellEditor fpvce, PropertyDescriptor pd, Object bean, JComponent prototype) {
+    private JXPropertySheet2 sheet;
+    public BooleanTCE(PropertyValueCellEditor fpvce,
+            PropertyDescriptor pd, Object bean, JComponent prototype,
+            final JXPropertySheet2 sheet) {
         this.pvce = fpvce;
+        this.sheet = sheet;
         cb = new JCheckBox("",false);
+        Object value = BeanUtils.getPropertyValue(pd,bean);
+//        u.p("value = " + value);
+        if(value instanceof Boolean) {
+            cb.setSelected(((Boolean)value).booleanValue());
+//            u.p("setting cb to: " + cb.isSelected());
+        }
         cb.setOpaque(true);
         //cb.setForeground(prototype.getForeground());
         cb.setBackground(prototype.getBackground());
@@ -139,16 +178,27 @@ class BooleanTCE extends PropertyValuePanel implements CellEditorListener {
         this.bean = bean;
         setEditorComponent(cb);
         pvce.addCellEditorListener(this);
+        cb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+//                u.p("action listener for boolean tce");
+                setBeanValue();
+            }
+        });
     }
     
     public void editingCanceled(ChangeEvent changeEvent) {
         cleanup();
     }
     
-    public void editingStopped(ChangeEvent changeEvent) {
-        u.p("editing stopped");
+    private void setBeanValue() {
         String text = Boolean.toString(cb.isSelected());
         BeanUtils.setPropertyFromText(pd, bean, text);
+        sheet.fireChangeEvent();
+    }
+    
+    public void editingStopped(ChangeEvent changeEvent) {
+//        u.p("editing stopped on boolean tce");
+        setBeanValue();
         cleanup();
     }
     private void cleanup() {
@@ -168,7 +218,8 @@ class PropertyEditorTCE extends PropertyValuePanel {
     private Object bean;
     
     public PropertyEditorTCE(final PropertyValueCellEditor fpvce,
-            final PropertyDescriptor fpd, final Object fbean, JComponent prototype) {
+            final PropertyDescriptor fpd, final Object fbean, JComponent prototype,
+            final JXPropertySheet2 sheet) {
         this.pvce = fpvce;
         this.pd = fpd;
         this.bean = fbean;
@@ -178,16 +229,14 @@ class PropertyEditorTCE extends PropertyValuePanel {
         setEditorComponent(editorTextField);
         pvce.addCellEditorListener(new CellEditorListener() {
             public void editingCanceled(ChangeEvent changeEvent) {
-                u.p("editing canceled");
                 cleanup();
             }
             public void editingStopped(ChangeEvent changeEvent) {
-                u.p("editing stopped");
                 String text = editorTextField.getText();
                 //u.p("text = " + text + " bean = " + bean);
                 BeanUtils.setPropertyFromText(pd,bean,text);
                 cleanup();
-                //u.p("done === ");
+                sheet.fireChangeEvent();
             }
             private void cleanup() {
                 bean = null;
@@ -202,11 +251,24 @@ class CustomEditorTCE extends PropertyValuePanel {
     
     private PropertyValueCellEditor pvce;
     
-    public CustomEditorTCE(PropertyValueCellEditor pvce, PropertyEditor ed, JComponent prototype) {
+    public CustomEditorTCE(PropertyValueCellEditor pvce, PropertyDescriptor pd,
+            PropertyEditor ed, Object bean, JComponent prototype,
+            JXPropertySheet2 sheet) {
         this.pvce = pvce;
         this.setPropertyEditor(ed);
         setEditorComponent(null);
         setCustomEditor(ed.getCustomEditor());
+        setPropertyDescriptor(pd);
+        setBean(bean);
+        setPropertySheet(sheet);
+        pvce.addCellEditorListener(new CellEditorListener() {
+            public void editingCanceled(ChangeEvent changeEvent) {
+//                u.p("custom editor canceled");
+            }
+            public void editingStopped(ChangeEvent changeEvent) {
+//                u.p("custom editor stopped");
+            }
+        });
     }
 }
 

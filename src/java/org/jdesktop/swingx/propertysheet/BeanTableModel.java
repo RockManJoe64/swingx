@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.table.AbstractTableModel;
-import org.jdesktop.swingx.JXPropertySheet;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.CompoundPainterBeanInfo;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
@@ -22,29 +21,30 @@ import org.joshy.util.u;
 
 public class BeanTableModel extends AbstractTreeTableModel {
     public Object bean;
-    private static final boolean debug = false;
+    private static final boolean debug = true;
     private BeanInfo info;
     public List<PropertyDescriptor> props = new ArrayList<PropertyDescriptor>();
     public List<Category> categories = new ArrayList();
     public Map<String,Category> categoryMap = new HashMap<String,Category>();
-    private JXPropertySheet sheet;
     
     private static void d(Object o) {
         if(debug) u.p(o);
     }
     
     
-    public BeanTableModel(JXPropertySheet sheet, Object bean, Class stopClass,
-            boolean included, List categoryFilter) {
+    public BeanTableModel(Object bean, Class stopClass,
+            boolean included, List categoryFilter, 
+            boolean isExpertOnly, boolean isExpertShown, boolean isHiddenShown) {
         super(bean);
-        this.sheet = sheet;
         this.bean = bean;
         
         Category catchall = new Category();
         catchall.name = "Other Properties";
         catchall.props = new ArrayList<PropertyDescriptor>();
         
-        
+        if(bean == null) {
+            return;
+        }
         try {
             
             // get the bean info
@@ -64,14 +64,15 @@ public class BeanTableModel extends AbstractTreeTableModel {
             for(PropertyDescriptor p : props2) {
                 d("prop desc: " + p);
                 d("ed : " + p.getPropertyEditorClass());
-                if(sheet.isExpertOnly() && !p.isExpert()) {
+                if(isExpertOnly && !p.isExpert()) {
                     continue;
                 }
-                if(p.isHidden() && !sheet.isHiddenShown()) continue;
-                if(p.isExpert() && !sheet.isExpertShown()) continue;
+                if(p.isHidden() && !isHiddenShown) continue;
+                if(p.isExpert() && !isExpertShown) continue;
                 
                 
                 String catname = findCategory(p);
+                d("category = " + catname);
                 if(included) {
                     // without a category
                     if(catname == null) {
@@ -109,6 +110,7 @@ public class BeanTableModel extends AbstractTreeTableModel {
             categoryMap.put(catchall.name,catchall);
             this.categories.add(catchall);
         }
+        u.p("catchall = " + catchall.props.size());
     }
     
     private Category getCategory(final String catname) {

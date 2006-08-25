@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="3"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+  </SyntheticProperties>
+
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+  <SubComponents>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="Center"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="org.netbeans.swing.etable.ETable" name="eTable1">
+          <Properties>
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+              <Table columnCount="5" rowCount="20">
+                <Column editable="false" title="Title 1" type="java.lang.Object">
+                  <Data value="a"/>
+                  <Data value="a2"/>
+                  <Data value="b"/>
+                  <Data value="b3"/>
+                  <Data value="c"/>
+                  <Data value="c2"/>
+                  <Data value="d"/>
+                  <Data value="d3"/>
+                  <Data value="e"/>
+                  <Data value="e2"/>
+                  <Data value="f"/>
+                  <Data value="f2"/>
+                  <Data value="g"/>
+                  <Data value="g2"/>
+                  <Data value="h"/>
+                  <Data value="h2"/>
+                  <Data value="i"/>
+                  <Data value="i2"/>
+                  <Data value="j"/>
+                  <Data value="j2"/>
+                </Column>
+                <Column editable="false" title="Title 2" type="java.lang.Object">
+                  <Data value="x"/>
+                  <Data value="y"/>
+                  <Data value="z"/>
+                  <Data value="w"/>
+                  <Data value="m"/>
+                  <Data value="n"/>
+                  <Data value="df"/>
+                  <Data value="f"/>
+                  <Data value="mm"/>
+                  <Data value="mg"/>
+                  <Data value="q"/>
+                  <Data value="dfg"/>
+                  <Data value="dfg"/>
+                  <Data value="fg"/>
+                  <Data value="xb"/>
+                  <Data value="sdf"/>
+                  <Data value="g"/>
+                  <Data value="mn"/>
+                  <Data value="we"/>
+                  <Data value="kl"/>
+                </Column>
+                <Column editable="false" title="Title 3" type="java.lang.Object">
+                  <Data value="tttttttt"/>
+                  <Data value="ggggggggg"/>
+                  <Data value="nnnnnnnn"/>
+                  <Data value="mmmmmm"/>
+                  <Data value="kkkkkkkkkk"/>
+                  <Data value="kkkkk"/>
+                  <Data value="wwwwwwww"/>
+                  <Data value="ggggggggggggg"/>
+                  <Data value="hhhhhhhhhhhh"/>
+                  <Data value="qqqqqqqqqqq"/>
+                  <Data value="ffffffffffffff"/>
+                  <Data value="nnnnnnnnnnnn"/>
+                  <Data value="mmmmmmmmmmm"/>
+                  <Data value="qqqqqqqqq"/>
+                  <Data value="nnnnnnnnnnn"/>
+                  <Data value="asdfasdf"/>
+                  <Data value="fads"/>
+                  <Data value="asdf"/>
+                  <Data value="asdfdsafafsdfsd"/>
+                  <Data value="asdfasdfafsdasdfasd"/>
+                </Column>
+                <Column editable="false" title="Title 4" type="java.lang.Integer">
+                  <Data value="5"/>
+                  <Data value="10"/>
+                  <Data value="7"/>
+                  <Data value="1"/>
+                  <Data value="10000"/>
+                  <Data value="4"/>
+                  <Data value="17"/>
+                  <Data value="13"/>
+                  <Data value="2"/>
+                  <Data value="8"/>
+                  <Data value="23"/>
+                  <Data value="100"/>
+                  <Data value="57"/>
+                  <Data value="3"/>
+                  <Data value="123"/>
+                  <Data value="321"/>
+                  <Data value="42"/>
+                  <Data value="72"/>
+                  <Data value="88"/>
+                  <Data value="99"/>
+                </Column>
+                <Column editable="false" title="Title 5" type="java.lang.Object">
+                  <Data value="aaaaab"/>
+                  <Data value="aaaaaa"/>
+                  <Data value="aaaaaa"/>
+                  <Data value="aaaaab"/>
+                  <Data value="aaaaab"/>
+                  <Data value="aaaaab"/>
+                  <Data value="aaaaaccc"/>
+                  <Data value="aaaaac"/>
+                  <Data value="aaaaac"/>
+                  <Data value="aaaaad"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaarrrr"/>
+                  <Data value="aaaaa"/>
+                  <Data value="aaaaaaaaa"/>
+                  <Data value="aaaaa"/>
+                </Column>
+              </Table>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="jPanel1">
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="South"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+        <Property name="columns" type="int" value="0"/>
+        <Property name="rows" type="int" value="1"/>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JTextField" name="jTextField1">
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Apply filter"/>
+          </Properties>
+          <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="jCheckBox1StateChanged"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="jPanel2">
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="North"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JButton" name="jButton1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Save"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="jButton2">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Load"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>

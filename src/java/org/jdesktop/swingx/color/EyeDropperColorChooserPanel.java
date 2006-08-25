@@ -6,36 +6,61 @@
 
 package org.jdesktop.swingx.color;
 
-import colorzoo.swing.ColorSelectionButton;
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.MouseInputAdapter;
+import org.jdesktop.swingx.JXColorSelectionButton;
 
 /**
+ * <p>EyeDropperColorChooserPanel is a pluggable panel for the 
+ * {@link JColorChooser} which allows the user to grab any 
+ * color from the screen using a magnifying glass.</p>
  *
- * @author  jm158417
+ * <p>Example usage:</p>
+ * <pre><code>
+ *    public static void main(String ... args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JColorChooser chooser = new JColorChooser();
+                chooser.addChooserPanel(new EyeDropperColorChooserPanel());
+                JFrame frame = new JFrame();
+                frame.add(chooser);
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
+    }
+ * </code></pre>
+ *
+ * @author Joshua.Marinacci@sun.com
  */
 public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
-    Color oldColor;
+    private Color oldColor;
     
     /**
-     * Creates new form EyeDropperColorChooserPanel
+     * Example usage
+     */
+    public static void main(String ... args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JColorChooser chooser = new JColorChooser();
+                chooser.addChooserPanel(new EyeDropperColorChooserPanel());
+                JFrame frame = new JFrame();
+                frame.add(chooser);
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
+    }
+    
+    /**
+     * Creates new EyeDropperColorChooserPanel
      */
     public EyeDropperColorChooserPanel() {
         initComponents();
@@ -66,14 +91,15 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 Color color = new Color(((MagnifyingPanel)magPanel).activeColor);
                 activeColor.setBackground(color);
-                hexColor.setText(Integer.toHexString(color.getRGB()));
+                hexColor.setText(ColorUtil.toHexString(color).substring(1));
+                rgbColor.setText(color.getRed() +"," + color.getGreen() + "," + color.getBlue());
             }
         });
     }
     
-    class MagnifyingPanel extends JPanel {
-        Point2D point;
-        int activeColor;
+    private class MagnifyingPanel extends JPanel {
+        private Point2D point;
+        private int activeColor;
         public void setMagPoint(Point2D point) {
             this.point = point;
             repaint();
@@ -86,7 +112,7 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
                     g.drawImage(img,0,0,getWidth(),getHeight(),null);
                     int oldColor = activeColor;
                     activeColor = img.getRGB(img.getWidth()/2,img.getHeight()/2);
-                    firePropertyChange("activeColor",oldColor,activeColor);
+                    firePropertyChange("activeColor", oldColor, activeColor);
                 } catch (AWTException ex) {
                     ex.printStackTrace();
                 }
@@ -106,9 +132,12 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     private void initComponents() {
         eyeDropper = new javax.swing.JButton();
         magPanel = new MagnifyingPanel();
-        activeColor = new ColorSelectionButton();
+        activeColor = new JXColorSelectionButton();
         hexColor = new javax.swing.JTextField();
         jTextArea1 = new javax.swing.JTextArea();
+        jLabel1 = new javax.swing.JLabel();
+        rgbColor = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
 
         eyeDropper.setText("eye");
 
@@ -124,6 +153,7 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
             .add(0, 100, Short.MAX_VALUE)
         );
 
+        activeColor.setEnabled(false);
         activeColor.setPreferredSize(new java.awt.Dimension(40, 40));
 
         hexColor.setEditable(false);
@@ -136,6 +166,13 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setOpaque(false);
 
+        jLabel1.setText("#");
+
+        rgbColor.setEditable(false);
+        rgbColor.setText("255,255,255");
+
+        jLabel2.setText("RGB");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -143,32 +180,45 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(eyeDropper)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jTextArea1, 0, 0, Short.MAX_VALUE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, hexColor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, rgbColor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                            .add(activeColor, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(eyeDropper)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jTextArea1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jTextArea1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jTextArea1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 52, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(eyeDropper))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(eyeDropper)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(layout.createSequentialGroup()
-                        .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(jLabel2)
+                                    .add(rgbColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(hexColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 14, Short.MAX_VALUE)
+                        .add(activeColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(magPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -177,8 +227,11 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     private javax.swing.JButton activeColor;
     private javax.swing.JButton eyeDropper;
     private javax.swing.JTextField hexColor;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel magPanel;
+    private javax.swing.JTextField rgbColor;
     // End of variables declaration//GEN-END:variables
     
     public void updateChooser() {
@@ -187,8 +240,11 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     protected void buildChooser() {
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public String getDisplayName() {
-        return "Cool Chooser";
+        return "Grab from Screen";
     }
     
     public Icon getSmallDisplayIcon() {

@@ -21,12 +21,15 @@
 
 package org.jdesktop.swingx.painter;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -61,7 +64,7 @@ public class ShapePainter extends PositionedPainter {
      * The Stroke to use when painting. If null, the default Stroke for
      * the Graphics2D is used
      */
-    private Stroke stroke;
+    private int stroke;
     /**
      * The Paint to use when painting the shape. If null, then the component
      * background color is used
@@ -83,6 +86,10 @@ public class ShapePainter extends PositionedPainter {
      */
     public ShapePainter() {
         super();
+        this.shape = new Ellipse2D.Double(0,0,100,100);
+        this.stroke = 3;
+        this.fillPaint = Color.RED;
+        this.strokePaint = Color.BLACK;
     }
     
     /**
@@ -156,16 +163,16 @@ public class ShapePainter extends PositionedPainter {
      *
      * @param s the Stroke to fillPaint with
      */
-    public void setStroke(Stroke s) {
-        Stroke old = getStroke();
+    public void setStrokeWidth(int s) {
+        int old = getStrokeWidth();
         this.stroke = s;
-        firePropertyChange("stroke", old, getStroke());
+        firePropertyChange("strokeWidth", old, getStrokeWidth());
     }
     
     /**
      * @return the Stroke to use for painting
      */
-    public Stroke getStroke() {
+    public int getStrokeWidth() {
         return stroke;
     }
     
@@ -237,10 +244,8 @@ public class ShapePainter extends PositionedPainter {
      */
     public void paintBackground(Graphics2D g, JComponent component, int w, int h) {
         //set the stroke if it is not null
-        Stroke s = getStroke();
-        if (s != null) {
-            g.setStroke(s);
-        }
+        Stroke s = new BasicStroke(getStrokeWidth());
+        g.setStroke(s);
         
         if(getShape() != null) {
             Shape shape = getShape();
@@ -251,28 +256,51 @@ public class ShapePainter extends PositionedPainter {
             //draw/fill the shape
             switch (getStyle()) {
                 case BOTH:
-                    g.setPaint(calculateStrokePaint(component));
-                    g.draw(shape);
-                    g.setPaint(calculateFillPaint(component));
-                    g.fill(shape);
+                    drawShape(g, shape, component, w, h);
+                    fillShape(g, shape, component, w, h);
                     break;
                 case FILLED:
-                    g.setPaint(calculateFillPaint(component));
-                    g.fill(shape);
+                    fillShape(g, shape, component, w, h);
                     break;
                 case OUTLINE:
-                    g.setPaint(calculateStrokePaint(component));
-                    g.draw(shape);
+                    drawShape(g, shape, component, w, h);
                     break;
             }
+            
+            
+            g.dispose();
+            return;
         }
-        /*
-            shape = AffineTransform.getScaleInstance(
-                    width, height).createTransformedShape(shape);
-        }
-         */
-        
     }
+    
+    private void drawShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
+        g.setPaint(calculateStrokePaint(component));
+        g.draw(shape);
+    }
+    private void fillShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
+        if(shapeEffect != null) {
+            Paint pt = calculateFillPaint(component);
+            if(!(pt instanceof Color)) {
+                pt = Color.BLUE;
+            }
+            shapeEffect.apply(g, shape, w, h, (Color)pt);
+        } else {
+            g.setPaint(calculateFillPaint(component));
+            g.fill(shape);
+        }
+    }
+    
+    // shape effect stuff
+    public Shape provideShape() {
+        return getShape();
+    }
+    
+    private ShapeEffect shapeEffect;
+    public void setShapeEffect(ShapeEffect shapeEffect) {
+        this.shapeEffect = shapeEffect;
+    }
+    
+    
     
     private Paint calculateStrokePaint(JComponent component) {
         Paint p = getStrokePaint();

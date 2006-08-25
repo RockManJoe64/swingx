@@ -24,7 +24,7 @@ import org.joshy.util.u;
 import org.jdesktop.swingx.propertysheet.*;
 
 
-public class JXPropertySheet extends JXTreeTable {
+public class JXPropertySheet extends JXTreeTable implements BeanProvider {
     public Object bean;
     private List<String> categoryFilter;
     
@@ -38,9 +38,9 @@ public class JXPropertySheet extends JXTreeTable {
         this.expertOnly = false;
         setAutoCreateColumnsFromModel(true);
         generateModel();
-        setDefaultRenderer(Object.class, new PropertyValueCellRenderer(this));
-        setTreeCellRenderer(new PropertyNameTreeCellRenderer(this));
-        setDefaultEditor(Object.class, new PropertyValueCellEditor(this));
+        //setDefaultRenderer(Object.class, new PropertyValueCellRenderer(this));
+        //setTreeCellRenderer(new PropertyNameTreeCellRenderer(this));
+        //setDefaultEditor(Object.class, new PropertyValueCellEditor(this));
         
         //setRootVisible(true);
         setShowsRootHandles(true);
@@ -64,8 +64,9 @@ public class JXPropertySheet extends JXTreeTable {
     }
     
     private void generateModel() {
-        this.setTreeTableModel(new BeanTableModel(this, bean, stopClass,
-                included, categoryFilter));
+        this.setTreeTableModel(
+                new BeanTableModel(bean, stopClass,
+                included, categoryFilter, isExpertOnly(), isExpertShown(), isHiddenShown()));
     }
     
     /**
@@ -180,7 +181,9 @@ public class JXPropertySheet extends JXTreeTable {
         }
         generateModel();
     }
-    
-    
+
+    public Object getBean() {
+        return this.bean;
+    }    
     
 }

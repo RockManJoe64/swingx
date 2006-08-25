@@ -100,11 +100,12 @@ public abstract class PositionedPainter extends AbstractPainter {
         firePropertyChange("verticalStretch",old,this.verticalStretch);
     }
     
-    protected Rectangle calculatePosition(final int imgWidth, final int imgHeight, final int width, final int height) {
+    protected Rectangle calculatePosition(final int contentWidth, final int contentHeight, 
+            final int width, final int height) {
         
         Rectangle rect = new Rectangle();
-        rect.width = imgWidth;
-        rect.height = imgHeight;
+        rect.width = contentWidth;
+        rect.height = contentHeight;
         
         if(isHorizontalStretch()) {
             rect.width = width - insets.left - insets.right;
@@ -126,6 +127,7 @@ public abstract class PositionedPainter extends AbstractPainter {
         }
         if(getVertical() == VerticalAlignment.CENTER) {
             y = (height-imgHeight)/2;
+            y += insets.top;
         }
         if(getVertical() == VerticalAlignment.BOTTOM) {
             y = height-imgHeight;
@@ -142,6 +144,7 @@ public abstract class PositionedPainter extends AbstractPainter {
         }
         if(getHorizontal() == HorizontalAlignment.CENTER) {
             x = (width-imgWidth)/2;
+            x += insets.left;
         }
         if(getHorizontal() == HorizontalAlignment.RIGHT) {
             x = width-imgWidth;
