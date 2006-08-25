@@ -31,6 +31,7 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
 public class Paint2PropertyEditor extends PropertyEditorSupport {
     Paint paint = new Color(0,128,255);
     PaintPicker picker = new PaintPicker();
+
     /** Creates a new instance of Paint2PropertyEditor */
     public Paint2PropertyEditor() {
         picker.addPropertyChangeListener("paint",new PropertyChangeListener() {

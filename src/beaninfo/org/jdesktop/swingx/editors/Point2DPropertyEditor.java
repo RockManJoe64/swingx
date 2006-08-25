@@ -36,7 +36,7 @@ public class Point2DPropertyEditor extends PropertyEditorSupport {
     }
 
     public Point2D getValue() {
-        return (Point2D.Double)super.getValue();
+        return (Point2D)super.getValue();
     }
 
     public String getJavaInitializationString() {
