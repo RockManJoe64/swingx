@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -43,7 +43,7 @@ import org.joshy.util.u;
  * this TextPainter is painting, and then used to position the text. A value of
  * 0,0 would put the text in the upper lefthand corner. 0.5,0.5 would position the
  * text in the center and 1.0,1.0 would be at the lower righthand corner. For a more
- * complete defintion of the positioning algorithm see the 
+ * complete defintion of the positioning algorithm see the
  * <a href="http://www.w3.org/TR/CSS21/colors.html#propdef-background-position">CSS 2.1 spec</a>.
  *
  * @author rbair
@@ -52,6 +52,7 @@ public class TextPainter extends PositionedPainter {
     private String text = "";
     private Font font = null;
     private Paint paint;
+    private boolean snapPaint;
     
     /** Creates a new instance of TextPainter */
     public TextPainter() {
@@ -101,7 +102,17 @@ public class TextPainter extends PositionedPainter {
     public Paint getPaint() {
         return paint;
     }
-
+    
+    public boolean isSnapPaint() {
+        return snapPaint;
+    }
+    
+    public void setSnapPaint(boolean snapPaint) {
+        boolean old = this.isSnapPaint();
+        this.snapPaint = snapPaint;
+        firePropertyChange("snapPaint",old,this.snapPaint);
+    }
+    
     protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         // prep the various text attributes
         Font font = getFont();
@@ -121,23 +132,20 @@ public class TextPainter extends PositionedPainter {
             paint = component.getForeground();
         }
         
-        if (paint != null) {
-            g.setPaint(paint);
-        }
         
         
         // prep the text
         String text = getText();
         //make components take priority if(text == null || text.trim().equals("")) {
-            if(component instanceof JTextComponent) {
-                text = ((JTextComponent)component).getText();
-            }
-            if(component instanceof JLabel) {
-                text = ((JLabel)component).getText();
-            }
-            if(component instanceof AbstractButton) {
-                text = ((AbstractButton)component).getText();
-            }
+        if(component instanceof JTextComponent) {
+            text = ((JTextComponent)component).getText();
+        }
+        if(component instanceof JLabel) {
+            text = ((JLabel)component).getText();
+        }
+        if(component instanceof AbstractButton) {
+            text = ((AbstractButton)component).getText();
+        }
         //}
         
         // get the font metrics
@@ -150,12 +158,25 @@ public class TextPainter extends PositionedPainter {
         int th = metrics.getHeight();
         Rectangle res = calculatePosition(tw, th, width, height);
         
+        g.translate(res.x, res.y);
+        
+        if(isSnapPaint()) {
+            paint = AreaPainter.calculateSnappedPaint(paint, res.width, res.height);//width, height);
+        }
+        
+        if (paint != null) {
+            g.setPaint(paint);
+        }
+        
+        
+        
         //double x = location.getX() * (width  - tw);
         //double y = location.getY() * (height - th);
         //y += metrics.getAscent();
         
         //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);
         //x -= stringWidth/2;
-        g.drawString(text, res.x, res.y += metrics.getAscent());
+        g.drawString(text, 0, 0 + metrics.getAscent());
+        g.translate(-res.x,-res.y);
     }
 }

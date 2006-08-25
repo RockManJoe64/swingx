@@ -80,59 +80,6 @@ public class RectanglePainter extends AreaPainter {
         return style;
     }
     
-    protected Shape calculateShape(JComponent component, int width, int height) {
-        Shape shape = new Rectangle2D.Double(insets.left, insets.top,
-                width-insets.left-insets.right,
-                height-insets.top-insets.bottom);
-        if(rounded) {
-            shape = new RoundRectangle2D.Double(insets.left, insets.top,
-                    width-insets.left-insets.right,
-                    height-insets.top-insets.bottom,
-                    roundWidth, roundHeight);
-        }
-        return shape;
-    }
-    
-    
-    
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
-        Shape shape = calculateShape(component, width, height);
-        switch (getStyle()) {
-            case BOTH:
-                drawBackground(g,shape,width,height);
-                drawBorder(g,shape,width,height);
-                break;
-            case FILLED:
-                drawBackground(g,shape,width,height);
-                break;
-            case OUTLINE:
-                drawBorder(g,shape,width,height);
-                break;
-            case NONE:
-                break;
-        }
-        
-        // background
-        // border
-        // leave the clip to support masking other painters
-        g.setClip(shape);
-    }
-    
-    private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
-        g.setPaint(borderPaint);
-        g.setStroke(new BasicStroke((float)strokeWidth));
-        g.draw(shape);
-    }
-    private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
-        Paint p = getPaint();
-        if(isSnapPaint()) {
-            p = calculateSnappedPaint(p, width, height);
-        }
-        
-        g.setPaint(p);
-        g.fill(shape);
-    }
-    
     public Paint getBorderPaint() {
         return borderPaint;
     }
@@ -191,6 +138,62 @@ public class RectanglePainter extends AreaPainter {
         double oldStrokeWidth = getStrokeWidth();
         this.strokeWidth = strokeWidth;
         firePropertyChange("strokeWidth",oldStrokeWidth,strokeWidth);
+    }
+    
+
+    
+    /* ======== drawing code ============ */
+    protected Shape calculateShape(JComponent component, int width, int height) {
+        Shape shape = new Rectangle2D.Double(insets.left, insets.top,
+                width-insets.left-insets.right,
+                height-insets.top-insets.bottom);
+        if(rounded) {
+            shape = new RoundRectangle2D.Double(insets.left, insets.top,
+                    width-insets.left-insets.right,
+                    height-insets.top-insets.bottom,
+                    roundWidth, roundHeight);
+        }
+        return shape;
+    }
+    
+    
+    
+    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+        Shape shape = calculateShape(component, width, height);
+        switch (getStyle()) {
+            case BOTH:
+                drawBackground(g,shape,width,height);
+                drawBorder(g,shape,width,height);
+                break;
+            case FILLED:
+                drawBackground(g,shape,width,height);
+                break;
+            case OUTLINE:
+                drawBorder(g,shape,width,height);
+                break;
+            case NONE:
+                break;
+        }
+        
+        // background
+        // border
+        // leave the clip to support masking other painters
+        g.setClip(shape);
+    }
+    
+    private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
+        g.setPaint(borderPaint);
+        g.setStroke(new BasicStroke((float)strokeWidth));
+        g.draw(shape);
+    }
+    private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
+        Paint p = getPaint();
+        if(isSnapPaint()) {
+            p = calculateSnappedPaint(p, width, height);
+        }
+        
+        g.setPaint(p);
+        g.fill(shape);
     }
     
 }

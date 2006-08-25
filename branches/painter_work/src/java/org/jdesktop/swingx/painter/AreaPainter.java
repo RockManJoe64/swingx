@@ -67,7 +67,7 @@ public abstract class AreaPainter extends AbstractPainter {
         firePropertyChange("snapPaint",old,this.snapPaint);
     }
     
-    protected Paint calculateSnappedPaint(Paint p, int width, int height) {
+    public static Paint calculateSnappedPaint(Paint p, int width, int height) {
         if(p instanceof Color) {
             return p;
         }
@@ -139,14 +139,14 @@ public abstract class AreaPainter extends AbstractPainter {
         return p;
     }
     
-    private static boolean isNear(double angle, double target, double error) {
+    public static boolean isNear(double angle, double target, double error) {
         if(Math.abs(target - Math.abs(angle)) < error) {
             return true;
         }
         return false;
     }
     
-    private static double calcAngle(Point2D p1, Point2D p2) {
+    public static double calcAngle(Point2D p1, Point2D p2) {
         double x_off = p2.getX() - p1.getX();
         double y_off = p2.getY() - p1.getY();
         double angle = Math.atan(y_off / x_off);

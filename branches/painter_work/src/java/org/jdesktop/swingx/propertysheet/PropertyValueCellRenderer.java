@@ -9,43 +9,91 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPropertySheet;
+import org.jdesktop.swingx.color.ColorUtil;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.RectanglePainter;
+import org.jdesktop.swingx.propertysheet.BeanProvider;
 import org.joshy.util.u;
+import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
+import org.netbeans.swing.outline.Outline;
 
 
-public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
-    private final JXPropertySheet jXPropertySheet;
-    
+public class PropertyValueCellRenderer extends DefaultOutlineCellRenderer {
     private Object bean;
+    private BeanProvider provider;
     private PropertyDescriptor pd = null;
-    //TableCellRenderer boolRend;
     private PropertyValuePanel customEditorPanel;
-    private JXLabel categoryRend;
     
-    public PropertyValueCellRenderer(JXPropertySheet jXPropertySheet) {
-        this.jXPropertySheet = jXPropertySheet;
-        //boolRend = this.jXPropertySheet.getDefaultRenderer(Boolean.class);
+    public PropertyValueCellRenderer(BeanProvider provider) {
+        this.provider = provider;
         customEditorPanel = new PropertyValuePanel();
-        categoryRend = new CategoryRenderer();
     }
     
     
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
+        
+        this.bean = provider.getBean();
         JLabel label = (JLabel) super.getTableCellRendererComponent(table, value,
                 isSelected, hasFocus, row, column);
-        JXPropertySheet sheet = (JXPropertySheet) table;
-        bean = sheet.bean;
+        /*
+        label.setPreferredSize(new Dimension(50,50));
+        label.setMinimumSize(new Dimension(50,50));
+        label.setMaximumSize(new Dimension(50,50));
+         
+         */
+        label.setSize(50,50);
+        label.setBackground(Color.WHITE);
+        label.setForeground(Color.BLACK);
+        if(isSelected) {
+            label.setBackground(ColorUtil.setSaturation(Color.BLUE,0.2f));
+        }
+        
+        if(value instanceof Category) {
+            label.setIcon(null);
+            label.setBackground(Color.GRAY);
+            label.setForeground(Color.WHITE);
+            if(column == 0) {
+                label.setText(((Category)value).name);
+                label.setBorder(
+                        BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(Color.WHITE,0),
+                        BorderFactory.createMatteBorder(1,1,1,0,Color.DARK_GRAY)
+                        ));
+            } else {
+                label.setText("");
+                label.setBorder(BorderFactory.createMatteBorder(1,0,1,1,Color.DARK_GRAY));
+            }
+            return label;
+        }
+        
+        if(column == 0) {
+            if(value == provider.getBean()) {
+                label.setText("The Bean");
+                return label;
+            }
+            
+            
+            if(value instanceof PropertyDescriptor) {
+                PropertyDescriptor prop = (PropertyDescriptor) value;
+                PropertyEditor pe = BeanUtils.getPE(prop, provider.getBean());
+                label.setText(prop.getDisplayName());
+                label.setIcon(null);
+                return label;
+            }
+        }
         
         customEditorPanel.setPropertyEditor(null);
         this.pd = null;
@@ -87,15 +135,6 @@ public class PropertyValueCellRenderer extends DefaultTableCellRenderer {
                 customEditorPanel.setEditorComponent(label2);
                 return customEditorPanel;
             }
-        } else if (value instanceof Category) {
-            categoryRend.setText("");
-            if(isSelected) {
-                //categoryRend.setBackground(UIManager.getColor("Table.selectionBackground"));
-                categoryRend.setOpaque(false);
-            } else {
-                categoryRend.setOpaque(false);
-            }
-            return categoryRend;
         } else {
             label.setText(""+value);
         }
