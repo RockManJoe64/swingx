@@ -201,6 +201,7 @@ class BooleanTCE extends PropertyValuePanel implements CellEditorListener {
         setBeanValue();
         cleanup();
     }
+
     private void cleanup() {
         bean = null;
         pd = null;
