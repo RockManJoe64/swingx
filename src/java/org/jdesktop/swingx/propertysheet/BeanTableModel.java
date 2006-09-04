@@ -21,7 +21,7 @@ import org.joshy.util.u;
 
 public class BeanTableModel extends AbstractTreeTableModel {
     public Object bean;
-    private static final boolean debug = true;
+    private static final boolean debug = false;
     private BeanInfo info;
     public List<PropertyDescriptor> props = new ArrayList<PropertyDescriptor>();
     public List<Category> categories = new ArrayList();
@@ -110,7 +110,7 @@ public class BeanTableModel extends AbstractTreeTableModel {
             categoryMap.put(catchall.name,catchall);
             this.categories.add(catchall);
         }
-        u.p("catchall = " + catchall.props.size());
+        d("catchall = " + catchall.props.size());
     }
     
     private Category getCategory(final String catname) {

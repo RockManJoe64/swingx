@@ -68,6 +68,7 @@ public abstract class AreaPainter extends AbstractPainter {
     }
     
     public static Paint calculateSnappedPaint(Paint p, int width, int height) {
+        u.p("calcing: " + width + " " + height);
         if(p instanceof Color) {
             return p;
         }

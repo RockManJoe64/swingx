@@ -37,6 +37,9 @@ public class JXPropertySheet2 extends Outline implements BeanProvider {
     }
     public JXPropertySheet2(Object bean) {
         super();
+        expertOnly = false;
+        expertShown = true;
+        hiddenShown = false;
         buildModel(bean);
         this.getTableHeader().setReorderingAllowed(false);
         this.setDefaultRenderer(Object.class, new PropertyValueCellRenderer(this));
@@ -63,7 +66,7 @@ public class JXPropertySheet2 extends Outline implements BeanProvider {
     private void buildModel(Object bean) {
         this.bean = bean;
         final SuperBeanModel mod = new SuperBeanModel(bean, null, false,
-                new ArrayList(), false, true, isHiddenShown());
+                new ArrayList(), isExpertOnly(), isExpertShown(), isHiddenShown());
         OutlineModel model = DefaultOutlineModel.createOutlineModel(mod, mod);
         super.setModel(model);
         this.setRootVisible(false);
@@ -100,6 +103,31 @@ public class JXPropertySheet2 extends Outline implements BeanProvider {
     
     public void setBean(Object bean) {
         buildModel(bean);
+    }
+
+    /**
+     * Holds value of property expertShown.
+     */
+    private boolean expertShown;
+    
+    
+    /**
+     * Getter for property expertShown.
+     * @return Value of property expertShown.
+     */
+    public boolean isExpertShown() {
+        return this.expertShown;
+    }
+    
+    /**
+     * Setter for property expertShown.
+     * @param expertShown New value of property expertShown.
+     */
+    public void setExpertShown(boolean expertShown) {
+        boolean oldExpertShown = this.expertShown;
+        this.expertShown = expertShown;
+        buildModel(bean);
+        firePropertyChange("expertShown", new Boolean(oldExpertShown), new Boolean(expertShown));
     }
 
     /**
