@@ -9,6 +9,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.util.EventObject;
@@ -111,7 +113,7 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
         this.bean = bean;
         setEditorComponent(cb);
         pvce.addCellEditorListener(this);
-        u.p("creating a combo box editor");
+        //u.p("creating a combo box editor");
         cb.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent focusEvent) {
             }
@@ -262,12 +264,13 @@ class CustomEditorTCE extends PropertyValuePanel {
         setPropertyDescriptor(pd);
         setBean(bean);
         setPropertySheet(sheet);
+        // i don't think this is used
         pvce.addCellEditorListener(new CellEditorListener() {
             public void editingCanceled(ChangeEvent changeEvent) {
-//                u.p("custom editor canceled");
+                u.p("custom editor canceled");
             }
             public void editingStopped(ChangeEvent changeEvent) {
-//                u.p("custom editor stopped");
+                u.p("custom editor stopped");
             }
         });
     }

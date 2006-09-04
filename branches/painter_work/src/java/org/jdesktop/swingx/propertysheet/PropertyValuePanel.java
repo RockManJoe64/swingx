@@ -10,13 +10,18 @@
 package org.jdesktop.swingx.propertysheet;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.lang.reflect.Method;
@@ -26,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.swingx.JXPropertySheet2;
+import org.jdesktop.swingx.color.ColorUtil;
 import org.jdesktop.swingx.util.WindowUtils;
 import org.joshy.util.u;
 
@@ -43,7 +49,7 @@ public class PropertyValuePanel extends JPanel {
     private PropertyDescriptor propertyDescriptor;
     
     private Object bean;
-
+    
     private JXPropertySheet2 sheet;
     
     /** Creates a new instance of PropertyValuePanel */
@@ -55,6 +61,9 @@ public class PropertyValuePanel extends JPanel {
         customEditorButton.setPreferredSize(new Dimension(20,20));
         paintableEditor = new JLabel() {
             public void paintComponent(Graphics g) {
+                Paint p = ColorUtil.getCheckerPaint(Color.GRAY, Color.WHITE, 6);
+                ((Graphics2D)g).setPaint(p);
+                g.fillRect(0,0,getWidth(), getHeight());
                 if(getPropertyEditor().isPaintable()) {
                     getPropertyEditor().paintValue(g, new Rectangle(0, 0, getWidth(), getHeight()));
                 }
@@ -95,6 +104,15 @@ public class PropertyValuePanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             if(customEditor != null) {
                 final JFrame frame = new JFrame("Edit");
+                final PropertyChangeListener pcl = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+                        u.p("got a change");
+                        writeValue();
+                    }
+                };
+                if(propertyEditor != null) {
+                    propertyEditor.addPropertyChangeListener(pcl);
+                }
                 frame.setLayout(new BorderLayout());
                 frame.add(customEditor,"Center");
                 JButton close = new JButton("Close");
@@ -102,25 +120,19 @@ public class PropertyValuePanel extends JPanel {
                     public void actionPerformed(ActionEvent actionEvent) {
                         frame.setVisible(false);
                         frame.dispose();
-                        //u.p("property editor = " + propertyEditor);
-                        //u.p("new value = " + propertyEditor.getValue());
-                        //u.p("desc = " + propertyDescriptor);
-                        if(propertyDescriptor != null) {
-                            try {
-                                Method meth = propertyDescriptor.getWriteMethod();
-                                //u.p("metho = " + meth.getName());
-                                //u.p("bean = " + bean);
-                                meth.invoke(bean, propertyEditor.getValue());
-                            } catch (Exception ex) {
-                                //u.p(ex);
-                            }
-                            paintableEditor.repaint();
+                        u.p("property editor = " + propertyEditor);
+                        u.p("new value = " + propertyEditor.getValue());
+                        u.p("desc = " + propertyDescriptor);
+                        writeValue();
+                        if(propertyEditor != null) {
+                            propertyEditor.removePropertyChangeListener(pcl);
                         }
                         u.p("finishing the editing");
                         if(sheet != null) {
                             sheet.fireChangeEvent();
                         }
                     }
+                    
                 });
                 frame.add(close, "South");
                 frame.pack();
@@ -148,5 +160,19 @@ public class PropertyValuePanel extends JPanel {
     
     public void setPropertySheet(JXPropertySheet2 sheet) {
         this.sheet = sheet;
+    }
+    
+    private void writeValue() {
+        if(propertyDescriptor != null) {
+            try {
+                Method meth = propertyDescriptor.getWriteMethod();
+                u.p("metho = " + meth.getName());
+                u.p("bean = " + bean);
+                meth.invoke(bean, propertyEditor.getValue());
+            } catch (Exception ex) {
+                u.p(ex);
+            }
+            paintableEditor.repaint();
+        }
     }
 }

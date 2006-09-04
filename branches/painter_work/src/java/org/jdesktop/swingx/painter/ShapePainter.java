@@ -35,6 +35,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.util.Resize;
+import org.joshy.util.u;
 
 /**
  * <p>A Painter that paints Shapes. It uses a stroke and a fillPaint to do so. The
@@ -80,6 +81,9 @@ public class ShapePainter extends PositionedPainter {
      * Indicates whether the shape should be filled or outlined, or both
      */
     private Style style = Style.BOTH;
+    
+    
+    private boolean snapPaint;
     
     /**
      * Create a new ShapePainter
@@ -238,6 +242,15 @@ public class ShapePainter extends PositionedPainter {
         return style;
     }
     
+    public boolean isSnapPaint() {
+        return snapPaint;
+    }
+    
+    public void setSnapPaint(boolean snapPaint) {
+        boolean old = this.isSnapPaint();
+        this.snapPaint = snapPaint;
+        firePropertyChange("snapPaint",old,this.snapPaint);
+    }
     
     /**
      * @inheritDoc
@@ -251,19 +264,20 @@ public class ShapePainter extends PositionedPainter {
             Shape shape = getShape();
             Rectangle bounds = shape.getBounds();
             Rectangle rect = calculatePosition(bounds.width, bounds.height, w, h);
+            u.p("rect = " + rect);
             g = (Graphics2D)g.create();
             g.translate(rect.x, rect.y);
             //draw/fill the shape
             switch (getStyle()) {
                 case BOTH:
-                    drawShape(g, shape, component, w, h);
-                    fillShape(g, shape, component, w, h);
+                    drawShape(g, shape, component, rect.width, rect.height);
+                    fillShape(g, shape, component, rect.width, rect.height);
                     break;
                 case FILLED:
-                    fillShape(g, shape, component, w, h);
+                    fillShape(g, shape, component, rect.width, rect.height);
                     break;
                 case OUTLINE:
-                    drawShape(g, shape, component, w, h);
+                    drawShape(g, shape, component, rect.width, rect.height);
                     break;
             }
             
@@ -274,18 +288,19 @@ public class ShapePainter extends PositionedPainter {
     }
     
     private void drawShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
-        g.setPaint(calculateStrokePaint(component));
+        g.setPaint(calculateStrokePaint(component, w, h));
         g.draw(shape);
     }
+    
     private void fillShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
         if(shapeEffect != null) {
-            Paint pt = calculateFillPaint(component);
+            Paint pt = calculateFillPaint(component, w, h);
             if(!(pt instanceof Color)) {
                 pt = Color.BLUE;
             }
             shapeEffect.apply(g, shape, w, h, (Color)pt);
         } else {
-            g.setPaint(calculateFillPaint(component));
+            g.setPaint(calculateFillPaint(component, w, h));
             g.fill(shape);
         }
     }
@@ -300,19 +315,32 @@ public class ShapePainter extends PositionedPainter {
         this.shapeEffect = shapeEffect;
     }
     
+    public ShapeEffect getShapeEffect() {
+        return this.shapeEffect;
+    }
     
     
-    private Paint calculateStrokePaint(JComponent component) {
+    
+    private Paint calculateStrokePaint(JComponent component, int width, int height) {
         Paint p = getStrokePaint();
         if (p == null) {
             p = component.getForeground();
         }
+        if(isSnapPaint()) {
+            p = AreaPainter.calculateSnappedPaint(p, width, height);
+        }
         return p;
     }
     
-    private Paint calculateFillPaint(JComponent component) {
+    private Paint calculateFillPaint(JComponent component, int width, int height) {
         //set the fillPaint
         Paint p = getFillPaint();
+        if(isSnapPaint()) {
+            u.p("snapping " + width + " " + height);
+            p = AreaPainter.calculateSnappedPaint(p, width, height);
+        } else {
+            u.p("not snapping");
+        }
         if (p == null) {
             p = component.getBackground();
         }
