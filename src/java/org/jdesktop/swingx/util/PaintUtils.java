@@ -35,8 +35,12 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.Transparency;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -50,6 +54,7 @@ import javax.swing.border.Border;
  * @author Mark Davidson
  */
 public class PaintUtils {
+    private static GraphicsConfiguration configuration = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
 
     //  Utility methods. 
     private static Border defaultBorder =
@@ -177,7 +182,7 @@ public class PaintUtils {
     /**
      * @param width         the width of the new BufferedImage
      * @param height        the height of the new BufferedImage
-     * @param transparency, one of the values in the Transparency interface
+     * @param transparency  one of the values in the Transparency interface
      *
      * @return Creates and returns a BufferedImage that is "compatible" with this machines
      *         video card and subsystem with the given Transparency.
@@ -199,4 +204,19 @@ public class PaintUtils {
         g2.dispose();
         return buff;
     }
+
+    public static BufferedImage loadCompatibleImage(URL resource) throws IOException {
+        BufferedImage image = ImageIO.read(resource);
+        return toCompatibleImage(image);
+    }
+    
+    public static BufferedImage toCompatibleImage(BufferedImage image) {
+        BufferedImage compatibleImage = configuration.createCompatibleImage(image.getWidth(),
+                image.getHeight(), Transparency.TRANSLUCENT);
+        Graphics g = compatibleImage.getGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return compatibleImage;
+    }
+
 }

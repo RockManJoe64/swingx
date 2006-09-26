@@ -264,7 +264,7 @@ public class ShapePainter extends PositionedPainter {
             Shape shape = getShape();
             Rectangle bounds = shape.getBounds();
             Rectangle rect = calculatePosition(bounds.width, bounds.height, w, h);
-            u.p("rect = " + rect);
+            //u.p("rect = " + rect);
             g = (Graphics2D)g.create();
             g.translate(rect.x, rect.y);
             //draw/fill the shape
@@ -336,10 +336,10 @@ public class ShapePainter extends PositionedPainter {
         //set the fillPaint
         Paint p = getFillPaint();
         if(isSnapPaint()) {
-            u.p("snapping " + width + " " + height);
+            //u.p("snapping " + width + " " + height);
             p = AreaPainter.calculateSnappedPaint(p, width, height);
         } else {
-            u.p("not snapping");
+            //u.p("not snapping");
         }
         if (p == null) {
             p = component.getBackground();
