@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
+ * Copyright 2006 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -35,9 +35,11 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.color.*;
+import org.jdesktop.swingx.util.OS;
 
 /**
  * A button which allows the user to select a single color. The button has a platform
@@ -49,7 +51,7 @@ import org.jdesktop.swingx.color.*;
  * By listening to this property developers can make other parts of their programs
  * update.
  *
- * @author joshua.marinacci@sun.com
+ * @author joshua@marinacci.org
  */
 public class JXColorSelectionButton extends JButton {
     private BufferedImage colorwell;
@@ -99,17 +101,29 @@ public class JXColorSelectionButton extends JButton {
      * {@inheritDoc}
      */
     protected void paintComponent(Graphics g) {
+        Insets ins = new Insets(0,0,0,0);
         // draw the colorwell image (should only be on OSX)
-        Insets ins = new Insets(5,5,5,5);
-        if(colorwell != null) {
+        if(OS.isMacOSX() && colorwell != null) {
+            ins = new Insets(5,5,5,5);
             ColorUtil.tileStretchPaint(g, this, colorwell, ins);
+        } else{
+            ins = new Insets(1,1,1,1);
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawRect(0,0, getWidth()-1, getHeight()-1);
+            g.setColor(new Color(241,241,237));
+            g.fillRect(1,1, getWidth()-2, getHeight()-2);
         }
         
+        // want disabledForeground when disabled, current colour otherwise
+        g.setColor(isEnabled() ? 
+            ColorUtil.removeAlpha(getBackground()) :
+            (Color) UIManager.get("Button.disabledForeground"));
+        
+        g.fillRect(ins.left, ins.top, 
+                    getWidth()  - ins.left - ins.right, 
+                    getHeight() - ins.top - ins.bottom);
+        /*
         // fill in the color area
-        g.setColor(ColorUtil.removeAlpha(getBackground()));
-        g.fillRect(ins.left, ins.top,
-                getWidth()  - ins.left - ins.right,
-                getHeight() - ins.top - ins.bottom);
         // draw the borders
         g.setColor(ColorUtil.setBrightness(getBackground(),0.85f));
         g.drawRect(ins.left, ins.top,
@@ -118,6 +132,7 @@ public class JXColorSelectionButton extends JButton {
         g.drawRect(ins.left + 1, ins.top + 1,
                 getWidth() - ins.left - ins.right - 3,
                 getHeight() - ins.top - ins.bottom - 3);
+         */
     }
     
     
@@ -129,7 +144,9 @@ public class JXColorSelectionButton extends JButton {
         JFrame frame = new JFrame("Color Button Test");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel();
-        panel.add(new JXColorSelectionButton());
+        JComponent btn = new JXColorSelectionButton();
+        btn.setEnabled(true);
+        panel.add(btn);
         panel.add(new JLabel("ColorSelectionButton test"));
         
         frame.add(panel);
@@ -164,7 +181,7 @@ public class JXColorSelectionButton extends JButton {
     }
     
     /**
-     * Get the chooser that is used by this JXColorSelectionButton. This
+     * Get the JColorChooser that is used by this JXColorSelectionButton. This
      * chooser instance is shared between all invocations of the chooser, but is unique to
      * this instance of JXColorSelectionButton.
      * @return the JColorChooser used by this JXColorSelectionButton
@@ -176,6 +193,19 @@ public class JXColorSelectionButton extends JButton {
             chooser.addChooserPanel(new EyeDropperColorChooserPanel());
         }
         return chooser;
+    }
+    
+    /**
+     * Set the JColorChooser that is used by this JXColorSelectionButton.
+     * chooser instance is shared between all invocations of the chooser,
+     * but is unique to
+     * this instance of JXColorSelectionButton.
+     * @param chooser The new JColorChooser to use.
+     */
+    public void setChooser(JColorChooser chooser) {
+        JColorChooser oldChooser = getChooser();
+        this.chooser = chooser;
+        firePropertyChange("chooser",oldChooser,chooser);
     }
     
     /**
