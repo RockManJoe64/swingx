@@ -38,7 +38,7 @@ import org.jdesktop.swingx.JXColorSelectionButton;
     }
  * </code></pre>
  *
- * @author Joshua.Marinacci@sun.com
+ * @author joshua@marinacci.org
  */
 public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     private Color oldColor;
@@ -234,9 +234,15 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
     private javax.swing.JTextField rgbColor;
     // End of variables declaration//GEN-END:variables
     
+    /**
+     * {@inheritDoc}
+     */
     public void updateChooser() {
     }
     
+    /**
+     * {@inheritDoc}
+     */
     protected void buildChooser() {
     }
     
@@ -247,10 +253,16 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
         return "Grab from Screen";
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Icon getSmallDisplayIcon() {
         return new ImageIcon();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public Icon getLargeDisplayIcon() {
         return new ImageIcon();
     }
