@@ -60,9 +60,8 @@ import org.jdesktop.swingx.multislider.ThumbListener;
 
 /**
  * A specialized JXPanel that allows the user to construct and choose a Gradient.
- * The returned values will be one of: GradientPaint, LinearGradientPaint, RadialGradientPaint.
- *
- * @author  jm158417
+ * The returned values will be one of: LinearGradientPaint or RadialGradientPaint.
+ * @author jm158417
  */
 public class JXGradientChooser extends JXPanel {
     private enum GradientStyle { Linear, Radial };
@@ -71,8 +70,8 @@ public class JXGradientChooser extends JXPanel {
      * The multi-thumb slider to use for the gradient stops
      */
     private JXMultiThumbSlider<Color> slider;
-    public JButton deleteThumbButton;
-    public JButton addThumbButton;
+    private JButton deleteThumbButton;
+    private JButton addThumbButton;
     
     private JTextField colorField;
     private JXColorSelectionButton changeColorButton;
@@ -80,26 +79,39 @@ public class JXGradientChooser extends JXPanel {
     private JSpinner alphaSpinner;
     private JSlider alphaSlider;
     
-    public JComboBox styleCombo;
+    private JComboBox styleCombo;
     private GradientPreviewPanel gradientPreview;
     
     private JRadioButton noCycleRadio;
-    public JRadioButton reflectedRadio;
-    public JRadioButton repeatedRadio;
-    public JCheckBox reversedCheck;
+    private JRadioButton reflectedRadio;
+    private JRadioButton repeatedRadio;
+    private JCheckBox reversedCheck;
     private MultipleGradientPaint gradient;
     
     private Paint checker_texture = null;
     
-    /** Creates new form GradientPicker */
+    /**
+     * Creates new JXGradientChooser
+     */
     public JXGradientChooser() {
         initComponents2();
     }
     
+    /**
+     * Returns the MultipleGradientPaint currently choosen by the user.
+     * @return the currently selected gradient
+     */
     public MultipleGradientPaint getGradient() {
         return gradient;
     }
     
+    // needs a better name and description
+    // get preview gradient? or, make a utility method or put in property editor
+    /**
+     * Creates a flat version of the current gradient. This is a linear gradient
+     * from 0.0 to length,0. This gradient is suitable for drawing previews of
+     * the real gradient.
+     * /
     public MultipleGradientPaint getFlatGradient(double length) {
         // get the list of colors
         List<Thumb<Color>> stops = slider.getModel().getSortedThumbs();
@@ -130,6 +142,13 @@ public class JXGradientChooser extends JXPanel {
     
     private boolean thumbsMoving = false;
     
+    /**
+     * Sets the gradient within this panel to the new gradient. This will delete
+     * the old gradient all of it's settings, resetting the slider, gradient
+     * type selection, and other gradient configuration options to match the
+     * new gradient.
+     * @param mgrad The desired gradient.
+     */
     public void setGradient(MultipleGradientPaint mgrad) {
         if(gradient != mgrad) {
             float[] fracts = mgrad.getFractions();
@@ -187,7 +206,7 @@ public class JXGradientChooser extends JXPanel {
     }
     
     private void updateFromStop(int thumb, float position, Color color) {
-        p("updating: " + thumb + " " + position + " " + color);
+        System.out.println("updating: " + thumb + " " + position + " " + color);
         if(thumb == -1) {
             colorLocationSpinner.setEnabled(false);
             alphaSpinner.setEnabled(false);
@@ -219,10 +238,6 @@ public class JXGradientChooser extends JXPanel {
         }
     }
     
-    public JXMultiThumbSlider<Color> getSlider() {
-        return slider;
-    }
-    
     /*
     private void updateGradientProperty() {
         firePropertyChange("gradient",null,getGradient());
@@ -244,6 +259,7 @@ public class JXGradientChooser extends JXPanel {
         // pre-init stuff
         slider = new JXMultiThumbSlider<Color>();
         gradientPreview = new GradientPreviewPanel();
+        gradientPreview.setMultiThumbModel(slider.getModel());
         
         java.awt.GridBagConstraints gridBagConstraints;
         
@@ -652,7 +668,7 @@ public class JXGradientChooser extends JXPanel {
         }
         
         public void thumbMoved(int thumb, float pos) {
-            p("moved: " + thumb + " " + pos);
+            System.out.println("moved: " + thumb + " " + pos);
             Color color = (Color)slider.getModel().getThumbAt(thumb).getObject();
             thumbsMoving = true;
             updateFromStop(thumb,pos,color);
@@ -670,7 +686,7 @@ public class JXGradientChooser extends JXPanel {
             thumbsMoving = true;
             float pos = slider.getModel().getThumbAt(thumb).getPosition();
             Color color = (Color)slider.getModel().getThumbAt(thumb).getObject();
-            p("selected = " + thumb + " " + pos + " " + color);
+            System.out.println("selected = " + thumb + " " + pos + " " + color);
             updateFromStop(thumb,pos,color);
             updateDeleteButtons();
             slider.repaint();
@@ -687,14 +703,22 @@ public class JXGradientChooser extends JXPanel {
     
     private final class RepaintOnEventListener implements ActionListener, ItemListener {
         public void actionPerformed(ActionEvent e) {
+            gradientPreview.setReflected(reflectedRadio.isSelected());
+            gradientPreview.setReversed(reversedCheck.isSelected());
+            gradientPreview.setRepeated(repeatedRadio.isSelected());
             //updateGradientProperty();
             recalcGradientFromStops();
-            System.out.println("the stuff changed");
+            System.out.println("updating to: " + reversedCheck.isSelected());
+            gradientPreview.repaint();
         }
         
         public void itemStateChanged(ItemEvent e) {
+            if(styleCombo.getSelectedItem() == GradientStyle.Radial) {
+                gradientPreview.setRadial(true);
+            } else {
+                gradientPreview.setRadial(false);
+            }
             recalcGradientFromStops();
-            System.out.println("the stuff changed");
         }
     }
     
@@ -714,6 +738,11 @@ public class JXGradientChooser extends JXPanel {
      * This static utility method <b>cannot</b> be called from the
      * ETD, or your application will lock up. Call it from a separate
      * thread or create a new Thread with a Runnable.
+     * @param comp The component to use when finding a top level window or frame for
+     * the dialog.
+     * @param title The desired title of the gradient chooser dialog.
+     * @param mgrad The gradient to initialize the chooser too.
+     * @return The gradient the user chose.
      */
     public static MultipleGradientPaint showDialog(Component comp, String title, MultipleGradientPaint mgrad) {
         Component root = SwingUtilities.getRoot(comp);
@@ -785,6 +814,11 @@ public class JXGradientChooser extends JXPanel {
         frame.setVisible(true);
     }
     
+    /**
+     * {@inheritDoc}
+     * @param paint 
+     * @return 
+     */
     public static String toString(MultipleGradientPaint paint) {
         StringBuffer buffer = new StringBuffer();
         buffer.append(paint.getClass().getName());
@@ -800,10 +834,7 @@ public class JXGradientChooser extends JXPanel {
         buffer.append("]");
         return buffer.toString();
     }
-    
-    public static void p(String s) {
-        System.out.println(s);
-    }
+
 }
 
 

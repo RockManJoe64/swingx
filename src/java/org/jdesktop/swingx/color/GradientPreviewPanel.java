@@ -35,6 +35,7 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
 import org.apache.batik.ext.awt.RadialGradientPaint;
 import org.jdesktop.swingx.JXGradientChooser;
 import org.jdesktop.swingx.JXPanel;
+import org.jdesktop.swingx.multislider.MultiThumbModel;
 import org.jdesktop.swingx.multislider.Thumb;
 
 /**
@@ -47,7 +48,11 @@ public class GradientPreviewPanel extends JXPanel {
     public JXGradientChooser picker;
     boolean moving_start = false;
     boolean moving_end = false;
-
+    private boolean radial = false;
+    private boolean reversed = false;
+    private boolean reflected = false;
+    private boolean repeated = false;
+    
     public GradientPreviewPanel() {
 	start = new Point2D.Float(10,10);
 	end = new Point2D.Float(80,10);
@@ -75,8 +80,7 @@ public class GradientPreviewPanel extends JXPanel {
     }
     
     public MultipleGradientPaint getGradient() {
-        // calculate the color stops
-        List<Thumb<Color>> stops = picker.getSlider().getModel().getSortedThumbs();
+        List<Thumb<Color>> stops = getStops();
         int len = stops.size();
         
         // set up the data for the gradient
@@ -93,6 +97,18 @@ public class GradientPreviewPanel extends JXPanel {
         MultipleGradientPaint paint = calculateGradient(fractions, colors);
         return paint;
     }
+
+    private MultiThumbModel model;
+    
+    private List<Thumb<Color>> getStops() {
+        // calculate the color stops
+        List<Thumb<Color>> stops = model.getSortedThumbs();
+        return stops;
+    }
+    
+    public void setMultiThumbModel(MultiThumbModel model) {
+        this.model = model;
+    }
     
     protected void paintComponent(Graphics g) {
 	try {
@@ -103,7 +119,7 @@ public class GradientPreviewPanel extends JXPanel {
 	    g.fillRect(0,0,getWidth(),getHeight());
 
         
-        Paint paint = getGradient();
+            Paint paint = getGradient();
 	    // fill the area
 	    if(paint != null) {
 		g2.setPaint(paint);
@@ -123,36 +139,38 @@ public class GradientPreviewPanel extends JXPanel {
 	// set up the end points
 	Point2D start = this.start;
 	Point2D end = this.end;
-	if(picker.reversedCheck.isSelected()) {
+        if(isReversed()) {
+	//if(picker.reversedCheck.isSelected()) {
 	    start = this.end;
 	    end = this.start;
 	}
 
 	// set up the cycle type
 	MultipleGradientPaint.CycleMethodEnum cycle = MultipleGradientPaint.NO_CYCLE;
-	if(picker.repeatedRadio.isSelected()) {
+        if(isRepeated()) {
+	//if(picker.repeatedRadio.isSelected()) {
 	    cycle = MultipleGradientPaint.REPEAT;
 	}
-	if(picker.reflectedRadio.isSelected()) {
+        if(isReflected()) {
+	//if(picker.reflectedRadio.isSelected()) {
 	    cycle = MultipleGradientPaint.REFLECT;
 	}
 	
 	// create the underlying gradient paint
 	MultipleGradientPaint paint = null;
-	if(picker.styleCombo.getSelectedItem().toString().equals("Linear")) {
+	if(isRadial()) { //picker.styleCombo.getSelectedItem().toString().equals("Radial")) {
+	    paint = new org.apache.batik.ext.awt.RadialGradientPaint(
+	    start, (float)start.distance(end),start,
+	    fractions, colors, cycle, MultipleGradientPaint.SRGB
+	    );
+	} else {
 	    paint = new org.apache.batik.ext.awt.LinearGradientPaint(
 	    (float)start.getX(),
 	    (float)start.getY(),
 	    (float)end.getX(),
 	    (float)end.getY(),
-	    fractions,colors,cycle);
-	}
-	if(picker.styleCombo.getSelectedItem().toString().equals("Radial")) {
-	    paint = new org.apache.batik.ext.awt.RadialGradientPaint(
-	    start, (float)start.distance(end),start,
-	    fractions, colors, cycle, MultipleGradientPaint.SRGB
-	    );
-	}
+	    fractions,colors,cycle);            
+        }
 	return paint;
     }
     
@@ -207,6 +225,38 @@ public class GradientPreviewPanel extends JXPanel {
             firePropertyChange("gradient",null,getGradient());
 	    repaint();
 	}
+    }
+
+    public boolean isRadial() {
+        return radial;
+    }
+
+    public void setRadial(boolean radial) {
+        this.radial = radial;
+    }
+
+    public boolean isReversed() {
+        return reversed;
+    }
+
+    public void setReversed(boolean reversed) {
+        this.reversed = reversed;
+    }
+
+    public boolean isReflected() {
+        return reflected;
+    }
+
+    public void setReflected(boolean reflected) {
+        this.reflected = reflected;
+    }
+
+    public boolean isRepeated() {
+        return repeated;
+    }
+
+    public void setRepeated(boolean repeated) {
+        this.repeated = repeated;
     }
 }
 
