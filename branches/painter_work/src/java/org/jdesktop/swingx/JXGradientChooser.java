@@ -111,7 +111,7 @@ public class JXGradientChooser extends JXPanel {
      * Creates a flat version of the current gradient. This is a linear gradient
      * from 0.0 to length,0. This gradient is suitable for drawing previews of
      * the real gradient.
-     * /
+     */
     public MultipleGradientPaint getFlatGradient(double length) {
         // get the list of colors
         List<Thumb<Color>> stops = slider.getModel().getSortedThumbs();

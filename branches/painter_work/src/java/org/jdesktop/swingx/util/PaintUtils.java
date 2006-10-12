@@ -205,8 +205,14 @@ public class PaintUtils {
         return buff;
     }
 
+    /**
+     * Loads the image at the URL and makes it compatible with the screen.
+     * If loading the url fails then this method will either throw an IOException
+     * or return null.
+     */
     public static BufferedImage loadCompatibleImage(URL resource) throws IOException {
         BufferedImage image = ImageIO.read(resource);
+        if(image == null) return null;
         return toCompatibleImage(image);
     }
     
