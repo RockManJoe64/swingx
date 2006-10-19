@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.swingx.painter;
+package org.jdesktop.swingx.painter.effects;
 
 import org.jdesktop.swingx.BeanInfoSupport;
 import org.jdesktop.swingx.editors.Paint2PropertyEditor;
@@ -20,7 +20,7 @@ public class ShapeEffectBeanInfo extends BeanInfoSupport {
     
     /** Creates a new instance of ShapeEffectBeanInfo */
     public ShapeEffectBeanInfo() {
-        super(ShapeEffect.class);
+        super(PathEffect.class);
     }
     
     protected void initialize() {

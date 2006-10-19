@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.swingx.painter;
+package org.jdesktop.swingx.painter.effects;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;

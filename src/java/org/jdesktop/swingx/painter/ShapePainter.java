@@ -55,35 +55,12 @@ import org.joshy.util.u;
  *
  * @author rbair
  */
-public class ShapePainter extends PositionedPainter {
+public class ShapePainter extends AbstractPathPainter {
     
     /**
      * The Shape to fillPaint. If null, nothing is painted.
      */
     private Shape shape;
-    /**
-     * The Stroke to use when painting. If null, the default Stroke for
-     * the Graphics2D is used
-     */
-    private int stroke;
-    /**
-     * The Paint to use when painting the shape. If null, then the component
-     * background color is used
-     */
-    private Paint fillPaint;
-    /**
-     * The Paint to use when stroking the shape (drawing the outline). If null,
-     * then the component foreground color is used
-     */
-    private Paint strokePaint;
-    
-    /**
-     * Indicates whether the shape should be filled or outlined, or both
-     */
-    private Style style = Style.BOTH;
-    
-    
-    private boolean snapPaint;
     
     /**
      * Create a new ShapePainter
@@ -91,9 +68,9 @@ public class ShapePainter extends PositionedPainter {
     public ShapePainter() {
         super();
         this.shape = new Ellipse2D.Double(0,0,100,100);
-        this.stroke = 3;
-        this.fillPaint = Color.RED;
-        this.strokePaint = Color.BLACK;
+        this.setStrokeWidth(3);
+        this.setFillPaint(Color.RED);
+        this.setBorderPaint(Color.BLACK);
     }
     
     /**
@@ -117,7 +94,7 @@ public class ShapePainter extends PositionedPainter {
     public ShapePainter(Shape shape, Paint paint) {
         super();
         this.shape = shape;
-        this.fillPaint = paint;
+        this.setFillPaint(paint);
     }
     
     /**
@@ -133,8 +110,8 @@ public class ShapePainter extends PositionedPainter {
     public ShapePainter(Shape shape, Paint paint, Style style) {
         super();
         this.shape = shape;
-        this.fillPaint = paint;
-        this.style = style == null ? Style.BOTH : style;
+        this.setFillPaint(paint);
+        this.setStyle(style == null ? Style.BOTH : style);
     }
     
     /**
@@ -161,107 +138,15 @@ public class ShapePainter extends PositionedPainter {
     }
     
     /**
-     * Sets the stroke to use for painting. If null, then the default Graphics2D
-     * stroke use used
-     *
-     *
-     * @param s the Stroke to fillPaint with
-     */
-    public void setStrokeWidth(int s) {
-        int old = getStrokeWidth();
-        this.stroke = s;
-        firePropertyChange("strokeWidth", old, getStrokeWidth());
-    }
-    
-    /**
-     * @return the Stroke to use for painting
-     */
-    public int getStrokeWidth() {
-        return stroke;
-    }
-    
-    /**
-     * The Paint to use for filling the shape. Can be a Color, GradientPaint,
-     * TexturePaint, or any other kind of Paint. If null, the component
-     * background is used.
-     *
-     * @param p the Paint to use for painting the shape. May be null.
-     */
-    public void setFillPaint(Paint p) {
-        Paint old = getFillPaint();
-        this.fillPaint = p;
-        firePropertyChange("fillPaint", old, getFillPaint());
-    }
-    
-    /**
-     * @return the Paint used when painting the shape. May be null
-     */
-    public Paint getFillPaint() {
-        return fillPaint;
-    }
-    
-    /**
-     * The Paint to use for stroking the shape (painting the outline).
-     * Can be a Color, GradientPaint, TexturePaint, or any other kind of Paint.
-     * If null, the component foreground is used.
-     *
-     * @param p the Paint to use for stroking the shape. May be null.
-     */
-    public void setStrokePaint(Paint p) {
-        Paint old = getStrokePaint();
-        this.strokePaint = p;
-        firePropertyChange("strokePaint", old, getStrokePaint());
-    }
-    
-    /**
-     * @return the Paint used when stroking the shape. May be null
-     */
-    public Paint getStrokePaint() {
-        return strokePaint;
-    }
-    
-    
-    
-    /**
-     * The shape can be filled or simply stroked (outlined), or both. By default,
-     * the shape is both filled and stroked. This property specifies the strategy to
-     * use.
-     *
-     * @param s the Style to use. If null, Style.BOTH is used
-     */
-    public void setStyle(Style s) {
-        Style old = getStyle();
-        this.style = s == null ? Style.BOTH : s;
-        firePropertyChange("style", old, getStyle());
-    }
-    
-    /**
-     * @return the Style used
-     */
-    public Style getStyle() {
-        return style;
-    }
-    
-    public boolean isSnapPaint() {
-        return snapPaint;
-    }
-    
-    public void setSnapPaint(boolean snapPaint) {
-        boolean old = this.isSnapPaint();
-        this.snapPaint = snapPaint;
-        firePropertyChange("snapPaint",old,this.snapPaint);
-    }
-    
-    /**
      * @inheritDoc
      */
     public void paintBackground(Graphics2D g, JComponent component, int w, int h) {
         //set the stroke if it is not null
-        Stroke s = new BasicStroke(getStrokeWidth());
+        Stroke s = new BasicStroke(this.getStrokeWidth());
         g.setStroke(s);
         
         if(getShape() != null) {
-            Shape shape = getShape();
+            Shape shape = provideShape(component, w, h);
             Rectangle bounds = shape.getBounds();
             Rectangle rect = calculatePosition(bounds.width, bounds.height, w, h);
             //u.p("rect = " + rect);
@@ -293,41 +178,30 @@ public class ShapePainter extends PositionedPainter {
     }
     
     private void fillShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
-        if(shapeEffect != null) {
+        if(getShapeEffect() != null) {
             Paint pt = calculateFillPaint(component, w, h);
             if(!(pt instanceof Color)) {
                 pt = Color.BLUE;
             }
-            shapeEffect.apply(g, shape, w, h, (Color)pt);
+            getShapeEffect().apply(g, shape, w, h, (Color)pt);
         } else {
             g.setPaint(calculateFillPaint(component, w, h));
             g.fill(shape);
         }
     }
-    
+
     // shape effect stuff
-    public Shape provideShape() {
+    public Shape provideShape(JComponent comp, int width, int height) {
         return getShape();
     }
     
-    private ShapeEffect shapeEffect;
-    public void setShapeEffect(ShapeEffect shapeEffect) {
-        this.shapeEffect = shapeEffect;
-    }
-    
-    public ShapeEffect getShapeEffect() {
-        return this.shapeEffect;
-    }
-    
-    
-    
     private Paint calculateStrokePaint(JComponent component, int width, int height) {
-        Paint p = getStrokePaint();
+        Paint p = getBorderPaint();
         if (p == null) {
             p = component.getForeground();
         }
         if(isSnapPaint()) {
-            p = AreaPainter.calculateSnappedPaint(p, width, height);
+            p = AbstractPathPainter.calculateSnappedPaint(p, width, height);
         }
         return p;
     }
@@ -336,8 +210,7 @@ public class ShapePainter extends PositionedPainter {
         //set the fillPaint
         Paint p = getFillPaint();
         if(isSnapPaint()) {
-            //u.p("snapping " + width + " " + height);
-            p = AreaPainter.calculateSnappedPaint(p, width, height);
+            p = AbstractPathPainter.calculateSnappedPaint(p, width, height);
         } else {
             //u.p("not snapping");
         }

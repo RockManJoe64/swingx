@@ -1,5 +1,5 @@
 /*
- * AreaPainter.java
+ * AbstractPathPainter.java
  *
  * Created on August 12, 2006, 8:12 PM
  *
@@ -11,64 +11,139 @@ package org.jdesktop.swingx.painter;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
+import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.joshy.util.u;
 
 /**
  *
  * @author joshy
  */
-public abstract class AreaPainter extends AbstractPainter {
+public abstract class AbstractPathPainter extends PositionedPainter {
+
+    private boolean snapPaint;
+    private PathEffect shapeEffect;
+    private Style style = Style.BOTH;
+    /**
+     * The stroke width to use when painting. If null, the default Stroke for
+     * the Graphics2D is used
+     */
+    private float strokeWidth;
 
     /**
-     * The paint to use
+     * The paint to use when filling the shape
      */
-    private Paint paint;
-    private boolean snapPaint;
+    private Paint fillPaint;
     
-    /** Creates a new instance of AreaPainter */
-    public AreaPainter() {
-        paint = Color.RED;
+    /**
+     * The Paint to use when stroking the shape (drawing the outline). If null,
+     * then the component foreground color is used
+     */
+    private Paint borderPaint;
+    
+    /**
+     * Creates a new instance of AbstractPathPainter
+     */
+    public AbstractPathPainter() {
+        fillPaint = Color.RED;
     }
-    public AreaPainter(Paint paint) {
-        this.paint = paint;
+    public AbstractPathPainter(Paint paint) {
+        this.fillPaint = paint;
     }
 
     
     /**
      * @return Gets the Paint being used. May be null
      */
-    public Paint getPaint() {
-        return paint;
+    public Paint getFillPaint() {
+        return fillPaint;
     }
 
-    
-    public boolean isSnapPaint() {
-        return snapPaint;
-    }
-
-    
     /**
      * Sets the Paint to use. If null, nothing is painted
      *
      * @param p the Paint to use
      */
-    public void setPaint(Paint p) {
-        Paint old = getPaint();
-        this.paint = p;
-        firePropertyChange("paint", old, getPaint());
+    public void setFillPaint(Paint p) {
+        Paint old = getFillPaint();
+        this.fillPaint = p;
+        firePropertyChange("paint", old, getFillPaint());
+    }
+ 
+    public boolean isSnapPaint() {
+        return snapPaint;
     }
 
-    
     public void setSnapPaint(boolean snapPaint) {
         boolean old = this.isSnapPaint();
         this.snapPaint = snapPaint;
         firePropertyChange("snapPaint",old,this.snapPaint);
     }
     
+    /**
+     * The Paint to use for stroking the shape (painting the outline).
+     * Can be a Color, GradientPaint, TexturePaint, or any other kind of Paint.
+     * If null, the component foreground is used.
+     *
+     * @param p the Paint to use for stroking the shape. May be null.
+     */
+    public void setBorderPaint(Paint p) {
+        Paint old = getBorderPaint();
+        this.borderPaint = p;
+        firePropertyChange("borderPaint", old, getBorderPaint());
+    }
+    
+    /**
+     * @return the Paint used when stroking the shape. May be null
+     */
+    public Paint getBorderPaint() {
+        return borderPaint;
+    }
+
+    /**
+     * The shape can be filled or simply stroked (outlined), or both. By default,
+     * the shape is both filled and stroked. This property specifies the strategy to
+     * use.
+     *
+     * @param s the Style to use. If null, Style.BOTH is used
+     */
+    public void setStyle(Style s) {
+        Style old = getStyle();
+        this.style = s == null ? Style.BOTH : s;
+        firePropertyChange("style", old, getStyle());
+    }
+    
+    /**
+     * @return the Style used
+     */
+    public Style getStyle() {
+        return style;
+    }
+
+    /**
+     * Sets the stroke to use for painting. If null, then the default Graphics2D
+     * stroke use used
+     *
+     *
+     * @param s the Stroke to fillPaint with
+     */
+    public void setStrokeWidth(float s) {
+        float old = getStrokeWidth();
+        this.strokeWidth = s;
+        firePropertyChange("strokeWidth", old, getStrokeWidth());
+    }
+    
+    /**
+     * @return the Stroke to use for painting
+     */
+    public float getStrokeWidth() {
+        return strokeWidth;
+    }
+    
     public static Paint calculateSnappedPaint(Paint p, int width, int height) {
-        //u.p("calcing: " + width + " " + height);
         if(p instanceof Color) {
             return p;
         }
@@ -159,4 +234,16 @@ public abstract class AreaPainter extends AbstractPainter {
         if(angle > 2*Math.PI) { angle -= 2*Math.PI; }
         return angle;
     }
+
+    // shape effect stuff
+    public abstract Shape provideShape(JComponent comp, int width, int height);
+    
+    public void setShapeEffect(PathEffect shapeEffect) {
+        this.shapeEffect = shapeEffect;
+    }
+    
+    public PathEffect getShapeEffect() {
+        return this.shapeEffect;
+    }
+
 }

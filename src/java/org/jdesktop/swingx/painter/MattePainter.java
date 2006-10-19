@@ -24,6 +24,8 @@ package org.jdesktop.swingx.painter;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
@@ -52,7 +54,7 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
  *
  * @author rbair
  */
-public class MattePainter extends AreaPainter {
+public class MattePainter extends AbstractPathPainter {
     
     /**
      * Creates a new MattePainter with "null" as the paint used
@@ -86,7 +88,7 @@ public class MattePainter extends AreaPainter {
      * @inheritDoc
      */
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
-        Paint p = getPaint();
+        Paint p = getFillPaint();
         if (p != null) {
             if(isSnapPaint()) {
                 p = calculateSnappedPaint(p,width,height);
@@ -94,6 +96,10 @@ public class MattePainter extends AreaPainter {
             g.setPaint(p);
             g.fillRect(0, 0, width, height);
         }
+    }
+
+    public Shape provideShape(JComponent comp, int width, int height) {
+        return new Rectangle(0,0,width,height);
     }
     
 }
