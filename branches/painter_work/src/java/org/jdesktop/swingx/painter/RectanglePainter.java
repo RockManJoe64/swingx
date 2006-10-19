@@ -55,7 +55,7 @@ public class RectanglePainter extends AbstractPathPainter {
         this.roundHeight = roundHeight;
         this.rounded = rounded;
         this.setFillPaint(fillPaint);
-        this.setStrokeWidth(strokeWidth);
+        this.setBorderWidth(strokeWidth);
         this.setBorderPaint(borderPaint);
     }
     
@@ -144,7 +144,7 @@ public class RectanglePainter extends AbstractPathPainter {
     
     private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
         g.setPaint(getBorderPaint());
-        g.setStroke(new BasicStroke(getStrokeWidth()));
+        g.setStroke(new BasicStroke(getBorderWidth()));
         g.draw(shape);
     }
     

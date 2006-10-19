@@ -31,7 +31,7 @@ public abstract class AbstractPathPainter extends PositionedPainter {
      * The stroke width to use when painting. If null, the default Stroke for
      * the Graphics2D is used
      */
-    private float strokeWidth;
+    private float borderWidth;
 
     /**
      * The paint to use when filling the shape
@@ -130,17 +130,17 @@ public abstract class AbstractPathPainter extends PositionedPainter {
      *
      * @param s the Stroke to fillPaint with
      */
-    public void setStrokeWidth(float s) {
-        float old = getStrokeWidth();
-        this.strokeWidth = s;
-        firePropertyChange("strokeWidth", old, getStrokeWidth());
+    public void setBorderWidth(float s) {
+        float old = getBorderWidth();
+        this.borderWidth = s;
+        firePropertyChange("strokeWidth", old, getBorderWidth());
     }
     
     /**
      * @return the Stroke to use for painting
      */
-    public float getStrokeWidth() {
-        return strokeWidth;
+    public float getBorderWidth() {
+        return borderWidth;
     }
     
     public static Paint calculateSnappedPaint(Paint p, int width, int height) {

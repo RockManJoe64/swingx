@@ -51,7 +51,7 @@ public class ShapeTest extends JXPanel {
         
         Shape shape = PainterEditorPanel.stringToShape("S",new Font("Arial",Font.BOLD,160));
         ShapePainter sp = new ShapePainter(shape,Color.RED);
-        sp.setStrokeWidth(5);//new BasicStroke(5f));
+        sp.setBorderWidth(5);//new BasicStroke(5f));
         sp.setBorderPaint(Color.RED.darker());
         sp.setAntialiasing(AbstractPainter.Antialiasing.On);
         sp.setStyle(ShapePainter.Style.FILLED);
