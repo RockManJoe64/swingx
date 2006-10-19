@@ -48,7 +48,7 @@ import org.jdesktop.swingx.painter.AffineTransformPainter;
 import org.jdesktop.swingx.painter.ComponentBackgroundPainter;
 import org.jdesktop.swingx.painter.CheckerboardPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.Effect;
+import org.jdesktop.swingx.painter.effects.Effect;
 import org.jdesktop.swingx.painter.GlossPainter;
 import org.jdesktop.swingx.painter.IconPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
@@ -56,7 +56,7 @@ import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.PinstripePainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
-import org.jdesktop.swingx.painter.ShapeEffect;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painter.TextPainter;
 import org.joshy.util.u;
@@ -110,7 +110,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         painterClasses.add(CompoundPainter.class);
         
         effectClasses = new BeanArrayList<Class>();
-        effectClasses.add(ShapeEffect.class);
+        effectClasses.add(PathEffect.class);
         effectClasses.add(ShadowFilter.class);
         effectClasses.add(GaussianFilter.class);
         
@@ -188,7 +188,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
     public PainterSet setupNewPainter(CompoundPainter painter) {
         if(painter == null) {
             TextPainter tp = new TextPainter();
-            tp.setPaint(Color.WHITE);
+            tp.setFillPaint(Color.WHITE);
             tp.setFont(new Font("SanSerif",Font.BOLD, 36));
             MattePainter mp = new MattePainter(Color.BLUE);
             ShapePainter sp = new ShapePainter();

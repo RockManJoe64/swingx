@@ -5,7 +5,7 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.Effect;
+import org.jdesktop.swingx.painter.effects.Effect;
 import org.jdesktop.swingx.painterset.dndtree.DnDTree;
 import org.jdesktop.swingx.painterset.dndtree.DnDTreeCellRenderer;
 
