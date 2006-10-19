@@ -68,7 +68,7 @@ public class ShapePainter extends AbstractPathPainter {
     public ShapePainter() {
         super();
         this.shape = new Ellipse2D.Double(0,0,100,100);
-        this.setStrokeWidth(3);
+        this.setBorderWidth(3);
         this.setFillPaint(Color.RED);
         this.setBorderPaint(Color.BLACK);
     }
@@ -142,7 +142,7 @@ public class ShapePainter extends AbstractPathPainter {
      */
     public void paintBackground(Graphics2D g, JComponent component, int w, int h) {
         //set the stroke if it is not null
-        Stroke s = new BasicStroke(this.getStrokeWidth());
+        Stroke s = new BasicStroke(this.getBorderWidth());
         g.setStroke(s);
         
         if(getShape() != null) {

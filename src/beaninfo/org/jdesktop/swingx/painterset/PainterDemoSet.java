@@ -61,7 +61,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         RectanglePainter stdrect = new RectanglePainter(0,0,0,0);
         stdrect.setFillPaint(gradient);
         stdrect.setBorderPaint(Color.BLACK);
-        stdrect.setStrokeWidth(4f);
+        stdrect.setBorderWidth(4f);
         comp = new CompoundPainter(stdrect, new TextPainter("This is some stuff"));
         addDemo(new JXButton("Cool Text Yo"), comp, "button with gradient and text");
         
