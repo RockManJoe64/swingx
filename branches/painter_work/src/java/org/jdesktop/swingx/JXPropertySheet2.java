@@ -12,7 +12,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import org.jdesktop.swingx.painter.ShapeEffect;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.propertysheet.BeanProvider;
 import org.jdesktop.swingx.propertysheet.BeanTableModel;
 import org.jdesktop.swingx.propertysheet.Category;
