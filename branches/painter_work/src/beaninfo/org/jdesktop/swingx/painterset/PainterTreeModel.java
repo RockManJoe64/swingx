@@ -20,10 +20,10 @@ import javax.swing.tree.TreePath;
 import org.jdesktop.swingx.editors.ImageEditor;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.Effect;
-import org.jdesktop.swingx.painter.ImageEffect;
+import org.jdesktop.swingx.painter.effects.Effect;
+import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.ShapeEffect;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.joshy.util.u;
 
@@ -198,7 +198,7 @@ public class PainterTreeModel implements TreeModel {
         fireStructureChanged();
     }
     
-    public void addShapeEffect(ShapePainter shapePainter, ShapeEffect eff) {
+    public void addShapeEffect(ShapePainter shapePainter, PathEffect eff) {
         shapePainter.setShapeEffect(eff);
         fireStructureChanged();
     }

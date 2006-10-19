@@ -4,10 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImageOp;
 import javax.swing.AbstractAction;
 import org.jdesktop.swingx.painter.AbstractPainter;
-import org.jdesktop.swingx.painter.Effect;
-import org.jdesktop.swingx.painter.ImageEffect;
+import org.jdesktop.swingx.painter.effects.Effect;
+import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.ShapeEffect;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterTreeModel;
@@ -38,8 +38,8 @@ public class AddEffectAction extends AbstractAction {
                     eff = new ImageEffect((BufferedImageOp) obj);
                     painterTreeModel.addEffect((AbstractPainter) painterEditorPanel.getSelectedPainter(), eff);
                 }
-                if (obj instanceof ShapeEffect) {
-                    ShapeEffect eff = (ShapeEffect) obj;
+                if (obj instanceof PathEffect) {
+                    PathEffect eff = (PathEffect) obj;
                     Painter ptr = (Painter) painterEditorPanel.getSelectedPainter();
                     if(ptr instanceof ShapePainter) {
                         painterTreeModel.addShapeEffect((ShapePainter)ptr,eff);

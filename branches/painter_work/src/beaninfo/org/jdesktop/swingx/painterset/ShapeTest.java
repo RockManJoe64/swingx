@@ -35,7 +35,7 @@ import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.MattePainter;
-import org.jdesktop.swingx.painter.ShapeEffect;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.joshy.util.u;
 
@@ -52,10 +52,10 @@ public class ShapeTest extends JXPanel {
         Shape shape = PainterEditorPanel.stringToShape("S",new Font("Arial",Font.BOLD,160));
         ShapePainter sp = new ShapePainter(shape,Color.RED);
         sp.setStrokeWidth(5);//new BasicStroke(5f));
-        sp.setStrokePaint(Color.RED);
+        sp.setBorderPaint(Color.RED.darker());
         sp.setAntialiasing(AbstractPainter.Antialiasing.On);
         sp.setStyle(ShapePainter.Style.FILLED);
-        ShapeEffect se = new ShapeEffect();
+        PathEffect se = new PathEffect();
         sp.setShapeEffect(se);
         MattePainter mp = new MattePainter(Color.BLUE);
         
