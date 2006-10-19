@@ -1,5 +1,5 @@
 /*
- * ShapeEffect.java
+ * PathEffect.java
  *
  * Created on August 20, 2006, 7:01 PM
  *
@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.swingx.painter;
+package org.jdesktop.swingx.painter.effects;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -32,15 +32,17 @@ import org.joshy.util.u;
  *
  * @author joshy
  */
-public class ShapeEffect {
+public class PathEffect {
     
-    /** Creates a new instance of ShapeEffect */
-    public ShapeEffect() {
+    /**
+     * Creates a new instance of PathEffect
+     */
+    public PathEffect() {
         setBrushColor(Color.BLACK);
         setBrushSteps(10);
         setEffectWidth(8);
         setRenderInsideShape(false);
-        setOffset(new Point(10,10));
+        setOffset(new Point(5,5));
         setShouldFillShape(true);
     }
     

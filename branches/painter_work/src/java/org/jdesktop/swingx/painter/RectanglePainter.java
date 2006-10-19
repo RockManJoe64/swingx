@@ -26,69 +26,41 @@ import org.joshy.util.u;
  *
  */
 
-public class RectanglePainter extends AreaPainter {
-    private Paint borderPaint = Color.BLACK;
+public class RectanglePainter extends AbstractPathPainter {
     private boolean rounded = false;
     private Insets insets = new Insets(0,0,0,0);
     private int roundWidth = 20;
     private int roundHeight = 20;
-    private double strokeWidth = 1;
-    /**
-     * Indicates whether the shape should be filled or outlined, or both
-     */
-    private Style style = Style.BOTH;
-    
+    //private double strokeWidth = 1;
     
     /** Creates a new instance of RectanglePainter */
     public RectanglePainter() {
     }
     
     
+    public RectanglePainter(int top, int left, int bottom, int right) {
+        this(top, left, bottom, right, 0, 0, false, Color.RED, 1f, Color.BLACK);
+    }
+    public RectanglePainter(int top, int left, int bottom, int right,
+            int roundWidth, int roundHeight) {
+        this(top,left,bottom,right,roundWidth, roundHeight, true, Color.RED, 1f, Color.BLACK);
+    }
     
     public RectanglePainter(int top, int left, int bottom, int right,
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
-            double strokeWidth, Paint borderPaint) {
+            float strokeWidth, Paint borderPaint) {
         this();
         insets = new Insets(top,left,bottom,right);
         this.roundWidth = roundWidth;
         this.roundHeight = roundHeight;
         this.rounded = rounded;
-        this.setPaint(fillPaint);
-        this.strokeWidth = strokeWidth;
-        this.borderPaint = borderPaint;
+        this.setFillPaint(fillPaint);
+        this.setStrokeWidth(strokeWidth);
+        this.setBorderPaint(borderPaint);
     }
     
     
     
-    /**
-     * The shape can be filled or simply stroked (outlined), or both. By default,
-     * the shape is both filled and stroked. This property specifies the strategy to
-     * use.
-     *
-     * @param s the Style to use. If null, Style.BOTH is used
-     */
-    public void setStyle(Style s) {
-        Style old = getStyle();
-        this.style = s == null ? Style.BOTH : s;
-        firePropertyChange("style", old, getStyle());
-    }
-    
-    /**
-     * @return the Style used
-     */
-    public Style getStyle() {
-        return style;
-    }
-    
-    public Paint getBorderPaint() {
-        return borderPaint;
-    }
-    
-    public void setBorderPaint(Paint borderPaint) {
-        Paint oldBorderPaint = getBorderPaint();
-        this.borderPaint = borderPaint;
-        firePropertyChange("fillPaint",oldBorderPaint,borderPaint);
-    }
     
     public boolean isRounded() {
         return rounded;
@@ -130,17 +102,6 @@ public class RectanglePainter extends AreaPainter {
         firePropertyChange("roundHeight",oldRoundHeight,roundHeight);
     }
     
-    public double getStrokeWidth() {
-        return strokeWidth;
-    }
-    
-    public void setStrokeWidth(double strokeWidth) {
-        double oldStrokeWidth = getStrokeWidth();
-        this.strokeWidth = strokeWidth;
-        firePropertyChange("strokeWidth",oldStrokeWidth,strokeWidth);
-    }
-    
-
     
     /* ======== drawing code ============ */
     protected Shape calculateShape(JComponent component, int width, int height) {
@@ -182,19 +143,31 @@ public class RectanglePainter extends AreaPainter {
     }
     
     private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
-        g.setPaint(borderPaint);
-        g.setStroke(new BasicStroke((float)strokeWidth));
+        g.setPaint(getBorderPaint());
+        g.setStroke(new BasicStroke(getStrokeWidth()));
         g.draw(shape);
     }
+    
     private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
-        Paint p = getPaint();
+        Paint p = getFillPaint();
         if(isSnapPaint()) {
             p = calculateSnappedPaint(p, width, height);
         }
         
         g.setPaint(p);
-        g.fill(shape);
+        if(!(p instanceof Color)) {
+            p = Color.BLUE;
+        }
+        
+        if(getShapeEffect() != null) {
+            getShapeEffect().apply(g, shape, width, height, (Color)p);
+        } else {
+            g.fill(shape);
+        }
     }
-    
+
+    public Shape provideShape(JComponent comp, int width, int height) {
+        return calculateShape(comp,width,height);
+    }
 }
 

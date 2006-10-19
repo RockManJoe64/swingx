@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.JavaBean;
+import org.jdesktop.swingx.painter.effects.Effect;
+import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.util.PaintUtils;
 import org.joshy.util.u;
 

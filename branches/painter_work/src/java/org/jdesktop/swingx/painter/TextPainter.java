@@ -27,6 +27,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.AbstractButton;
@@ -48,11 +50,9 @@ import org.joshy.util.u;
  *
  * @author rbair
  */
-public class TextPainter extends PositionedPainter {
+public class TextPainter extends AbstractPathPainter {
     private String text = "";
     private Font font = null;
-    private Paint paint;
-    private boolean snapPaint;
     
     /** Creates a new instance of TextPainter */
     public TextPainter() {
@@ -70,7 +70,7 @@ public class TextPainter extends PositionedPainter {
     public TextPainter(String text, Font font, Paint paint) {
         this.text = text;
         this.font = font;
-        this.paint = paint;
+        setFillPaint(paint);
     }
     
     public void setFont(Font f) {
@@ -93,60 +93,18 @@ public class TextPainter extends PositionedPainter {
         return text;
     }
     
-    public void setPaint(Paint paint) {
-        Paint old = getPaint();
-        this.paint = paint;
-        firePropertyChange("paint", old, getPaint());
-    }
-    
-    public Paint getPaint() {
-        return paint;
-    }
-    
-    public boolean isSnapPaint() {
-        return snapPaint;
-    }
-    
-    public void setSnapPaint(boolean snapPaint) {
-        boolean old = this.isSnapPaint();
-        this.snapPaint = snapPaint;
-        firePropertyChange("snapPaint",old,this.snapPaint);
-    }
-    
     protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
-        // prep the various text attributes
-        Font font = getFont();
-        if (font == null) {
-            font = component.getFont();
-        }
-        if (font == null) {
-            font = new Font("Dialog", Font.PLAIN, 18);
-        }
-        
+        Font font = calculateFont(component);
         if (font != null) {
             g.setFont(font);
         }
         
-        Paint paint = getPaint();
+        Paint paint = getFillPaint();
         if(paint == null) {
             paint = component.getForeground();
         }
         
-        
-        
-        // prep the text
-        String text = getText();
-        //make components take priority if(text == null || text.trim().equals("")) {
-        if(component instanceof JTextComponent) {
-            text = ((JTextComponent)component).getText();
-        }
-        if(component instanceof JLabel) {
-            text = ((JLabel)component).getText();
-        }
-        if(component instanceof AbstractButton) {
-            text = ((AbstractButton)component).getText();
-        }
-        //}
+        String text = calculateText(component);
         
         // get the font metrics
         FontMetrics metrics = g.getFontMetrics(g.getFont());
@@ -161,7 +119,7 @@ public class TextPainter extends PositionedPainter {
         g.translate(res.x, res.y);
         
         if(isSnapPaint()) {
-            paint = AreaPainter.calculateSnappedPaint(paint, res.width, res.height);//width, height);
+            paint = calculateSnappedPaint(paint, res.width, res.height);//width, height);
         }
         
         if (paint != null) {
@@ -176,7 +134,53 @@ public class TextPainter extends PositionedPainter {
         
         //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);
         //x -= stringWidth/2;
-        g.drawString(text, 0, 0 + metrics.getAscent());
+        if(getShapeEffect() != null) {
+            if(!(paint instanceof Color)) {
+                paint = Color.BLUE;
+            }
+            getShapeEffect().apply(g,
+                    provideShape(component,width,height),
+                    width,height,(Color)paint);
+        } else {
+            g.drawString(text, 0, 0 + metrics.getAscent());
+        }
         g.translate(-res.x,-res.y);
+    }
+    
+    private String calculateText(final JComponent component) {
+        // prep the text
+        String text = getText();
+        //make components take priority if(text == null || text.trim().equals("")) {
+        if(component instanceof JTextComponent) {
+            text = ((JTextComponent)component).getText();
+        }
+        if(component instanceof JLabel) {
+            text = ((JLabel)component).getText();
+        }
+        if(component instanceof AbstractButton) {
+            text = ((AbstractButton)component).getText();
+        }
+        return text;
+    }
+    
+    private Font calculateFont(final JComponent component) {
+        // prep the various text attributes
+        Font font = getFont();
+        if (font == null) {
+            font = component.getFont();
+        }
+        if (font == null) {
+            font = new Font("Dialog", Font.PLAIN, 18);
+        }
+        return font;
+    }
+    
+    public Shape provideShape(JComponent comp, int width, int height) {
+        Font font = calculateFont(comp);
+        String text = calculateText(comp);
+        Graphics2D g2 = (Graphics2D)comp.getGraphics();
+        GlyphVector vect = font.createGlyphVector(g2.getFontRenderContext(),text);
+        Shape shape = vect.getOutline(0f,(float)-vect.getVisualBounds().getY());
+        return shape;
     }
 }
