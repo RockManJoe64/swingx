@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.text.Style;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.painter.AbstractPainter;
@@ -78,8 +79,6 @@ public class PainterDemoSet extends javax.swing.JFrame {
         star.setStyle(ShapePainter.Style.FILLED);
         star.setShapeEffect(new ShadowPathEffect());
         addDemo(new JXPanel(), star, "Star with drop shadow");
-        
-        
         
         
         
@@ -227,7 +226,45 @@ public class PainterDemoSet extends javax.swing.JFrame {
         coollogo.setFillPaint(gradient);
         //coollogo.setShapeEffect(new NeonBorder(Color.WHITE, Color.RED, 8f));
         addDemo(new JXPanel(),coollogo,"A Cool Logo");
+
         
+        // create a coming soon badge
+        star = new ShapePainter(ShapeUtils.generatePolygon(30,50,45,true),Color.RED);
+        star.setStyle(ShapePainter.Style.FILLED);
+        star.setBorderPaint(Color.BLUE);
+        ShadowPathEffect starShadow = new ShadowPathEffect();
+        starShadow.setOffset(new Point(1,1));
+        starShadow.setEffectWidth(5);
+        star.setShapeEffect(starShadow);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        addDemo(new JXPanel(), new CompoundPainter(
+                new MattePainter(Color.GRAY),
+                star,
+                new TextPainter("Coming Soon!", 
+                    new Font("SansSerif", Font.PLAIN, 12), Color.WHITE)
+                ),
+                "Coming Soon Badge");
+        
+        
+        TextPainter normText = new TextPainter("Text", font);
+        comp = new CompoundPainter(normText);
+        addDemo(new JXPanel(), comp, "Normal Text");
+
+        TextPainter rotText = new TextPainter("Text", font);
+        comp = new CompoundPainter(rotText);
+        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
+        addDemo(new JXPanel(), comp, "Rotated Text");
+        
+        
+        TextPainter shearText = new TextPainter("Text", font);
+        comp = new CompoundPainter(shearText);
+        comp.setTransform(AffineTransform.getShearInstance(-0.2,0));
+        addDemo(new JXPanel(), comp, "Sheared Text");
+        
+        TextPainter scaleText = new TextPainter("Text", font);
+        comp = new CompoundPainter(scaleText);
+        comp.setTransform(AffineTransform.getScaleInstance(2,2));
+        addDemo(new JXPanel(), comp, "Scaled Text");
     }
     
     /** This method is called from within the constructor to

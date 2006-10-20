@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -22,6 +22,7 @@
 package org.jdesktop.swingx.painter;
 
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.JavaBean;
 
@@ -54,6 +55,7 @@ import org.jdesktop.swingx.JavaBean;
  */
 public class CompoundPainter extends AbstractPainter {
     private Painter[] painters = new Painter[0];
+    private AffineTransform transform;
     
     /** Creates a new instance of CompoundPainter */
     public CompoundPainter() {
@@ -97,13 +99,28 @@ public class CompoundPainter extends AbstractPainter {
         System.arraycopy(painters, 0, results, 0, results.length);
         return results;
     }
-
+    
     /**
      * @inheritDoc
      */
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
-        for (Painter p : getPainters()) {
-            p.paint(g, component, width, height);
+        Graphics2D g2 = (Graphics2D) g.create();
+        if(getTransform() != null) {
+            g2.setTransform(getTransform());
         }
+        for (Painter p : getPainters()) {
+            p.paint(g2, component, width, height);
+        }
+        g2.dispose();
+    }
+    
+    public AffineTransform getTransform() {
+        return transform;
+    }
+    
+    public void setTransform(AffineTransform transform) {
+        AffineTransform old = getTransform();
+        this.transform = transform;
+        firePropertyChange("transform",old,transform);
     }
 }
