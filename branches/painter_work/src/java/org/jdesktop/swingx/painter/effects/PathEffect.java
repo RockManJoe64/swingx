@@ -42,47 +42,41 @@ public class PathEffect {
         setBrushSteps(10);
         setEffectWidth(8);
         setRenderInsideShape(false);
-        setOffset(new Point(5,5));
+        setOffset(new Point(4,4));
         setShouldFillShape(true);
     }
     
     
-    
-    public void apply(Graphics2D g, Shape shape, int width, int height, Color fillColor) {
-        
-        // create a shape for clipping
-        //Shape clipShape = createClipShape(width, height);
-        //Shape clipShape = new Ellipse2D.Float(width/4, height/4, width/2, height/2);
-        Shape clipShape = shape;
-        
-        // Clear the background to white
-        g.setColor(Color.WHITE);
-        //g.fillRect(0, 0, width, height);
+    /*
+     * Applies the shape effect. This effect will be drawn on top of the graphics context. 
+     */    
+    public void apply(Graphics2D g, Shape clipShape, int width, int height, Color fillColor) {
         
         // Set the clip shape onto a buffer image
-        BufferedImage clipImage = createClipImage(clipShape, g, width, height);
+        BufferedImage clipImage = createClipImage(clipShape, g, 
+                width + getEffectWidth(), 
+                height + getEffectWidth());
         Graphics2D g2 = clipImage.createGraphics();
         
         // Fill the shape with a gradient
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setComposite(AlphaComposite.SrcAtop);
-        Color clrHi;
-        clrHi = ColorUtil.setBrightness(fillColor, 1f);
-        Color clrLo;
-        clrLo = ColorUtil.setBrightness(fillColor, 0.5f);
-        //g2.setPaint(new GradientPaint(0, 0, clrHi, 0, height, clrLo));
-        // use fill color instead
+        
+        // fill the clip shape with the fill color (joshy: why do we do this?)
         g2.setPaint(fillColor);
         g2.fill(clipShape);
         
         // Apply the border glow effect
-        paintBorderGlow(g2, 8, clipShape, width, height, fillColor, fillColor);
+        paintBorderGlow(g2, 8, clipShape, width, height);
         
         g2.dispose();
         
+        // draw the final image
         g.drawImage(clipImage, 0, 0, null);
         
     }
+    
+    /*
     private Shape createClipShape(int width, int height) {
         float border = 20.0f;
         float x1 = border;
@@ -111,6 +105,8 @@ public class PathEffect {
         gp.closePath();
         return gp;
     }
+     */
+    
     private BufferedImage createClipImage(Shape s, Graphics2D g, int width, int height) {
         // Create a translucent intermediate image in which we can perform
         // the soft clipping
@@ -135,6 +131,8 @@ public class PathEffect {
         
         return img;
     }
+    
+    /* //no longer needed. part of chris' original blog
     private static Color getMixedColor(Color c1, float pct1, Color c2, float pct2) {
         float[] clr1 = c1.getComponents(null);
         float[] clr2 = c2.getComponents(null);
@@ -142,23 +140,20 @@ public class PathEffect {
             clr1[i] = (clr1[i] * pct1) + (clr2[i] * pct2);
         }
         return new Color(clr1[0], clr1[1], clr1[2], clr1[3]);
-    }
+    }*/
     
-    private void paintBorderGlow(Graphics2D g2, int glowWidth, Shape clipShape, int width, int height,
-            Color clrHi, Color clrLo) {
-        //Color brushColor = Color.WHITE;
-        //int steps = 10;
+    /* draws the actual shaded border to the specified graphics
+     */
+    private void paintBorderGlow(Graphics2D g2, int glowWidth, 
+            Shape clipShape, int width, int height) {
+        
         int steps = getBrushSteps();
         float brushAlpha = 1f/steps;
-        //int effectWidth = 8;
         
-        //boolean inside = true;
         boolean inside = isRenderInsideShape();
         
         g2.setPaint(getBrushColor());
-        //u.p("brush color = " + getBrushColor());
         
-        //Point2D offset = new Point(5,5);
         g2.translate(offset.getX(), offset.getY());
         
         if(isShouldFillShape()) {
