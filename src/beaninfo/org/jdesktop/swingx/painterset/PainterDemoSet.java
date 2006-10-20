@@ -220,6 +220,38 @@ public class PainterDemoSet extends javax.swing.JFrame {
         addDemo(new JXPanel(),triangle,"Triangle w/ gradient");
         
         
+        
+        TextPainter normText = new TextPainter("Text", font);
+        comp = new CompoundPainter(normText);
+        addDemo(new JXPanel(), comp, "Normal Text");
+
+        TextPainter rotText = new TextPainter("Text", font);
+        comp = new CompoundPainter(rotText);
+        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
+        addDemo(new JXPanel(), comp, "Rotated Text");
+        
+        
+        TextPainter shearText = new TextPainter("Text", font);
+        comp = new CompoundPainter(shearText);
+        comp.setTransform(AffineTransform.getShearInstance(-0.2,0));
+        addDemo(new JXPanel(), comp, "Sheared Text");
+        
+        TextPainter scaleText = new TextPainter("Text", font);
+        comp = new CompoundPainter(scaleText);
+        comp.setTransform(AffineTransform.getScaleInstance(2,2));
+        addDemo(new JXPanel(), comp, "Scaled Text");
+        
+        
+        rotText = new TextPainter("Text", font);
+        rectnorm = new RectanglePainter(30,30,30,30,30,30,true,Color.RED,4f,Color.RED.darker());
+        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        comp = new CompoundPainter(rectnorm,rotText);
+        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
+        addDemo(new JXPanel(), comp, "Rotated Text w/ effects on rect");
+        
+        
+        
+        
         // a text painter using the neon border path effect
         TextPainter coollogo = new TextPainter("Cool Logo");
         coollogo.setFont(new Font("SansSerif",Font.ITALIC,40));
@@ -245,26 +277,6 @@ public class PainterDemoSet extends javax.swing.JFrame {
                 ),
                 "Coming Soon Badge");
         
-        
-        TextPainter normText = new TextPainter("Text", font);
-        comp = new CompoundPainter(normText);
-        addDemo(new JXPanel(), comp, "Normal Text");
-
-        TextPainter rotText = new TextPainter("Text", font);
-        comp = new CompoundPainter(rotText);
-        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
-        addDemo(new JXPanel(), comp, "Rotated Text");
-        
-        
-        TextPainter shearText = new TextPainter("Text", font);
-        comp = new CompoundPainter(shearText);
-        comp.setTransform(AffineTransform.getShearInstance(-0.2,0));
-        addDemo(new JXPanel(), comp, "Sheared Text");
-        
-        TextPainter scaleText = new TextPainter("Text", font);
-        comp = new CompoundPainter(scaleText);
-        comp.setTransform(AffineTransform.getScaleInstance(2,2));
-        addDemo(new JXPanel(), comp, "Scaled Text");
     }
     
     /** This method is called from within the constructor to
