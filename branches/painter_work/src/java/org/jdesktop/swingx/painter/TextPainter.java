@@ -109,8 +109,6 @@ public class TextPainter extends AbstractPathPainter {
         // get the font metrics
         FontMetrics metrics = g.getFontMetrics(g.getFont());
         Rectangle2D rect = metrics.getStringBounds(text,g);
-        //Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
-        //g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
         
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();
@@ -126,14 +124,7 @@ public class TextPainter extends AbstractPathPainter {
             g.setPaint(paint);
         }
         
-        
-        
-        //double x = location.getX() * (width  - tw);
-        //double y = location.getY() * (height - th);
-        //y += metrics.getAscent();
-        
-        //double stringWidth = SwingUtilities.computeStringWidth(metrics, text);
-        //x -= stringWidth/2;
+        g.drawString(text, 0, 0 + metrics.getAscent());
         if(getShapeEffect() != null) {
             if(!(paint instanceof Color)) {
                 paint = Color.BLUE;
@@ -141,8 +132,6 @@ public class TextPainter extends AbstractPathPainter {
             getShapeEffect().apply(g,
                     provideShape(component,width,height),
                     width,height,(Color)paint);
-        } else {
-            g.drawString(text, 0, 0 + metrics.getAscent());
         }
         g.translate(-res.x,-res.y);
     }
@@ -179,8 +168,10 @@ public class TextPainter extends AbstractPathPainter {
         Font font = calculateFont(comp);
         String text = calculateText(comp);
         Graphics2D g2 = (Graphics2D)comp.getGraphics();
+        FontMetrics metrics = g2.getFontMetrics(font);
         GlyphVector vect = font.createGlyphVector(g2.getFontRenderContext(),text);
-        Shape shape = vect.getOutline(0f,(float)-vect.getVisualBounds().getY());
+        Shape shape = vect.getOutline(0f,0f+ metrics.getAscent());//(float)-vect.getVisualBounds().getY()
+                //);
         return shape;
     }
 }

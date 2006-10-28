@@ -159,13 +159,12 @@ public class RectanglePainter extends AbstractPathPainter {
             p = Color.BLUE;
         }
         
+        g.fill(shape);
         if(getShapeEffect() != null) {
             getShapeEffect().apply(g, shape, width, height, (Color)p);
-        } else {
-            g.fill(shape);
         }
     }
-
+    
     public Shape provideShape(JComponent comp, int width, int height) {
         return calculateShape(comp,width,height);
     }

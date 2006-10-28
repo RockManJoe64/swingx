@@ -22,10 +22,11 @@ public class InnerGlowPathEffect extends PathEffect {
     public InnerGlowPathEffect() {
         super();
         setBrushColor(Color.WHITE);
-        setRenderInsideShape(true);
+        setBrushSteps(10);
+        setEffectWidth(10);
         setShouldFillShape(false);
         setOffset(new Point(0,0));
-        setEffectWidth(10);
+        setRenderInsideShape(true);
     }
     
 }
