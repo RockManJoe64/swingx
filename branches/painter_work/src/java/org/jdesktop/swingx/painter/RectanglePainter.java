@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -31,6 +32,8 @@ public class RectanglePainter extends AbstractPathPainter {
     //private Insets insets = new Insets(0,0,0,0);
     private int roundWidth = 20;
     private int roundHeight = 20;
+    private int width = -1;
+    private int height = -1;
     //private double strokeWidth = 1;
     
     /** Creates a new instance of RectanglePainter */
@@ -46,11 +49,37 @@ public class RectanglePainter extends AbstractPathPainter {
         this(top,left,bottom,right,roundWidth, roundHeight, true, Color.RED, 1f, Color.BLACK);
     }
     
+    public RectanglePainter(int width, int height, int cornerRadius, Paint fillPaint) {
+        this(new Insets(0,0,0,0), width,height, 
+                cornerRadius, cornerRadius, true, 
+                fillPaint, 1f, Color.BLACK);
+    }
+    
+    public RectanglePainter(Insets insets,
+            int width, int height,
+            int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
+            float strokeWidth, Paint borderPaint) {
+        this();
+        this.width = width;
+        this.height = height;
+        setHorizontalStretch(false);
+        setVerticalStretch(false);
+        setInsets(insets);
+        this.roundWidth = roundWidth;
+        this.roundHeight = roundHeight;
+        this.rounded = rounded;
+        this.setFillPaint(fillPaint);
+        this.setBorderWidth(strokeWidth);
+        this.setBorderPaint(borderPaint);
+    }
+    
     public RectanglePainter(int top, int left, int bottom, int right,
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
             float strokeWidth, Paint borderPaint) {
         this();
         this.setInsets(new Insets(top,left,bottom,right));
+        setVerticalStretch(true);
+        setHorizontalStretch(true);
         this.roundWidth = roundWidth;
         this.roundHeight = roundHeight;
         this.rounded = rounded;
@@ -96,14 +125,31 @@ public class RectanglePainter extends AbstractPathPainter {
     /* ======== drawing code ============ */
     protected Shape calculateShape(JComponent component, int width, int height) {
         Insets insets = getInsets();
-        Shape shape = new Rectangle2D.Double(insets.left, insets.top,
-                width-insets.left-insets.right,
-                height-insets.top-insets.bottom);
+        int x = insets.left;
+        int y = insets.top;
+        
+        // use the position calcs from the super class
+        Rectangle bounds = calculatePosition(this.width, this.height, width, height);
+        if(this.width != -1 && !isHorizontalStretch()) {
+            width = this.width;
+            x = bounds.x;
+        } 
+        if(this.height != -1 && !isVerticalStretch()) {
+            height = this.height;
+            y = bounds.y;
+        }
+        
+        if(isHorizontalStretch()) {
+            width = width - insets.left - insets.right;
+        }
+        if(isVerticalStretch()) {
+            height = height - insets.top - insets.bottom;
+        }
+        
+        
+        Shape shape = new Rectangle2D.Double(x, y, width, height);
         if(rounded) {
-            shape = new RoundRectangle2D.Double(insets.left, insets.top,
-                    width-insets.left-insets.right,
-                    height-insets.top-insets.bottom,
-                    roundWidth, roundHeight);
+            shape = new RoundRectangle2D.Double(x, y, width, height, roundWidth, roundHeight);
         }
         return shape;
     }
