@@ -28,7 +28,7 @@ import org.joshy.util.u;
 
 public class RectanglePainter extends AbstractPathPainter {
     private boolean rounded = false;
-    private Insets insets = new Insets(0,0,0,0);
+    //private Insets insets = new Insets(0,0,0,0);
     private int roundWidth = 20;
     private int roundHeight = 20;
     //private double strokeWidth = 1;
@@ -50,7 +50,7 @@ public class RectanglePainter extends AbstractPathPainter {
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
             float strokeWidth, Paint borderPaint) {
         this();
-        insets = new Insets(top,left,bottom,right);
+        this.setInsets(new Insets(top,left,bottom,right));
         this.roundWidth = roundWidth;
         this.roundHeight = roundHeight;
         this.rounded = rounded;
@@ -70,16 +70,6 @@ public class RectanglePainter extends AbstractPathPainter {
         boolean oldRounded = isRounded();
         this.rounded = rounded;
         firePropertyChange("rounded",oldRounded,rounded);
-    }
-    
-    public Insets getInsets() {
-        return insets;
-    }
-    
-    public void setInsets(Insets insets) {
-        Insets oldInsets = getInsets();
-        this.insets = insets;
-        firePropertyChange("insets",oldInsets,insets);
     }
     
     public int getRoundWidth() {
@@ -105,6 +95,7 @@ public class RectanglePainter extends AbstractPathPainter {
     
     /* ======== drawing code ============ */
     protected Shape calculateShape(JComponent component, int width, int height) {
+        Insets insets = getInsets();
         Shape shape = new Rectangle2D.Double(insets.left, insets.top,
                 width-insets.left-insets.right,
                 height-insets.top-insets.bottom);
@@ -160,8 +151,8 @@ public class RectanglePainter extends AbstractPathPainter {
         }
         
         g.fill(shape);
-        if(getShapeEffect() != null) {
-            getShapeEffect().apply(g, shape, width, height, (Color)p);
+        if(getPathEffect() != null) {
+            getPathEffect().apply(g, shape, width, height, (Color)p);
         }
     }
     
