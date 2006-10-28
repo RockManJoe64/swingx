@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.jdesktop.swingx.editors.PaintPicker;
-import org.joshy.util.u;
+
 
 /**
  *
@@ -35,7 +35,8 @@ public class Main {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception ex) {
-                    u.p(ex);
+                    System.out.println(ex.getMessage());
+                    ex.printStackTrace();
                 }
                 JFrame frame = new JFrame("Painter Editor");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

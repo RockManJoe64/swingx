@@ -33,7 +33,6 @@ import javax.swing.JPanel;
 import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.color.ColorUtil;
 import org.jdesktop.swingx.util.WindowUtils;
-import org.joshy.util.u;
 
 /**
  *
@@ -106,7 +105,7 @@ public class PropertyValuePanel extends JPanel {
                 final JFrame frame = new JFrame("Edit");
                 final PropertyChangeListener pcl = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-                        u.p("got a change");
+                        p("got a change");
                         writeValue();
                     }
                 };
@@ -120,14 +119,14 @@ public class PropertyValuePanel extends JPanel {
                     public void actionPerformed(ActionEvent actionEvent) {
                         frame.setVisible(false);
                         frame.dispose();
-                        u.p("property editor = " + propertyEditor);
-                        u.p("new value = " + propertyEditor.getValue());
-                        u.p("desc = " + propertyDescriptor);
+                        p("property editor = " + propertyEditor);
+                        p("new value = " + propertyEditor.getValue());
+                        p("desc = " + propertyDescriptor);
                         writeValue();
                         if(propertyEditor != null) {
                             propertyEditor.removePropertyChangeListener(pcl);
                         }
-                        u.p("finishing the editing");
+                        p("finishing the editing");
                         if(sheet != null) {
                             sheet.fireChangeEvent();
                         }
@@ -166,13 +165,26 @@ public class PropertyValuePanel extends JPanel {
         if(propertyDescriptor != null) {
             try {
                 Method meth = propertyDescriptor.getWriteMethod();
-                u.p("metho = " + meth.getName());
-                u.p("bean = " + bean);
+                p("method = " + meth.getName());
+                p("type = " + meth.getParameterTypes());
+                for(Class clss : meth.getParameterTypes()) {
+                    p("class = " + clss.getName());
+                }
+                
+                p("bean = " + bean);
                 meth.invoke(bean, propertyEditor.getValue());
             } catch (Exception ex) {
-                u.p(ex);
+                p(ex);
             }
             paintableEditor.repaint();
         }
+    }
+    
+    private static void p(String str) {
+        System.out.println(str);
+    }
+    private static void p(Throwable thr) {
+        System.out.println(thr.getMessage());
+        thr.printStackTrace();
     }
 }

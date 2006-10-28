@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import org.joshy.util.u;
+
 
 /**
  *
@@ -41,7 +41,8 @@ public class RectanglePropertyEditor extends PropertyEditorSupport {
             Rectangle val = (Rectangle)PropertyEditorUtil.createValueFromString(text, 4, Rectangle.class, int.class);
             setValue(val);
         } catch (Throwable e) {
-            u.p(e);
+            System.out.println(e.getMessage());
+            e.printStackTrace();
             throw new IllegalArgumentException("The input value " + originalParam + " is not formatted correctly. Please " +
                     "try something of the form [x,y,w,h] or [x , y , w , h] or [x y w h]", e);
         }

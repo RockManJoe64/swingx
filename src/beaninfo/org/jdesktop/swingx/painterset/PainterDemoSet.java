@@ -315,6 +315,12 @@ public class PainterDemoSet extends javax.swing.JFrame {
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectneon),"Rectangle with neon border");
         
+        // rectangle w/ pink neon border
+        rectneon = createStandardRectPainter();
+        rectneon.setFillPaint(Color.BLACK);
+        rectneon.setStyle(AbstractPainter.Style.FILLED);
+        rectneon.setPathEffect(new NeonBorderEffect(Color.RED, new Color(255,200,200), 30));
+        addDemo("Rectangle w/ pink neon border", new MattePainter(Color.BLACK), rectneon);
         
         
         //a list with painter effects

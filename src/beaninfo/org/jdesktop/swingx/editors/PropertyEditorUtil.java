@@ -11,7 +11,6 @@ package org.jdesktop.swingx.editors;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import org.joshy.util.u;
 
 /**
  *

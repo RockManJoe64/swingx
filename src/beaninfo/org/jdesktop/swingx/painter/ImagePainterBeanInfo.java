@@ -14,8 +14,6 @@ import org.jdesktop.swingx.editors.EnumerationValuePropertyEditor;
 import org.jdesktop.swingx.editors.ImageEditor;
 import org.jdesktop.swingx.editors.InsetsPropertyEditor;
 import org.jdesktop.swingx.editors.Point2DPropertyEditor;
-import org.netbeans.beaninfo.editors.InsetsEditor;
-import org.netbeans.beaninfo.editors.URLEditor;
 
 /**
  *

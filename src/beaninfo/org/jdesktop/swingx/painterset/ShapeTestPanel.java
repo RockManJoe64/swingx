@@ -33,7 +33,7 @@ public class ShapeTestPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         sheet = new JXPropertySheet2(new Object());
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(ShapeTestPanel.class, "ShapeTestPanel.jButton1.text")); // NOI18N
+        jButton1.setText("Refresh");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -41,6 +41,7 @@ public class ShapeTestPanel extends javax.swing.JPanel {
         });
 
         jSplitPane1.setDividerLocation(200);
+        preview.setToolTipText("asdf");
         org.jdesktop.layout.GroupLayout previewLayout = new org.jdesktop.layout.GroupLayout(preview);
         preview.setLayout(previewLayout);
         previewLayout.setHorizontalGroup(
@@ -53,6 +54,7 @@ public class ShapeTestPanel extends javax.swing.JPanel {
         );
         jSplitPane1.setLeftComponent(preview);
 
+        jScrollPane1.setToolTipText("asdf");
         sheet.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},

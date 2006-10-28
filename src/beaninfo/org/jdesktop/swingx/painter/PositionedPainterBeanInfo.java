@@ -11,7 +11,7 @@ package org.jdesktop.swingx.painter;
 
 import org.jdesktop.swingx.EnumerationValue;
 import org.jdesktop.swingx.editors.EnumerationValuePropertyEditor;
-import org.netbeans.beaninfo.editors.InsetsEditor;
+import org.jdesktop.swingx.editors.InsetsPropertyEditor;
 
 /**
  *
@@ -25,7 +25,7 @@ public class PositionedPainterBeanInfo extends AbstractPainterBeanInfo {
     }
     protected void initialize() {
         super.initialize();
-        setPropertyEditor(InsetsEditor.class,"insets");
+        setPropertyEditor(InsetsPropertyEditor.class,"insets");
         setPropertyEditor(VerticalPropertyEditor.class,"vertical");
         setPropertyEditor(HorizontalPropertyEditor.class,"horizontal");
     }

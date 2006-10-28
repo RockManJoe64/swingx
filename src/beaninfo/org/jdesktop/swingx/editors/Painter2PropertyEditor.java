@@ -22,7 +22,6 @@ import javax.swing.JOptionPane;
 import org.jdesktop.swingx.painter.URLPainter;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
-import org.joshy.util.u;
 
 /**
  *
@@ -34,7 +33,7 @@ public class Painter2PropertyEditor extends PropertyEditorSupport {
     
     void log(String str) {
         //JOptionPane.showMessageDialog(picker,str);
-        u.p(str);
+        System.out.println(str);
     }
     /** Creates a new instance of Painter2PropertyEditor */
     public Painter2PropertyEditor() {
@@ -72,7 +71,7 @@ public class Painter2PropertyEditor extends PropertyEditorSupport {
     }
     
     public void setAsText(String text) throws IllegalArgumentException {
-        u.p("setting as text: " + text);
+//        u.p("setting as text: " + text);
         log("setting as text: " + text);
     }
     

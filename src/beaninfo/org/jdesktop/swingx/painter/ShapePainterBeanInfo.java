@@ -10,9 +10,9 @@
 package org.jdesktop.swingx.painter;
 
 import org.jdesktop.swingx.editors.EnumPropertyEditor;
+import org.jdesktop.swingx.editors.InsetsPropertyEditor;
 import org.jdesktop.swingx.editors.Paint2PropertyEditor;
 import org.jdesktop.swingx.editors.ShapePropertyEditor;
-import org.netbeans.beaninfo.editors.InsetsEditor;
 
 /**
  *
@@ -28,7 +28,7 @@ public class ShapePainterBeanInfo extends PositionedPainterBeanInfo {
     protected void initialize() {
         super.initialize();
         setPropertyEditor(Paint2PropertyEditor.class, "fillPaint", "strokePaint");
-        setPropertyEditor(InsetsEditor.class,"insets");
+        setPropertyEditor(InsetsPropertyEditor.class,"insets");
         setPropertyEditor(StylePropertyEditor.class,"style");
         setPropertyEditor(ShapePropertyEditor.class,"shape");
     }

@@ -36,7 +36,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.text.JTextComponent;
 import org.jdesktop.swingx.util.Resize;
-import org.joshy.util.u;
 
 /**
  * "Paints" text at the given location. The location should be a point where

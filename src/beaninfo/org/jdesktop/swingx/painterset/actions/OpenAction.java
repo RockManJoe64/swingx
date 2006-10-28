@@ -11,7 +11,6 @@ import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterSet;
-import org.joshy.util.u;
 
 public class OpenAction extends AbstractAction {
     public OpenAction(PainterEditorPanel painterEditorPanel) {
@@ -38,7 +37,8 @@ public class OpenAction extends AbstractAction {
                 painterEditorPanel.addPainterSet(set);
             }
         }  catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

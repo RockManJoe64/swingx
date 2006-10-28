@@ -5,7 +5,6 @@ import javax.swing.AbstractAction;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterTreeModel;
-import org.joshy.util.u;
 
 public class AddPainterAction extends AbstractAction {
     public AddPainterAction(PainterEditorPanel painterEditorPanel) {
@@ -22,7 +21,8 @@ public class AddPainterAction extends AbstractAction {
             PainterTreeModel painterTreeModel = (PainterTreeModel) painterEditorPanel.getSelectedTree().getModel();
             painterTreeModel.insertNodeInto(pt, this.painterEditorPanel.getRootPainter(), this.painterEditorPanel.getRootPainter().getPainters().length);
         }  catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         } 
     }
 }

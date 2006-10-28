@@ -25,7 +25,6 @@ import org.jdesktop.swingx.color.ColorUtil;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.RectanglePainter;
 import org.jdesktop.swingx.propertysheet.BeanProvider;
-import org.joshy.util.u;
 import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
 import org.netbeans.swing.outline.Outline;
 

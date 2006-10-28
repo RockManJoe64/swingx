@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -23,46 +23,46 @@ package org.jdesktop.swingx.editors;
 
 import java.awt.geom.Point2D;
 import java.beans.PropertyEditorSupport;
-import org.joshy.util.u;
 
 /**
  *
  * @author rbair
  */
 public class Point2DPropertyEditor extends PropertyEditorSupport {
-
+    
     /** Creates a new instance of Point2DPropertyEditor */
     public Point2DPropertyEditor() {
     }
-
+    
     public Point2D getValue() {
         return (Point2D)super.getValue();
     }
-
+    
     public String getJavaInitializationString() {
         Point2D point = getValue();
         return point == null ? "null" : "new java.awt.geom.Point2D.Double(" + point.getX() + ", " + point.getY() + ")";
     }
-
+    
     public void setAsText(String text) throws IllegalArgumentException {
-
+        
         String originalParam = text;
         try {
             Point2D val = (Point2D)PropertyEditorUtil.createValueFromString(
                     text, 2, Point2D.Double.class, double.class);
             setValue(val);
         } catch (Exception e) {
-            u.p(e);
+            System.out.println(e.getMessage());
+            e.printStackTrace();
             throw new IllegalArgumentException("The input value " + originalParam + " is not formatted correctly. Please " +
                     "try something of the form [x,y] or [x , y] or [x y]", e);
         }
     }
-
+    
     public String getAsText() {
         Point2D point = getValue();
         return point == null ? "[]" : "[" + point.getX() + ", " + point.getY() + "]";
     }
-
+    
     public static void main(String... args) {
         test("[1.5,1.2]");
         test("1.5,1.2]");
@@ -79,7 +79,7 @@ public class Point2DPropertyEditor extends PropertyEditorSupport {
         test("[ ]");
         test("[1.5 1.2]");
     }
-
+    
     private static void test(String input) {
         System.out.print("Input '" + input + "'");
         try {
@@ -91,4 +91,4 @@ public class Point2DPropertyEditor extends PropertyEditorSupport {
             System.out.println(" failed: " + e.getMessage());
         }
     }
-} 
+}
