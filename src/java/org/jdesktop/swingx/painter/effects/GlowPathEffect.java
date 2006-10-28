@@ -23,11 +23,11 @@ public class GlowPathEffect extends PathEffect {
      */
     public GlowPathEffect() {
         super();
-        this.setBrushColor(Color.WHITE);
-        this.setBrushSteps(10);
-        this.setEffectWidth(10);
-        this.setShouldFillShape(true);
-        this.setOffset(new Point(0,0));
+        setBrushColor(Color.WHITE);
+        setBrushSteps(10);
+        setEffectWidth(10);
+        setShouldFillShape(false);
+        setOffset(new Point(0,0));
     }
     
 }

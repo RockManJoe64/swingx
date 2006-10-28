@@ -12,6 +12,7 @@ package org.jdesktop.swingx.painter.effects;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -33,7 +34,6 @@ import org.joshy.util.u;
  * @author joshy
  */
 public class PathEffect {
-    
     /**
      * Creates a new instance of PathEffect
      */
@@ -44,68 +44,60 @@ public class PathEffect {
         setRenderInsideShape(false);
         setOffset(new Point(4,4));
         setShouldFillShape(true);
+        setShapeMasked(true);
     }
     
     
     /*
-     * Applies the shape effect. This effect will be drawn on top of the graphics context. 
-     */    
+     * Applies the shape effect. This effect will be drawn on top of the graphics context.
+     */
     public void apply(Graphics2D g, Shape clipShape, int width, int height, Color fillColor) {
-        
-        // Set the clip shape onto a buffer image
-        BufferedImage clipImage = createClipImage(clipShape, g, 
-                width + getEffectWidth(), 
+        // create a rect to hold the bounds
+        Rectangle effectBounds = new Rectangle(0,0,
+                width + getEffectWidth(),
                 height + getEffectWidth());
+        
+        // set up a temp buffer
+        BufferedImage clipImage = new BufferedImage(
+                effectBounds.width,
+                effectBounds.height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = clipImage.createGraphics();
         
-        // Fill the shape with a gradient
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setComposite(AlphaComposite.SrcAtop);
+        // clear the buffer
+        g2.setPaint(Color.BLACK);
+        g2.setComposite(AlphaComposite.Clear);
+        g2.fillRect(0,0, effectBounds.width, effectBounds.height);
         
-        // fill the clip shape with the fill color (joshy: why do we do this?)
-        g2.setPaint(fillColor);
-        g2.fill(clipShape);
+        // turn on smoothing
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         // Apply the border glow effect
-        paintBorderGlow(g2, 8, clipShape, width, height);
+        if(isShapeMasked()) {
+            paintBorderGlow(g2, clipShape, width, height);
+            
+            // clip out the parts we don't want
+            g2.setComposite(AlphaComposite.Clear);
+            g2.setColor(Color.WHITE);
+            if(isRenderInsideShape()) {
+                // clip the outside
+                Area area = new Area(effectBounds);//new Rectangle(0,0,50,50));
+                area.subtract(new Area(clipShape));            
+                g2.fill(area);
+            } else {
+                // clip the inside
+                g2.fill(clipShape);
+            }
+            
+            // draw the final image
+            g2.dispose();            
+            g.drawImage(clipImage, 0, 0, null);
+        } else {
+            paintBorderGlow(g, clipShape, width, height);
+        }
         
-        g2.dispose();
-        
-        // draw the final image
-        g.drawImage(clipImage, 0, 0, null);
         
     }
     
-    /*
-    private Shape createClipShape(int width, int height) {
-        float border = 20.0f;
-        float x1 = border;
-        float y1 = border;
-        float x2 = width - border;
-        float y2 = height - border;
-        
-        float adj = 3.0f; // helps round out the sharp corners
-        float arc = 8.0f;
-        float dcx = 0.18f * width;
-        float cx1 = x1-dcx;
-        float cy1 = 0.40f * height;
-        float cx2 = x1+dcx;
-        float cy2 = 0.50f * height;
-        
-        GeneralPath gp = new GeneralPath();
-        gp.moveTo(x1-adj, y1+adj);
-        gp.quadTo(x1, y1, x1+adj, y1);
-        gp.lineTo(x2-arc, y1);
-        gp.quadTo(x2, y1, x2, y1+arc);
-        gp.lineTo(x2, y2-arc);
-        gp.quadTo(x2, y2, x2-arc, y2);
-        gp.lineTo(x1+adj, y2);
-        gp.quadTo(x1, y2, x1, y2-adj);
-        gp.curveTo(cx2, cy2, cx1, cy1, x1-adj, y1+adj);
-        gp.closePath();
-        return gp;
-    }
-     */
     
     private BufferedImage createClipImage(Shape s, Graphics2D g, int width, int height) {
         // Create a translucent intermediate image in which we can perform
@@ -132,19 +124,10 @@ public class PathEffect {
         return img;
     }
     
-    /* //no longer needed. part of chris' original blog
-    private static Color getMixedColor(Color c1, float pct1, Color c2, float pct2) {
-        float[] clr1 = c1.getComponents(null);
-        float[] clr2 = c2.getComponents(null);
-        for (int i = 0; i < clr1.length; i++) {
-            clr1[i] = (clr1[i] * pct1) + (clr2[i] * pct2);
-        }
-        return new Color(clr1[0], clr1[1], clr1[2], clr1[3]);
-    }*/
     
     /* draws the actual shaded border to the specified graphics
      */
-    private void paintBorderGlow(Graphics2D g2, int glowWidth, 
+    protected void paintBorderGlow(Graphics2D g2,
             Shape clipShape, int width, int height) {
         
         int steps = getBrushSteps();
@@ -175,16 +158,19 @@ public class PathEffect {
         }
         
         // set the inside/outside mode
+        /*
         if(inside) {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, brushAlpha));
         } else {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, brushAlpha));
-        }
-        
+        }*/
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, brushAlpha));
+            
         // draw the effect
         for(float i=0; i<steps; i=i+1f) {
             float brushWidth = i * effectWidth/steps;
-            g2.setStroke(new BasicStroke(brushWidth));
+            g2.setStroke(new BasicStroke(brushWidth,
+                    BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.draw(clipShape);
         }
         g2.translate(-offset.getX(), -offset.getY());
@@ -348,6 +334,29 @@ public class PathEffect {
         boolean oldShouldFillShape = this.shouldFillShape;
         this.shouldFillShape = shouldFillShape;
         propertyChangeSupport.firePropertyChange("shouldFillShape", new Boolean(oldShouldFillShape), new Boolean(shouldFillShape));
+    }
+    
+    /**
+     * Holds value of property shapeMasked.
+     */
+    private boolean shapeMasked;
+    
+    /**
+     * Getter for property shapeMasked.
+     * @return Value of property shapeMasked.
+     */
+    public boolean isShapeMasked() {
+        return this.shapeMasked;
+    }
+    
+    /**
+     * Setter for property shapeMasked.
+     * @param shapeMasked New value of property shapeMasked.
+     */
+    public void setShapeMasked(boolean shapeMasked) {
+        boolean oldShapeMasked = this.shapeMasked;
+        this.shapeMasked = shapeMasked;
+        propertyChangeSupport.firePropertyChange("shapeMasked", new Boolean(oldShapeMasked), new Boolean(shapeMasked));
     }
     
 }
