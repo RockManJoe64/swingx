@@ -16,7 +16,7 @@ import java.awt.geom.Point2D;
 import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.jdesktop.swingx.painter.effects.PathEffect;
-import org.joshy.util.u;
+
 
 /**
  *

@@ -12,8 +12,8 @@ package org.jdesktop.swingx.painter;
 import org.jdesktop.swingx.EnumerationValue;
 import org.jdesktop.swingx.editors.EnumPropertyEditor;
 import org.jdesktop.swingx.editors.EnumerationValuePropertyEditor;
+import org.jdesktop.swingx.editors.InsetsPropertyEditor;
 import org.jdesktop.swingx.editors.Paint2PropertyEditor;
-import org.netbeans.beaninfo.editors.InsetsEditor;
 
 /**
  *
@@ -28,8 +28,8 @@ public class RectanglePainterBeanInfo extends AbstractPainterBeanInfo {
     
     protected void initialize() {
         super.initialize();
-        setPropertyEditor(Paint2PropertyEditor.class, "paint", "borderPaint");
-        setPropertyEditor(InsetsEditor.class,"insets");
+        setPropertyEditor(Paint2PropertyEditor.class, "fillPaint", "borderPaint");
+        setPropertyEditor(InsetsPropertyEditor.class,"insets");
         setPropertyEditor(StylePropertyEditor.class,"style");
     }
     

@@ -25,7 +25,6 @@ import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
-import org.joshy.util.u;
 
 /**
  *
@@ -166,7 +165,7 @@ public class PainterTreeModel implements TreeModel {
     }
     
     public void valueForPathChanged(TreePath path, Object newValue) {
-        u.p("value for path changed: " + path + " " + newValue);
+        //u.p("value for path changed: " + path + " " + newValue);
     }
     
     public void insertNodeInto(Object droppedNode, Object newParent, int index) {

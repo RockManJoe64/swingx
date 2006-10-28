@@ -11,7 +11,6 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterTreeModel;
-import org.joshy.util.u;
 
 public class AddEffectAction extends AbstractAction {
     public AddEffectAction(PainterEditorPanel painterEditorPanel) {
@@ -46,7 +45,8 @@ public class AddEffectAction extends AbstractAction {
                     }
                 }
             }  catch (Exception ex) {
-                u.p(ex);
+                System.out.println(ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }

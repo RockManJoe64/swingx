@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.joshy.util.u;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterSet;
 
@@ -39,7 +38,8 @@ public class SaveAction extends AbstractAction {
             SaveAsAction.save(painterEditorPanel);
         }
         } catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

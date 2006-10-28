@@ -16,7 +16,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.editors.PainterUtil;
-import org.joshy.util.u;
 
 /**
  *
@@ -39,7 +38,7 @@ public class URLPainter extends CompoundPainter{
         try {
             this.url = file.toURL();
         } catch (MalformedURLException exception) {
-            u.p(exception);
+            p(exception);
             this.url = null;
         }
     }
@@ -48,7 +47,7 @@ public class URLPainter extends CompoundPainter{
         try {
             this.url = new URL(url);
         } catch (MalformedURLException ex) {
-            u.p(ex);
+            p(ex);
             this.url = null;
         }
     }
@@ -88,4 +87,11 @@ public class URLPainter extends CompoundPainter{
     }
     
     
+    private static void p(String str) {
+        System.out.println(str);
+    }
+    private static void p(Throwable thr) {
+        System.out.println(thr.getMessage());
+        thr.printStackTrace();
+    }
 }

@@ -35,7 +35,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.util.Resize;
-import org.joshy.util.u;
+
 
 /**
  * <p>A Painter that paints Shapes. It uses a stroke and a fillPaint to do so. The

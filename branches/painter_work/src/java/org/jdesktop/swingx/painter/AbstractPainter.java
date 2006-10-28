@@ -42,7 +42,6 @@ import org.jdesktop.swingx.JavaBean;
 import org.jdesktop.swingx.painter.effects.Effect;
 import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.util.PaintUtils;
-import org.joshy.util.u;
 
 /**
  * <p>A convenient base class from which concrete Painter implementations may

@@ -29,7 +29,6 @@ import org.jdesktop.swingx.editors.Point2DPropertyEditor;
 import org.jdesktop.swingx.editors.PointPropertyEditor;
 import org.jdesktop.swingx.editors.Rectangle2DPropertyEditor;
 import org.jdesktop.swingx.editors.RectanglePropertyEditor;
-import org.joshy.util.u;
 
 /**
  *
@@ -92,7 +91,7 @@ public class BeanUtils {
         PropertyEditor ed = getPE(pd,bean);
         Method meth = pd.getWriteMethod();
         if(meth == null) {
-            u.p("couldn't write to this bean!!!!");
+            p("couldn't write to this bean!!!!");
             return;
         }
         try {
@@ -102,7 +101,7 @@ public class BeanUtils {
             //u.p("got value: " + value);
             meth.invoke(bean,value);
         } catch (Exception ex) {
-            u.p("error writing back to the object");
+            p("error writing back to the object");
         }
         
     }
@@ -138,4 +137,11 @@ public class BeanUtils {
         return "???--";
     }
     
+    private static void p(String str) {
+        System.out.println(str);
+    }
+    private static void p(Throwable thr) {
+        System.out.println(thr.getMessage());
+        thr.printStackTrace();
+    }
 }

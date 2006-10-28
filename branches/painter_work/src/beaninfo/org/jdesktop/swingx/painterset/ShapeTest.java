@@ -38,7 +38,6 @@ import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
 import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
-import org.joshy.util.u;
 
 /**
  *
@@ -69,7 +68,6 @@ public class ShapeTest extends JXPanel {
         sheet.setHiddenShown(false);
         sheet.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent changeEvent) {
-                u.p("got a change");
                 tp.preview.repaint();
             }
         });

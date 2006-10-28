@@ -15,7 +15,6 @@ import java.awt.Insets;
 import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import org.jdesktop.swingx.painter.Painter;
-import org.joshy.util.u;
 
 /**
  *

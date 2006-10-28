@@ -10,7 +10,6 @@ import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterSet;
-import org.joshy.util.u;
 
 public class SaveAsAction extends AbstractAction {
     public SaveAsAction(PainterEditorPanel painterEditorPanel) {
@@ -37,10 +36,10 @@ public class SaveAsAction extends AbstractAction {
                 PainterUtil.savePainterToFile((CompoundPainter)set.model.getRoot(), file);
                 painterEditorPanel.updateFromPainterSet(set);
             }  else {
-                u.p("save canceled");
             }
         }  catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

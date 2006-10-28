@@ -16,7 +16,6 @@ import javax.swing.table.AbstractTableModel;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.CompoundPainterBeanInfo;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
-import org.joshy.util.u;
 
 
 public class BeanTableModel extends AbstractTreeTableModel {
@@ -28,7 +27,7 @@ public class BeanTableModel extends AbstractTreeTableModel {
     public Map<String,Category> categoryMap = new HashMap<String,Category>();
     
     private static void d(Object o) {
-        if(debug) u.p(o);
+        if(debug) System.out.println(""+o);
     }
     
     
@@ -102,7 +101,8 @@ public class BeanTableModel extends AbstractTreeTableModel {
                 }
             }
         }  catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
         
         // only use the catchall category if there is at least one property in it.
@@ -186,7 +186,6 @@ public class BeanTableModel extends AbstractTreeTableModel {
             if(prop.getPropertyType() == null) return false;
             if(prop.getWriteMethod() == null) return false;
             PropertyEditor ed = BeanUtils.getPE(prop,bean);
-            u.p("returned editor: " + ed);
             if(ed == null) return false;
             if(ed.isPaintable()) return true;
             return true;
@@ -267,15 +266,12 @@ public class BeanTableModel extends AbstractTreeTableModel {
     
     public void setValueAt(Object newValue, int rowIndex, int columnIndex) {
         if(columnIndex != 1) return;
-        u.p("setting " + newValue + " at " + rowIndex + "," + columnIndex);
         PropertyDescriptor prop = props.get(rowIndex);
-        u.p("prop = " + prop.getName());
         PropertyEditor ed = BeanUtils.getPE(prop, bean);
-        u.p("ed = " + ed);
         try {
             ed.setAsText((String)newValue);
         } catch (IllegalArgumentException arg) {
-            u.p("not a valid value: " + newValue);
+            System.out.println("not a valid value: " + newValue);
             return;
         }
         Method meth = prop.getWriteMethod();

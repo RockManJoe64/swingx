@@ -8,7 +8,6 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
-import org.joshy.util.u;
 
 public class ExportAction extends AbstractAction {
     public ExportAction(PainterEditorPanel painterEditorPanel) {
@@ -28,10 +27,10 @@ public class ExportAction extends AbstractAction {
                         this.painterEditorPanel.getRootPainter(), 
                         new File(fd.getDirectory(), fd.getFile()));
             }  else {
-                u.p("save canceled");
             }
         }  catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

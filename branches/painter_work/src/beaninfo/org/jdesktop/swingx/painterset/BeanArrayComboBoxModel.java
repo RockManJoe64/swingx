@@ -1,6 +1,6 @@
 package org.jdesktop.swingx.painterset;
 
-import com.totsp.util.BeanArrayList;
+import org.jdesktop.swingx.util.BeanArrayList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;

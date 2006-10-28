@@ -27,7 +27,6 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import org.jdesktop.swingx.color.ColorUtil;
-import org.joshy.util.u;
 
 /**
  *

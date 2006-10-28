@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import org.jdesktop.swingx.painter.RectanglePainter;
-import org.joshy.util.u;
 
 /**
  *
@@ -45,7 +44,7 @@ public class EnumPropertyEditor<E extends Enum<E>> extends PropertyEditorSupport
     }
     
     public void setAsText(String text) throws IllegalArgumentException {
-        u.p("setting as text: " + text);
+//        u.p("setting as text: " + text);
         Enum<E> e = Enum.valueOf(en, text);
         setValue(e);
     }

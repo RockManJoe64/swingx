@@ -18,7 +18,6 @@ import org.jdesktop.swingx.propertysheet.BeanTableModel;
 import org.jdesktop.swingx.propertysheet.Category;
 import org.jdesktop.swingx.propertysheet.PropertyValueCellEditor;
 import org.jdesktop.swingx.propertysheet.PropertyValueCellRenderer;
-import org.joshy.util.u;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;

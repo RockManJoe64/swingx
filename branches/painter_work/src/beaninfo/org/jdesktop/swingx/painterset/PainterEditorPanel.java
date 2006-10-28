@@ -20,7 +20,7 @@ import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import com.jhlabs.image.ShadowFilter;
-import com.totsp.util.BeanArrayList;
+import org.jdesktop.swingx.util.BeanArrayList;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -59,9 +59,6 @@ import org.jdesktop.swingx.painter.RectanglePainter;
 import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painter.TextPainter;
-import org.joshy.util.u;
-import org.openide.nodes.BeanNode;
-import org.openide.nodes.Node;
 import org.jdesktop.swingx.painterset.actions.AddEffectAction;
 import org.jdesktop.swingx.painterset.actions.AddPainterAction;
 import org.jdesktop.swingx.painterset.actions.DeleteAction;
@@ -153,7 +150,8 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         try {
             ImagePainter.baseURL = new File("../PainterTest/src/samples/").toURL();
         } catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
         
         
@@ -219,9 +217,9 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         painterSets.add(set);
         return set;
     }
-
+    
     public void closePainterSet(int i) {
-        u.p("closing painter: " + i);
+        //        u.p("closing painter: " + i);
         painterSets.remove(i);
     }
     public Action getNewDocumentAction() {
@@ -310,7 +308,8 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
             } else {
             }
         } catch (Exception ex) {
-            u.p(ex);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
     
@@ -665,7 +664,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         if(painterSets.size() > 0 && painterTabs.getSelectedIndex() >= 0) {
             // add one to skip over the 'none' item
             selectedPainterSet = painterSets.get(painterTabs.getSelectedIndex()+1);
-            u.p("set selected painter set to: " + selectedPainterSet.tree.hashCode());
+            
         }
     }//GEN-LAST:event_painterTabsStateChanged
     
@@ -689,12 +688,9 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
     
     private class PainterTreeSelectionListener implements TreeSelectionListener {
         public void valueChanged(TreeSelectionEvent evt) {
-            u.p("selected tree = " + getSelectedTree().hashCode());
             TreePath path = getSelectedTree().getSelectionPath();
-            u.p("in the listener: " + path + " " + evt.isAddedPath());
             if(path != null && evt.isAddedPath()) {
                 Object comp = path.getLastPathComponent();
-                u.p("updating: " + comp);
                 setSelectedPainter(comp);
                 if(comp != getSelectedTree().getModel().getRoot() &&
                         (comp instanceof Painter ||

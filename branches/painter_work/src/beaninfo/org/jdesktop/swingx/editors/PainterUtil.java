@@ -62,7 +62,6 @@ import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.editors.PainterPropertyEditor.*;
 import org.jdesktop.swingx.painter.PositionedPainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
-import org.joshy.util.u;
 
 /**
  *
@@ -96,8 +95,9 @@ public class PainterUtil {
         XMLDecoder dec = new XMLDecoder(new FileInputStream(in));
         
         dec.setExceptionListener(new ExceptionListener() {
-            public void exceptionThrown(Exception exception) {
-                u.p(exception);
+            public void exceptionThrown(Exception ex) {
+                System.out.println(ex.getMessage());
+                ex.printStackTrace();
             }
         });
         Object obj = dec.readObject();
@@ -107,17 +107,18 @@ public class PainterUtil {
     }
     
     public static Painter loadPainter(URL url) throws IOException {
-        u.p("loading: " + url);
+        //        u.p("loading: " + url);
         XMLDecoder dec = new XMLDecoder(url.openStream());
         
         dec.setExceptionListener(new ExceptionListener() {
-            public void exceptionThrown(Exception exception) {
-                u.p(exception);
+            public void exceptionThrown(Exception ex) {
+                System.out.println(ex.getMessage());
+                ex.printStackTrace();
             }
         });
         Object obj = dec.readObject();
         //setAAOn((Painter)obj);
-        u.p("object = " + obj);
+        //        u.p("object = " + obj);
         return (Painter)obj;
     }
     
@@ -135,7 +136,7 @@ public class PainterUtil {
     
     static public void savePainterToFile(Painter compoundPainter, File file) throws IOException {
         //System.setErr(null);
-        u.p("writing out to: " + file.getCanonicalPath());
+        //        u.p("writing out to: " + file.getCanonicalPath());
         setTransient(ImagePainter.class, "image");
         //setTransient(CompoundPainter.class,"antialiasing");
         //setTransient(AbstractPainter.class,"antialiasing");

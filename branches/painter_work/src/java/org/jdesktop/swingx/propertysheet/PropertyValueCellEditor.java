@@ -29,7 +29,6 @@ import javax.swing.event.ChangeEvent;
 import org.jdesktop.swingx.JXPropertySheet;
 import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.util.WindowUtils;
-import org.joshy.util.u;
 
 
 public class PropertyValueCellEditor extends DefaultCellEditor {
@@ -140,7 +139,7 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
     public void editingStopped(ChangeEvent e) {
         setBeanValue();
         cleanup();
-        u.p("editing stopped");
+        p("editing stopped");
     }
     
     // or this!!!
@@ -152,6 +151,13 @@ class ComboBoxTCE extends PropertyValuePanel implements CellEditorListener {
         bean = null;
         pd = null;
         pvce.removeCellEditorListener(this);
+    }
+    private static void p(String str) {
+        System.out.println(str);
+    }
+    private static void p(Throwable thr) {
+        System.out.println(thr.getMessage());
+        thr.printStackTrace();
     }
 }
 
@@ -267,10 +273,10 @@ class CustomEditorTCE extends PropertyValuePanel {
         // i don't think this is used
         pvce.addCellEditorListener(new CellEditorListener() {
             public void editingCanceled(ChangeEvent changeEvent) {
-                u.p("custom editor canceled");
+                //u.p("custom editor canceled");
             }
             public void editingStopped(ChangeEvent changeEvent) {
-                u.p("custom editor stopped");
+                //u.p("custom editor stopped");
             }
         });
     }
