@@ -35,6 +35,7 @@ import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.MattePainter;
+import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
 import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.joshy.util.u;
@@ -55,7 +56,7 @@ public class ShapeTest extends JXPanel {
         sp.setBorderPaint(Color.RED.darker());
         sp.setAntialiasing(AbstractPainter.Antialiasing.On);
         sp.setStyle(ShapePainter.Style.FILLED);
-        PathEffect se = new PathEffect();
+        PathEffect se = new NeonBorderEffect(Color.RED, Color.BLUE, 10);
         sp.setPathEffect(se);
         MattePainter mp = new MattePainter(Color.BLUE);
         

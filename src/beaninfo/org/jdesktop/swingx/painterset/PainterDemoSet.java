@@ -216,40 +216,76 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         
         
-        // normal rectangle
-        RectanglePainter rectnorm = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
-        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectnorm),"Rectangle, green on gray");
+        RectanglePainter rectnorm = null;
         
         // rect w/ 0 insets
-        rectnorm = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
-        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        rectnorm = createStandardRectPainter();
         rectnorm.setInsets(new Insets(0,0,0,0));
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectnorm),"Rectangle, green on gray, 0px insets");
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle, green on gray, 0px insets");
+        
+        // normal rectangle
+        rectnorm = createStandardRectPainter();
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle, green on gray, 20px insets");
+        
         // rect w/ 20px top insets
-        // rect w/ 
+        rectnorm = createStandardRectPainter();
+        rectnorm.setInsets(new Insets(50,0,0,0));
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle 50px top insets");
+        
+        // do the fixed size demos
+        rectnorm = create50pxRectPainter();
+        addDemo("Rectangle, 50x50, default aligned (center)", gray, rectnorm);
+        // rect 50x50 left aligned
+        rectnorm = create50pxRectPainter();
+        rectnorm.setHorizontal(RectanglePainter.HorizontalAlignment.LEFT);
+        addDemo("Rectangle, 50x50, left aligned", gray, rectnorm);
+
+        // rect 50x50 top aligned
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        addDemo("Rectangle, 50x50, top aligned", gray, rectnorm);
+        // rect 50x50 top aligned w/ horiz stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setHorizontalStretch(true);
+        addDemo("Rectangle, 50x50, top aligned w/ horiz stretch", gray, rectnorm);
+        // rect 50x50 top aligned w/ vert stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setVerticalStretch(true);
+        addDemo("Rectangle, 50x50, top aligned w/ vert stretch", gray, rectnorm);
+        // rect 50x50 top aligned w/ vert & horiz stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setHorizontalStretch(true);
+        rectnorm.setVerticalStretch(true);
+        addDemo("Rectangle, 50x50, top aligned w/ horiz & vert stretch", gray, rectnorm);
+        // rect 50x50 center aligned w/ vert & horiz stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVerticalStretch(true);
+        rectnorm.setHorizontalStretch(true);
+        addDemo("Rectangle, 50x50, center aligned w/ horiz & vert stretch", gray, rectnorm);
+        
+        // rect 50x50 center aligned w/ vert & horiz stretch & 20px insets
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVerticalStretch(true);
+        rectnorm.setHorizontalStretch(true);
+        rectnorm.setInsets(new Insets(20,20,20,20));
+        addDemo("Rectangle, 50x50, w/ horiz & vert stretch & 20px insets", gray, rectnorm);
         
         // rectangle with shadow
-        RectanglePainter rectshad = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
+        RectanglePainter rectshad = createStandardRectPainter();
         rectshad.setAntialiasing(AbstractPainter.Antialiasing.On);
         ShadowPathEffect rectShadEffect = new ShadowPathEffect();
         //rectShadEffect.setOffset(new Point(10,10));
         rectshad.setPathEffect(rectShadEffect);
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectshad),"Rectangle with shadow");
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectshad),"Rectangle with shadow");
         
         // rectangle with glow
-        RectanglePainter rectglow = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
+        RectanglePainter rectglow = createStandardRectPainter();
         rectglow.setAntialiasing(AbstractPainter.Antialiasing.On);
         rectglow.setPathEffect(new GlowPathEffect());
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectglow),"Rectangle with glow");
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectglow),"Rectangle with glow");
         
         // rectangle with inner shadow
         RectanglePainter rectinshad = new RectanglePainter(20,20,20,20, 30,30, true,
@@ -401,6 +437,28 @@ public class PainterDemoSet extends javax.swing.JFrame {
                 "Coming Soon Badge");
         
     }
+
+    private RectanglePainter create50pxRectPainter() {
+        RectanglePainter rectnorm;
+        
+        // rectangle positioning
+        // rect 50x50 default aligned (center)
+        rectnorm = new RectanglePainter(50, 50, 30, Color.GREEN);
+        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        rectnorm.setBorderPaint(Color.GREEN.darker());
+        //rectnorm.setStyle(AbstractPainter.Style.FILLED);
+        rectnorm.setBorderWidth(3);
+        return rectnorm;
+    }
+
+    private RectanglePainter createStandardRectPainter() {
+        RectanglePainter rectnorm;
+        // rect w/ 20px top insets
+        rectnorm = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        return rectnorm;
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -415,7 +473,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         painterPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        jSplitPane1.setDividerLocation(200);
+        jSplitPane1.setDividerLocation(250);
         painterList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -436,7 +494,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         painterPanel.setLayout(painterPanelLayout);
         painterPanelLayout.setHorizontalGroup(
             painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 317, Short.MAX_VALUE)
+            .add(0, 421, Short.MAX_VALUE)
         );
         painterPanelLayout.setVerticalGroup(
             painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -448,7 +506,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -495,6 +553,10 @@ public class PainterDemoSet extends javax.swing.JFrame {
             ((JXButton)component).setForegroundPainter(painter);
         }
         //painterPanel.repaint();
+    }
+    
+    private void addDemo(String text, Painter ... painters) {
+        addDemo(new JXPanel(),new CompoundPainter(painters),text);
     }
     
     private JList createJListWithData() {
