@@ -23,6 +23,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.text.Style;
+import org.apache.batik.ext.awt.LinearGradientPaint;
+import org.apache.batik.ext.awt.MultipleGradientPaint;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.painter.AbstractPainter;
@@ -33,6 +35,7 @@ import org.jdesktop.swingx.painter.effects.InnerShadowPathEffect;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.PainterListCellRenderer;
+import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
 import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.painter.PinstripePainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
@@ -53,9 +56,14 @@ public class PainterDemoSet extends javax.swing.JFrame {
         painterList.setModel(new DefaultListModel());
         painterPanel.setLayout(new BorderLayout());
         CompoundPainter comp;
-        GradientPaint gradient = new GradientPaint(new Point2D.Double(0,0), Color.BLACK,
-                new Point2D.Double(0,10), Color.BLUE);
+      //  GradientPaint gradient = new GradientPaint(new Point2D.Double(0,0), Color.BLACK,
+      //          new Point2D.Double(0,10), Color.BLUE);
         
+        Color[] colors = { Color.BLACK, Color.BLUE, Color.WHITE};
+        float[] floats = { 0f, 0.5f, 1f};
+        MultipleGradientPaint gradient = new LinearGradientPaint(
+                new Point2D.Double(0,0), new Point2D.Double(100,0), 
+                floats,colors);
         
         
         // a rectangle filled with a gradient
@@ -68,51 +76,139 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         Shape starShape = ShapeUtils.generatePolygon(5,30,15,true);
         // build a star shape with 5 points and 30 degree angles
-        ShapePainter star = new ShapePainter(starShape, Color.RED);
+        ShapePainter star = null;
+        
+        // star filled
+        star = new ShapePainter(starShape, Color.RED);
         star.setAntialiasing(ShapePainter.Antialiasing.On);
         star.setStyle(ShapePainter.Style.FILLED);
-        addDemo(new JXPanel(),star,"Star Shape");
+        addDemo(new JXPanel(),star,"Star style = filled");
+        // star outline
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setStyle(ShapePainter.Style.OUTLINE);
+        addDemo(new JXPanel(),star,"Star style = outline");
+        // star both
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setStyle(ShapePainter.Style.BOTH);
+        addDemo(new JXPanel(),star,"Star style = both");
+        // star both
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setStyle(ShapePainter.Style.BOTH);
+        star.setBorderWidth(6f);
+        addDemo(new JXPanel(),star,"Star border width = 5");
+        
+        // left/top aligned star
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVertical(ShapePainter.VerticalAlignment.TOP);
+        addDemo(new JXPanel(),star,"Star, left & top aligned");
+        // left/top aligned with insets
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVertical(ShapePainter.VerticalAlignment.TOP);
+        star.setInsets(new Insets(50,50,50,50));
+        addDemo(new JXPanel(),star,"Star, left & top aligned, 50px insets");
+        // left aligned only with left insets
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setInsets(new Insets(0,50,0,0));
+        addDemo(new JXPanel(),star,"Star, left aligned, 50px left insets");
+        // left aligned only with left top insets
+        star = new ShapePainter(starShape, Color.RED);
+        star.setAntialiasing(ShapePainter.Antialiasing.On);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setInsets(new Insets(50,50,0,0));
+        addDemo(new JXPanel(),star,"Star, left aligned, 50px left & top insets");
         
         // the same star, but with a drop shadow
         star = new ShapePainter(starShape, Color.RED);
         star.setAntialiasing(ShapePainter.Antialiasing.On);
         star.setStyle(ShapePainter.Style.FILLED);
-        star.setShapeEffect(new ShadowPathEffect());
+        star.setPathEffect(new ShadowPathEffect());
         addDemo(new JXPanel(), star, "Star with drop shadow");
         
         
         
         // normal text
-        Font font = new Font("SansSerif",Font.BOLD,80);
-        TextPainter textnorm = new TextPainter("Bloo", font, Color.RED);
+        Font font = new Font("SansSerif", Font.BOLD, 80);
+        TextPainter textnorm = new TextPainter("Neon", font, Color.RED);
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textnorm);
         addDemo(new JXPanel(),comp,"Text with no effects");
         
+        
+        // text AA on
+        MattePainter gray = new MattePainter(Color.GRAY);
+        TextPainter text = new TextPainter("Neon",font,Color.BLACK);
+        text.setAntialiasing(TextPainter.Antialiasing.On);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text AA on");
+        // text AA off
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setAntialiasing(TextPainter.Antialiasing.Off);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text AA off");
+        
+        // text left aligned
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Left aligned");
+        // text right aligned
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setHorizontal(TextPainter.HorizontalAlignment.RIGHT);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Right aligned");
+        // text top aligned
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setVertical(TextPainter.VerticalAlignment.TOP);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Top aligned");
+        // text bottom aligned
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setVertical(TextPainter.VerticalAlignment.BOTTOM);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Bottom aligned");
+        // text bottom aligned with insets
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setVertical(TextPainter.VerticalAlignment.BOTTOM);
+        text.setInsets(new Insets(0,0,20,0));
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Bottom aligned with 20px inset");
+        
+        // text with gradient
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setFillPaint(gradient);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text with gradient");
+        // text with snapped gradient
+        text = new TextPainter("Neon",font,Color.BLACK);
+        text.setFillPaint(gradient);
+        text.setSnapPaint(true);
+        addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text with snapped gradient");
+        
         // text w/ dropshadow
-        TextPainter textshadow = new TextPainter("Bloo", font, Color.RED);
+        TextPainter textshadow = new TextPainter("Neon", font, Color.RED);
         ShadowPathEffect shadow = new ShadowPathEffect();
         //shadow.setOffset(new Point(3,3));
-        textshadow.setShapeEffect(shadow);
+        textshadow.setPathEffect(shadow);
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textshadow);
         addDemo(new JXPanel(),comp,"Text with shadow");
 
         // text w/ glow effet
-        TextPainter textglow = new TextPainter("Bloo", font, Color.RED);
+        TextPainter textglow = new TextPainter("Neon", font, Color.RED);
         GlowPathEffect glow = new GlowPathEffect();
         //glow.setOffset(new Point(0,0));
-        textglow.setShapeEffect(glow);
+        textglow.setPathEffect(glow);
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textglow);
         addDemo(new JXPanel(),comp,"Text with glow");
         
         // text w/ inner shadow effect
-        TextPainter textinshad = new TextPainter("Bloo", font, Color.RED);
-        textinshad.setShapeEffect(new InnerShadowPathEffect());
+        TextPainter textinshad = new TextPainter("Neon", font, Color.RED);
+        textinshad.setPathEffect(new InnerShadowPathEffect());
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textinshad);
         addDemo(new JXPanel(), comp, "Text with inner shadow");
         
         // text w/ inner glow effect
-        TextPainter textinglow = new TextPainter("Bloo", font, Color.RED);
-        textinglow.setShapeEffect(new InnerGlowPathEffect());
+        TextPainter textinglow = new TextPainter("Neon", font, Color.RED);
+        textinglow.setPathEffect(new InnerGlowPathEffect());
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textinglow);
         addDemo(new JXPanel(), comp, "Text with inner glow");
         
@@ -124,37 +220,64 @@ public class PainterDemoSet extends javax.swing.JFrame {
         RectanglePainter rectnorm = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
-        //rectglow.setShapeEffect(new InnerGlowPathEffect());
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectnorm),"Rectangle, green on gray");
+        
+        // rect w/ 0 insets
+        rectnorm = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        rectnorm.setInsets(new Insets(0,0,0,0));
+        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
+                rectnorm),"Rectangle, green on gray, 0px insets");
+        // rect w/ 20px top insets
+        // rect w/ 
         
         // rectangle with shadow
         RectanglePainter rectshad = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         rectshad.setAntialiasing(AbstractPainter.Antialiasing.On);
-        rectshad.setShapeEffect(new ShadowPathEffect());
+        ShadowPathEffect rectShadEffect = new ShadowPathEffect();
+        //rectShadEffect.setOffset(new Point(10,10));
+        rectshad.setPathEffect(rectShadEffect);
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectshad),"Rectangle with shadow");
         
-        // rectangle with inner glow
+        // rectangle with glow
         RectanglePainter rectglow = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         rectglow.setAntialiasing(AbstractPainter.Antialiasing.On);
-        rectglow.setShapeEffect(new GlowPathEffect());
+        rectglow.setPathEffect(new GlowPathEffect());
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectglow),"Rectangle with glow");
+        
+        // rectangle with inner shadow
+        RectanglePainter rectinshad = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        rectinshad.setAntialiasing(AbstractPainter.Antialiasing.On);
+        InnerShadowPathEffect rectinshadEffect = new InnerShadowPathEffect();
+        rectinshad.setPathEffect(rectinshadEffect);
+        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
+                rectinshad),"Rectangle with inner shadow");
         
         // rectangle with inner glow
         RectanglePainter rectinglow = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         rectinglow.setAntialiasing(AbstractPainter.Antialiasing.On);
         InnerGlowPathEffect rectinglowEffect = new InnerGlowPathEffect();
-        rectinglowEffect.setEffectWidth(20);
-        rectinglow.setShapeEffect(rectinglowEffect);
+        rectinglow.setPathEffect(rectinglowEffect);
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectinglow),"Rectangle with inner glow");
         
         
+        // rectangle with cool border
+        RectanglePainter rectneon = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        rectneon.setStyle(RectanglePainter.Style.FILLED);
+        rectneon.setAntialiasing(AbstractPainter.Antialiasing.On);
+        rectneon.setPathEffect(new NeonBorderEffect(Color.WHITE, Color.ORANGE, 20));
+        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
+                rectneon),"Rectangle with neon border");
         
         
         
@@ -253,10 +376,10 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         
         // a text painter using the neon border path effect
-        TextPainter coollogo = new TextPainter("Cool Logo");
-        coollogo.setFont(new Font("SansSerif",Font.ITALIC,40));
-        coollogo.setFillPaint(gradient);
-        //coollogo.setShapeEffect(new NeonBorder(Color.WHITE, Color.RED, 8f));
+        TextPainter coollogo = new TextPainter("abcde");
+        coollogo.setFont(new Font("SansSerif",Font.BOLD,100));
+        coollogo.setFillPaint(Color.GREEN);
+        coollogo.setPathEffect(new NeonBorderEffect(Color.BLUE, Color.RED, 20));
         addDemo(new JXPanel(),coollogo,"A Cool Logo");
 
         
@@ -267,7 +390,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         ShadowPathEffect starShadow = new ShadowPathEffect();
         starShadow.setOffset(new Point(1,1));
         starShadow.setEffectWidth(5);
-        star.setShapeEffect(starShadow);
+        star.setPathEffect(starShadow);
         star.setAntialiasing(ShapePainter.Antialiasing.On);
         addDemo(new JXPanel(), new CompoundPainter(
                 new MattePainter(Color.GRAY),
@@ -313,11 +436,11 @@ public class PainterDemoSet extends javax.swing.JFrame {
         painterPanel.setLayout(painterPanelLayout);
         painterPanelLayout.setHorizontalGroup(
             painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 339, Short.MAX_VALUE)
+            .add(0, 317, Short.MAX_VALUE)
         );
         painterPanelLayout.setVerticalGroup(
             painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 354, Short.MAX_VALUE)
+            .add(0, 307, Short.MAX_VALUE)
         );
         jSplitPane1.setRightComponent(painterPanel);
 
@@ -325,11 +448,11 @@ public class PainterDemoSet extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
         );
         pack();
     }// </editor-fold>//GEN-END:initComponents

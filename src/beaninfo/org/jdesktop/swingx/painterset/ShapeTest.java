@@ -56,7 +56,7 @@ public class ShapeTest extends JXPanel {
         sp.setAntialiasing(AbstractPainter.Antialiasing.On);
         sp.setStyle(ShapePainter.Style.FILLED);
         PathEffect se = new PathEffect();
-        sp.setShapeEffect(se);
+        sp.setPathEffect(se);
         MattePainter mp = new MattePainter(Color.BLUE);
         
         final ShapeTestPanel tp = new ShapeTestPanel();

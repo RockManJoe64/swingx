@@ -35,6 +35,8 @@ public class NeonBorderEffect extends PathEffect {
         this.centerColor = centerColor;
         this.setRenderInsideShape(false);
         this.setShouldFillShape(false);
+        //setBrushSteps(30);
+        //setEffectWidth()
         //setShapeMasked(false);
     }
     
@@ -68,10 +70,14 @@ public class NeonBorderEffect extends PathEffect {
         }
          */
         gfx.setComposite(AlphaComposite.SrcOver);
-        for(int i=10; i>=0; i=i-3) {
-            float brushWidth = (float)i;
-            p("width = " + brushWidth);
-            gfx.setPaint(interpolateColor((float)(10-i)/10, edgeColor, centerColor));
+        for(int i=0; i<steps; i++) {
+            float brushWidth = (float)(steps+1-i);
+            float half = steps/2;
+            if(i<half) {
+                gfx.setPaint(interpolateColor((float)(half-i)/half, edgeColor, centerColor));
+            } else {
+                gfx.setPaint(interpolateColor((float)(i-half)/half, edgeColor, centerColor));                
+            }
             gfx.setStroke(new BasicStroke(brushWidth));
             gfx.draw(clipShape);
         }
@@ -95,7 +101,7 @@ public class NeonBorderEffect extends PathEffect {
             //        partsE[i] + " * " + t + " = " + partsR[i]);
         }
         Color c = new Color(partsR[0],partsR[1],partsR[2]);
-        System.out.println("c = " + c);
+        //System.out.println("c = " + c);
         return c;
         //return start;
     }

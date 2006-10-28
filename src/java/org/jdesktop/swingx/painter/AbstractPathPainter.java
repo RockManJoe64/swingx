@@ -25,7 +25,7 @@ import org.joshy.util.u;
 public abstract class AbstractPathPainter extends PositionedPainter {
 
     private boolean snapPaint;
-    private PathEffect shapeEffect;
+    private PathEffect pathEffect;
     private Style style = Style.BOTH;
     /**
      * The stroke width to use when painting. If null, the default Stroke for
@@ -238,12 +238,12 @@ public abstract class AbstractPathPainter extends PositionedPainter {
     // shape effect stuff
     public abstract Shape provideShape(JComponent comp, int width, int height);
     
-    public void setShapeEffect(PathEffect shapeEffect) {
-        this.shapeEffect = shapeEffect;
+    public void setPathEffect(PathEffect pathEffect) {
+        this.pathEffect = pathEffect;
     }
     
-    public PathEffect getShapeEffect() {
-        return this.shapeEffect;
+    public PathEffect getPathEffect() {
+        return this.pathEffect;
     }
 
 }
