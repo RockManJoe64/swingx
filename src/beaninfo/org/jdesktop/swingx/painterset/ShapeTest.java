@@ -44,26 +44,27 @@ import org.jdesktop.swingx.painter.ShapePainter;
  * @author joshy
  */
 public class ShapeTest extends JXPanel {
-    
+    public ShapePainter sp;
+    public PathEffect effect;
     /** Creates a new instance of ShapeTest */
     public ShapeTest() {
         
         
         Shape shape = PainterEditorPanel.stringToShape("S",new Font("Arial",Font.BOLD,160));
-        ShapePainter sp = new ShapePainter(shape,Color.RED);
-        sp.setBorderWidth(5);//new BasicStroke(5f));
+        sp = new ShapePainter(shape,Color.RED);
+        sp.setBorderWidth(5);
         sp.setBorderPaint(Color.RED.darker());
         sp.setAntialiasing(AbstractPainter.Antialiasing.On);
         sp.setStyle(ShapePainter.Style.FILLED);
-        PathEffect se = new NeonBorderEffect(Color.RED, Color.BLUE, 10);
-        sp.setPathEffect(se);
+        effect = new NeonBorderEffect();
+        sp.setPathEffect(effect);
         MattePainter mp = new MattePainter(Color.BLUE);
         
-        final ShapeTestPanel tp = new ShapeTestPanel();
+        final ShapeTestPanel tp = new ShapeTestPanel(this);
         ((JXPanel)tp.preview).setBackgroundPainter(new CompoundPainter(mp,sp));
         
         JXPropertySheet2 sheet = (JXPropertySheet2)tp.sheet;
-        sheet.setBean(se);
+        sheet.setBean(effect);
         sheet.setExpertOnly(false);
         sheet.setHiddenShown(false);
         sheet.addChangeListener(new ChangeListener() {
@@ -81,12 +82,30 @@ public class ShapeTest extends JXPanel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.add(new ShapeTest());
                 frame.pack();
                 //frame.setSize(300,300);
                 frame.setVisible(true);
             }
         });
+    }
+
+    
+    boolean isEffectEnabled() {
+        if(sp.getPathEffect() == null) {
+            return false;
+        }
+        return true;
+    }
+
+    void removeEffect() {
+        sp.setPathEffect(null);
+    }
+
+    void addEffect() {
+        sp.setPathEffect(effect);
+        
     }
     
 }

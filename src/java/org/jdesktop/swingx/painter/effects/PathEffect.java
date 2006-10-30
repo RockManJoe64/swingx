@@ -33,6 +33,7 @@ import org.jdesktop.swingx.color.ColorUtil;
  * @author joshy
  */
 public class PathEffect {
+    private static final boolean debug = false;
     /**
      * Creates a new instance of PathEffect
      */
@@ -53,25 +54,30 @@ public class PathEffect {
     public void apply(Graphics2D g, Shape clipShape, int width, int height, Color fillColor) {
         // create a rect to hold the bounds
         Rectangle effectBounds = new Rectangle(0,0,
-                width + getEffectWidth(),
-                height + getEffectWidth());
-        
-        // set up a temp buffer
-        BufferedImage clipImage = new BufferedImage(
-                effectBounds.width,
-                effectBounds.height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = clipImage.createGraphics();
-        
-        // clear the buffer
-        g2.setPaint(Color.BLACK);
-        g2.setComposite(AlphaComposite.Clear);
-        g2.fillRect(0,0, effectBounds.width, effectBounds.height);
-        
-        // turn on smoothing
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                width  + getEffectWidth()*2 + 1,
+                height + getEffectWidth()*2 + 1);
         
         // Apply the border glow effect
         if(isShapeMasked()) {
+            // set up a temp buffer
+            BufferedImage clipImage = new BufferedImage(
+                    effectBounds.width,
+                    effectBounds.height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = clipImage.createGraphics();
+            
+            // clear the buffer
+            g2.setPaint(Color.BLACK);
+            g2.setComposite(AlphaComposite.Clear);
+            g2.fillRect(0, 0, effectBounds.width, effectBounds.height);
+            if(debug) {
+                g2.setPaint(Color.WHITE);
+                g2.setComposite(AlphaComposite.SrcOver);
+                g2.drawRect(0, 0, effectBounds.width-1, effectBounds.height-1);
+            }
+            
+            // turn on smoothing
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.translate(getEffectWidth()-getOffset().getX(), getEffectWidth()-getOffset().getY());
             paintBorderGlow(g2, clipShape, width, height);
             
             // clip out the parts we don't want
@@ -79,8 +85,8 @@ public class PathEffect {
             g2.setColor(Color.WHITE);
             if(isRenderInsideShape()) {
                 // clip the outside
-                Area area = new Area(effectBounds);//new Rectangle(0,0,50,50));
-                area.subtract(new Area(clipShape));            
+                Area area = new Area(effectBounds);
+                area.subtract(new Area(clipShape));
                 g2.fill(area);
             } else {
                 // clip the inside
@@ -88,8 +94,8 @@ public class PathEffect {
             }
             
             // draw the final image
-            g2.dispose();            
-            g.drawImage(clipImage, 0, 0, null);
+            g2.dispose();
+            g.drawImage(clipImage, -getEffectWidth()+(int)getOffset().getX(), -getEffectWidth()+(int)getOffset().getY(), null);
         } else {
             paintBorderGlow(g, clipShape, width, height);
         }
@@ -164,7 +170,7 @@ public class PathEffect {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, brushAlpha));
         }*/
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, brushAlpha));
-            
+        
         // draw the effect
         for(float i=0; i<steps; i=i+1f) {
             float brushWidth = i * effectWidth/steps;

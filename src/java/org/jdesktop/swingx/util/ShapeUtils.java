@@ -26,6 +26,10 @@ public final class ShapeUtils {
     /** Creates a new instance of ShapeUtils */
     private ShapeUtils() { }
     
+    public static Shape generatePolygon(int sides, int outsideRadius, boolean normalize) {
+        return generatePolygon(sides, outsideRadius, 0, normalize);
+    }
+    
     public static Shape generatePolygon(int sides, int outsideRadius, int insideRadius, boolean normalize) {
         Shape shape = generatePolygon(sides,outsideRadius,insideRadius);
         if(normalize) {
@@ -36,6 +40,8 @@ public final class ShapeUtils {
         }
         return shape;
     }
+    
+    
     public static Shape generatePolygon(int sides, int outsideRadius, int insideRadius) {
         
         if(sides < 3) {
