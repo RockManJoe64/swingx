@@ -107,7 +107,7 @@ public class TextPainter extends AbstractPathPainter {
         
         // get the font metrics
         FontMetrics metrics = g.getFontMetrics(g.getFont());
-        Rectangle2D rect = metrics.getStringBounds(text,g);
+        //Rectangle2D rect = metrics.getStringBounds(text,g);
         
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();

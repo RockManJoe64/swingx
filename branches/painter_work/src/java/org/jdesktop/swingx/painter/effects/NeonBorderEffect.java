@@ -27,27 +27,23 @@ public class NeonBorderEffect extends PathEffect {
     private Color centerColor;
     
     
+    public NeonBorderEffect() {
+        this(Color.GREEN, Color.WHITE, 10);
+    }
+    
     /** Creates a new instance of NeonBorderEffect */
     public NeonBorderEffect(Color edgeColor, Color centerColor, int effectWidth) {
         super();
         setEffectWidth(effectWidth);
-        this.edgeColor = edgeColor;
-        this.centerColor = centerColor;
+        this.setEdgeColor(edgeColor);
+        this.setCenterColor(centerColor);
         this.setRenderInsideShape(false);
         this.setShouldFillShape(false);
-        //setBrushSteps(30);
-        //setEffectWidth()
-        //setShapeMasked(false);
     }
     
     protected void paintBorderGlow(Graphics2D gfx, Shape clipShape, int width, int height) {
-        //gfx.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        int steps = getBrushSteps();
+        int steps = getEffectWidth();
         float brushAlpha = 1f/steps;
-        
-        //gfx.setPaint(getBrushColor());
-        //Point2D offset = getOffset();
-        //gfx.translate(offset.getX(), offset.getY());
         
         /*
         // draw the effect
@@ -69,20 +65,22 @@ public class NeonBorderEffect extends PathEffect {
             gfx.draw(clipShape);
         }
          */
+        gfx.translate(getOffset().getX(), getOffset().getY());
         gfx.setComposite(AlphaComposite.SrcOver);
         for(int i=0; i<steps; i++) {
             float brushWidth = (float)(steps+1-i);
             float half = steps/2;
             if(i<half) {
-                gfx.setPaint(interpolateColor((float)(half-i)/half, edgeColor, centerColor));
+                gfx.setPaint(interpolateColor((float)(half-i)/half, getEdgeColor(), getCenterColor()));
             } else {
-                gfx.setPaint(interpolateColor((float)(i-half)/half, edgeColor, centerColor));                
+                gfx.setPaint(interpolateColor((float)(i-half)/half, getEdgeColor(), getCenterColor()));                
             }
-            gfx.setStroke(new BasicStroke(brushWidth));
+            gfx.setStroke(new BasicStroke(brushWidth,
+                    BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            //gfx.setStroke(new BasicStroke(brushWidth));
             gfx.draw(clipShape);
         }
-        
-        //gfx.translate(-offset.getX(), -offset.getY());
+        gfx.translate(-getOffset().getX(), -getOffset().getY());
         
     }
     
@@ -91,18 +89,29 @@ public class NeonBorderEffect extends PathEffect {
     }
     
     protected Color interpolateColor(float t, Color start, Color end) {
-        //System.out.println("t = " + t + " " + start + " -> " + end);
         float[] partsS = start.getRGBComponents(null);
         float[] partsE = end.getRGBComponents(null);
-        float[] partsR = new float[3];
-        for(int i=0; i<3; i++) {
+        float[] partsR = new float[4];
+        for(int i=0; i<4; i++) {
             partsR[i] = (partsS[i] - partsE[i])*t + partsE[i];
-            //System.out.println("i = " + i + " " + partsS[i] + " - " +
-            //        partsE[i] + " * " + t + " = " + partsR[i]);
         }
-        Color c = new Color(partsR[0],partsR[1],partsR[2]);
-        //System.out.println("c = " + c);
+        Color c = new Color(partsR[0],partsR[1],partsR[2],partsR[3]);
         return c;
-        //return start;
+    }
+
+    public Color getEdgeColor() {
+        return edgeColor;
+    }
+
+    public void setEdgeColor(Color edgeColor) {
+        this.edgeColor = edgeColor;
+    }
+
+    public Color getCenterColor() {
+        return centerColor;
+    }
+
+    public void setCenterColor(Color centerColor) {
+        this.centerColor = centerColor;
     }
 }
