@@ -9,12 +9,18 @@
 
 package org.jdesktop.swingx.painter;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
+import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.effects.PathEffect;
 
 
@@ -142,6 +148,8 @@ public abstract class AbstractPathPainter extends PositionedPainter {
     public float getBorderWidth() {
         return borderWidth;
     }
+    
+    
     
     public static Paint calculateSnappedPaint(Paint p, int width, int height) {
         if(p instanceof Color) {

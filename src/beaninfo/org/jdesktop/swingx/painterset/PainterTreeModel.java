@@ -23,7 +23,7 @@ import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.effects.Effect;
 import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 
 /**
@@ -197,7 +197,7 @@ public class PainterTreeModel implements TreeModel {
         fireStructureChanged();
     }
     
-    public void addShapeEffect(ShapePainter shapePainter, PathEffect eff) {
+    public void addShapeEffect(ShapePainter shapePainter, AbstractPathEffect eff) {
         shapePainter.setPathEffect(eff);
         fireStructureChanged();
     }

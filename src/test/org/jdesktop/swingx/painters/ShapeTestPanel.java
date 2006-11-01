@@ -4,7 +4,7 @@
  * Created on August 23, 2006, 4:34 PM
  */
 
-package org.jdesktop.swingx.painterset;
+package org.jdesktop.swingx.painters;
 
 import java.awt.Font;
 import java.awt.Shape;
@@ -13,6 +13,7 @@ import java.util.Map;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.combobox.MapComboBoxModel;
+import org.jdesktop.swingx.painterset.*;
 import org.jdesktop.swingx.util.ShapeUtils;
 
 /**
@@ -116,13 +117,15 @@ public class ShapeTestPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
-                    .add(jButton1)
                     .add(layout.createSequentialGroup()
-                        .add(shapeSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 206, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jCheckBox1)))
-                .addContainerGap())
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(shapeSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 206, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jCheckBox1)))
+                        .addContainerGap())
+                    .add(jButton1)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

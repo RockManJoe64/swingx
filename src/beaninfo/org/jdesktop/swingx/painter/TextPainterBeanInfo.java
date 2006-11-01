@@ -26,7 +26,7 @@ public class TextPainterBeanInfo extends PositionedPainterBeanInfo {
     protected void initialize() {
         super.initialize();
         setDisplayName("Text","text");
-        setPropertyEditor(Paint2PropertyEditor.class,"paint");
+        //inherited setPropertyEditor(Paint2PropertyEditor.class,"fillPaint");
     }
     
 }

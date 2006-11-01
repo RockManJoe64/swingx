@@ -40,7 +40,9 @@ public class RectanglePainter extends AbstractPathPainter {
     public RectanglePainter() {
     }
     
-    
+    public RectanglePainter(Color fillPaint, Color borderPaint) {
+        this(0,0,0,0,0,0,false,fillPaint,1f,borderPaint);
+    }
     public RectanglePainter(int top, int left, int bottom, int right) {
         this(top, left, bottom, right, 0, 0, false, Color.RED, 1f, Color.BLACK);
     }

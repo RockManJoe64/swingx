@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.swingx.painter.effects;
+package org.jdesktop.swingx.painters;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;

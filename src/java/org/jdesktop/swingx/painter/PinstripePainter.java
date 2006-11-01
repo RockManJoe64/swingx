@@ -112,6 +112,13 @@ public class PinstripePainter extends AbstractPainter {
     public PinstripePainter(double angle) {
         this.angle = angle;
     }
+    
+    public PinstripePainter(Paint paint, double angle, double stripeWidth, double spacing) {
+        this.paint = paint;
+        this.angle = angle;
+        this.stripeWidth = stripeWidth;
+        this.spacing = spacing;
+    }
 
     /**
      * Set the paint to use for drawing the pinstripes

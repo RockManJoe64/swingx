@@ -116,6 +116,7 @@ public class PropertyValueCellRenderer extends DefaultOutlineCellRenderer {
             
             // handle paintable property editors
             if (pe != null && pe.isPaintable()) {
+                pe.setValue(BeanUtils.getPropertyValue(prop,bean));
                 customEditorPanel.setPropertyEditor(pe);
                 customEditorPanel.setEditorComponent(null); // reset to paintable
                 this.pd = prop;

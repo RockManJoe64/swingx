@@ -27,7 +27,7 @@ public class ShapePainterBeanInfo extends PositionedPainterBeanInfo {
     
     protected void initialize() {
         super.initialize();
-        setPropertyEditor(Paint2PropertyEditor.class, "fillPaint", "strokePaint");
+        setPropertyEditor(Paint2PropertyEditor.class, "fillPaint", "borderPaint");
         setPropertyEditor(InsetsPropertyEditor.class,"insets");
         setPropertyEditor(StylePropertyEditor.class,"style");
         setPropertyEditor(ShapePropertyEditor.class,"shape");

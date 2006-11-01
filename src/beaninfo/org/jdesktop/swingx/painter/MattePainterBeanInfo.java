@@ -24,7 +24,7 @@ public class MattePainterBeanInfo extends AbstractPainterBeanInfo{
     
     protected void initialize() {
         super.initialize();
-        setPropertyEditor(Paint2PropertyEditor.class, "paint");
+        setPropertyEditor(Paint2PropertyEditor.class, "fillPaint");
     }
     
 }

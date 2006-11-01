@@ -4,11 +4,12 @@
  * Created on October 18, 2006, 8:20 PM
  */
 
-package org.jdesktop.swingx.painterset;
+package org.jdesktop.swingx.painters;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Insets;
@@ -19,9 +20,16 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.text.Style;
 import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.apache.batik.ext.awt.MultipleGradientPaint;
@@ -29,6 +37,7 @@ import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
+import org.jdesktop.swingx.painter.PainterTableCellRenderer;
 import org.jdesktop.swingx.painter.effects.GlowPathEffect;
 import org.jdesktop.swingx.painter.effects.InnerGlowPathEffect;
 import org.jdesktop.swingx.painter.effects.InnerShadowPathEffect;
@@ -36,7 +45,7 @@ import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.PainterListCellRenderer;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.PinstripePainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
 import org.jdesktop.swingx.painter.ShapePainter;
@@ -56,8 +65,6 @@ public class PainterDemoSet extends javax.swing.JFrame {
         painterList.setModel(new DefaultListModel());
         painterPanel.setLayout(new BorderLayout());
         CompoundPainter comp;
-      //  GradientPaint gradient = new GradientPaint(new Point2D.Double(0,0), Color.BLACK,
-      //          new Point2D.Double(0,10), Color.BLUE);
         
         Color[] colors = { Color.BLACK, Color.BLUE, Color.WHITE};
         float[] floats = { 0f, 0.5f, 1f};
@@ -319,7 +326,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         rectneon = createStandardRectPainter();
         rectneon.setFillPaint(Color.BLACK);
         rectneon.setStyle(AbstractPainter.Style.FILLED);
-        rectneon.setPathEffect(new NeonBorderEffect(Color.RED, new Color(255,200,200), 30));
+        rectneon.setPathEffect(new NeonBorderEffect(new Color(255,100,100), new Color(255,255,255), 30));
         addDemo("Rectangle w/ pink neon border", new MattePainter(Color.BLACK), rectneon);
         
         
@@ -385,16 +392,15 @@ public class PainterDemoSet extends javax.swing.JFrame {
         addDemo(new JXPanel(),triangle,"Triangle w/ gradient");
         
         
-        
+        // affine transforms
         TextPainter normText = new TextPainter("Text", font);
         comp = new CompoundPainter(normText);
         addDemo(new JXPanel(), comp, "Normal Text");
-
+        
         TextPainter rotText = new TextPainter("Text", font);
         comp = new CompoundPainter(rotText);
         comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
         addDemo(new JXPanel(), comp, "Rotated Text");
-        
         
         TextPainter shearText = new TextPainter("Text", font);
         comp = new CompoundPainter(shearText);
@@ -405,7 +411,6 @@ public class PainterDemoSet extends javax.swing.JFrame {
         comp = new CompoundPainter(scaleText);
         comp.setTransform(AffineTransform.getScaleInstance(2,2));
         addDemo(new JXPanel(), comp, "Scaled Text");
-        
         
         rotText = new TextPainter("Text", font);
         rectnorm = new RectanglePainter(30,30,30,30,30,30,true,Color.RED,4f,Color.RED.darker());
@@ -418,12 +423,15 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         
         // a text painter using the neon border path effect
-        TextPainter coollogo = new TextPainter("abcde");
+        TextPainter coollogo = new TextPainter("Neon");
         coollogo.setFont(new Font("SansSerif",Font.BOLD,100));
-        coollogo.setFillPaint(Color.GREEN);
-        coollogo.setPathEffect(new NeonBorderEffect(Color.BLUE, Color.RED, 20));
-        addDemo(new JXPanel(),coollogo,"A Cool Logo");
+        coollogo.setFillPaint(Color.BLACK);
+        NeonBorderEffect neon1 = new NeonBorderEffect(Color.RED.darker().darker(), Color.RED.brighter(), 10);
+        neon1.setBorderPosition(NeonBorderEffect.BorderPosition.Centered);
+        coollogo.setPathEffect(neon1);
+        addDemo("A Cool Logo",new MattePainter(Color.BLACK),coollogo);
 
+        
         
         // create a coming soon badge
         star = new ShapePainter(ShapeUtils.generatePolygon(30,50,45,true),Color.RED);
@@ -442,6 +450,47 @@ public class PainterDemoSet extends javax.swing.JFrame {
                 ),
                 "Coming Soon Badge");
         
+        
+        // itunes like table demo
+        JTable musicTable = createJTableWithData(false);
+        //musicTable.setIntercellSpacing(new Dimension(0,0));
+        musicTable.setGridColor(Color.GRAY.darker());
+        PainterTableCellRenderer tableRenderer = new PainterTableCellRenderer();
+        MultipleGradientPaint shading = new LinearGradientPaint(
+                new Point(0,0), new Point(0,10), 
+                new float[] {0f, 1f} , 
+                new Color[] {Color.GRAY, Color.GRAY.darker()});
+        tableRenderer.setBackgroundPainter(new MattePainter(shading));
+        shading = new LinearGradientPaint(
+                new Point(0,0), new Point(0,10), 
+                new float[] {0f, 1f} , 
+                new Color[] {Color.BLUE, Color.BLUE.darker()});
+        
+        TextPainter selectionText = new TextPainter();
+        selectionText.setFillPaint(Color.BLACK);
+        selectionText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        tableRenderer.setSelectionBackgroundPainter(new MattePainter(shading));
+        
+        musicTable.setDefaultRenderer(Object.class, tableRenderer);
+        
+        PainterTableCellRenderer headerRenderer = new PainterTableCellRenderer();
+        CompoundPainter headerPainter = new CompoundPainter(
+                new MattePainter(new Color(200,200,200)),
+                new PinstripePainter(new Color(220,220,220),45,5,8),
+                new RectanglePainter(new Color(200,200,200,0), Color.BLACK));
+        headerPainter.setAntialiasing(CompoundPainter.Antialiasing.On);
+        headerRenderer.setBackgroundPainter(headerPainter);
+        
+        
+        for(int i=0; i<musicTable.getColumnCount(); i++) {
+            TableColumn col = musicTable.getColumn(musicTable.getColumnName(i));
+            col.setHeaderRenderer(headerRenderer);
+        }
+        //musicTable.setEnabled(false);
+        
+        musicTable.setRowSelectionAllowed(true);
+        musicTable.setColumnSelectionAllowed(false);
+        addDemo(new JScrollPane(musicTable), null, "JTable with custom renderer");
     }
 
     private RectanglePainter create50pxRectPainter() {
@@ -568,6 +617,20 @@ public class PainterDemoSet extends javax.swing.JFrame {
     private JList createJListWithData() {
         String[] data = { "Item 1", "Item 2", "Item 3", "Item 4" };
         return new JList(data);
+    }
+    
+    private JTable createJTableWithData(final boolean editable) {
+        String[] columns = { "Song", "Artist", "Album"};
+        String[][] data = { 
+            { "Love Me Do", "The Beatles", "With the Beatles"},
+            { "Evil Woman", "ELO", "Classics" },
+            { "Crash", "Dave Mathews Band", "Crash" }
+        };
+        return new JTable(new DefaultTableModel(data,columns) {
+            public boolean isCellEditable(int row, int column) {
+                return editable;
+            }
+        });
     }
     
     

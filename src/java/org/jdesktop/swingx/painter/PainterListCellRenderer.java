@@ -77,8 +77,6 @@ public class PainterListCellRenderer extends DefaultListCellRenderer {
     
     private void applyPainter(final Painter painter, final Graphics g) {
         Graphics2D g2 = (Graphics2D)g.create();
-        Insets ins = this.getInsets();
-        //g2.translate(ins.left, ins.top);
         painter.paint(g2, this,
                 this.getWidth(),
                 this.getHeight());
