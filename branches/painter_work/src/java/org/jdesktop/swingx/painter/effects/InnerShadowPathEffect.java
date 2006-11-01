@@ -16,7 +16,7 @@ import java.awt.Point;
  *
  * @author joshy
  */
-public class InnerShadowPathEffect extends PathEffect {
+public class InnerShadowPathEffect extends AbstractPathEffect {
     
     /** Creates a new instance of InnerShadowPathEffect */
     public InnerShadowPathEffect() {

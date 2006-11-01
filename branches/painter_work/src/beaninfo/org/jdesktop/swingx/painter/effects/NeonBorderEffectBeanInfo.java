@@ -9,6 +9,7 @@
 
 package org.jdesktop.swingx.painter.effects;
 
+import org.jdesktop.swingx.editors.EnumPropertyEditor;
 import org.jdesktop.swingx.editors.Paint2PropertyEditor;
 import org.jdesktop.swingx.painter.AbstractPainterBeanInfo;
 
@@ -27,15 +28,15 @@ public class NeonBorderEffectBeanInfo extends AbstractPainterBeanInfo {
         super.initialize();
         setPropertyEditor(Paint2PropertyEditor.class, "edgeColor", "centerColor", "brushColor");
         //setPropertyEditor(InsetsPropertyEditor.class,"insets");
-        //setPropertyEditor(StylePropertyEditor.class,"style");
+        setPropertyEditor(BorderPositionPropertyEditor.class,"borderPosition");
     }
     
-    /*
-    public static final class StylePropertyEditor extends EnumPropertyEditor {
-        public StylePropertyEditor() {
-            super(RectanglePainter.Style.class);
+    
+    public static final class BorderPositionPropertyEditor extends EnumPropertyEditor {
+        public BorderPositionPropertyEditor() {
+            super(NeonBorderEffect.BorderPosition.class);
         }
     }
-     */
+    
 
 }

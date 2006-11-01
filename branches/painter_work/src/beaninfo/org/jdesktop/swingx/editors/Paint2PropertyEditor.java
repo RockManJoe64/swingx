@@ -70,8 +70,10 @@ public class Paint2PropertyEditor extends PropertyEditorSupport {
     }
     
     public void paintValue(Graphics g, Rectangle box) {
-        //System.out.println("really doing painter");
+        System.out.println("painting the value with: " + getValue());
+        System.out.println("picker value = " + picker.getPaint());
         Graphics2D g2 = (Graphics2D)g;
+        //picker.setPaint(getValue());
         g2.setPaint(picker.getDisplayPaint(box));
         g2.fill(box);
     }

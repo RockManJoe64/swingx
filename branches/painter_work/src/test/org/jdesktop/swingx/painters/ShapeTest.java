@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.swingx.painterset;
+package org.jdesktop.swingx.painters;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -36,8 +36,9 @@ import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
+import org.jdesktop.swingx.painterset.*;
 
 /**
  *
@@ -45,7 +46,7 @@ import org.jdesktop.swingx.painter.ShapePainter;
  */
 public class ShapeTest extends JXPanel {
     public ShapePainter sp;
-    public PathEffect effect;
+    public AbstractPathEffect effect;
     /** Creates a new instance of ShapeTest */
     public ShapeTest() {
         

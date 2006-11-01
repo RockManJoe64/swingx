@@ -11,16 +11,17 @@ package org.jdesktop.swingx.painter.effects;
 
 import org.jdesktop.swingx.BeanInfoSupport;
 import org.jdesktop.swingx.editors.Paint2PropertyEditor;
+import org.jdesktop.swingx.painter.effects.*;
 
 /**
  *
  * @author joshy
  */
-public class ShapeEffectBeanInfo extends BeanInfoSupport {
+public class AbstractPathEffectBeanInfo extends BeanInfoSupport {
     
     /** Creates a new instance of ShapeEffectBeanInfo */
-    public ShapeEffectBeanInfo() {
-        super(PathEffect.class);
+    public AbstractPathEffectBeanInfo() {
+        super(AbstractPathEffect.class);
     }
     
     protected void initialize() {

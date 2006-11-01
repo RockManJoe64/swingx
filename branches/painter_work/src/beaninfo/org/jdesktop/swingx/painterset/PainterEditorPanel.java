@@ -20,6 +20,7 @@ import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPropertySheet2;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import com.jhlabs.image.ShadowFilter;
+import org.jdesktop.swingx.painterset.TestPlaf;
 import org.jdesktop.swingx.util.BeanArrayList;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -56,7 +57,7 @@ import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.PinstripePainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painter.TextPainter;
 import org.jdesktop.swingx.painterset.actions.AddEffectAction;
@@ -107,7 +108,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         painterClasses.add(CompoundPainter.class);
         
         effectClasses = new BeanArrayList<Class>();
-        effectClasses.add(PathEffect.class);
+        effectClasses.add(AbstractPathEffect.class);
         effectClasses.add(ShadowFilter.class);
         effectClasses.add(GaussianFilter.class);
         

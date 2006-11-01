@@ -7,7 +7,7 @@ import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.effects.Effect;
 import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterTreeModel;
@@ -37,8 +37,8 @@ public class AddEffectAction extends AbstractAction {
                     eff = new ImageEffect((BufferedImageOp) obj);
                     painterTreeModel.addEffect((AbstractPainter) painterEditorPanel.getSelectedPainter(), eff);
                 }
-                if (obj instanceof PathEffect) {
-                    PathEffect eff = (PathEffect) obj;
+                if (obj instanceof AbstractPathEffect) {
+                    AbstractPathEffect eff = (AbstractPathEffect) obj;
                     Painter ptr = (Painter) painterEditorPanel.getSelectedPainter();
                     if(ptr instanceof ShapePainter) {
                         painterTreeModel.addShapeEffect((ShapePainter)ptr,eff);
