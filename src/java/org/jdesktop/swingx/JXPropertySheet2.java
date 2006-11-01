@@ -1,27 +1,19 @@
 package org.jdesktop.swingx;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.TreeModelListener;
 import javax.swing.table.TableModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.propertysheet.BeanProvider;
 import org.jdesktop.swingx.propertysheet.BeanTableModel;
-import org.jdesktop.swingx.propertysheet.Category;
 import org.jdesktop.swingx.propertysheet.PropertyValueCellEditor;
 import org.jdesktop.swingx.propertysheet.PropertyValueCellRenderer;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
-import org.netbeans.swing.outline.RenderDataProvider;
 import org.netbeans.swing.outline.RowModel;
 
 
