@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>swingx</name>
+            <name>swingx_painterbranch</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.beaninfo.dir"/>
@@ -13,5 +13,6 @@
                 <root id="test.test.dir"/>
             </test-roots>
         </data>
+        <references xmlns="http://www.netbeans.org/ns/ant-project-references/1"/>
     </configuration>
 </project>
