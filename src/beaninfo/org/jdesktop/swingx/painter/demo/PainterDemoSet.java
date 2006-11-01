@@ -4,7 +4,7 @@
  * Created on October 18, 2006, 8:20 PM
  */
 
-package org.jdesktop.swingx.painters;
+package org.jdesktop.swingx.painter.demo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -35,21 +35,12 @@ import org.apache.batik.ext.awt.LinearGradientPaint;
 import org.apache.batik.ext.awt.MultipleGradientPaint;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
-import org.jdesktop.swingx.painter.AbstractPainter;
-import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.PainterTableCellRenderer;
+import org.jdesktop.swingx.painter.*;
 import org.jdesktop.swingx.painter.effects.GlowPathEffect;
 import org.jdesktop.swingx.painter.effects.InnerGlowPathEffect;
 import org.jdesktop.swingx.painter.effects.InnerShadowPathEffect;
-import org.jdesktop.swingx.painter.MattePainter;
-import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.PainterListCellRenderer;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
 import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
-import org.jdesktop.swingx.painter.PinstripePainter;
-import org.jdesktop.swingx.painter.RectanglePainter;
-import org.jdesktop.swingx.painter.ShapePainter;
-import org.jdesktop.swingx.painter.TextPainter;
 import org.jdesktop.swingx.painter.effects.ShadowPathEffect;
 import org.jdesktop.swingx.util.ShapeUtils;
 
@@ -426,7 +417,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         TextPainter coollogo = new TextPainter("Neon");
         coollogo.setFont(new Font("SansSerif",Font.BOLD,100));
         coollogo.setFillPaint(Color.BLACK);
-        NeonBorderEffect neon1 = new NeonBorderEffect(Color.RED.darker().darker(), Color.RED.brighter(), 10);
+        NeonBorderEffect neon1 = new NeonBorderEffect(Color.BLACK, Color.RED.brighter(), 10);
         neon1.setBorderPosition(NeonBorderEffect.BorderPosition.Centered);
         coollogo.setPathEffect(neon1);
         addDemo("A Cool Logo",new MattePainter(Color.BLACK),coollogo);
