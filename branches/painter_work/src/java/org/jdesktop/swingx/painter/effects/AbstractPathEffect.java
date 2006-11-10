@@ -50,8 +50,10 @@ public class AbstractPathEffect implements PathEffect {
     /*
      * Applies the shape effect. This effect will be drawn on top of the graphics context.
      */
-    public void apply(Graphics2D g, Shape clipShape, int width, int height, Color fillColor) {
+    public void apply(Graphics2D g, Shape clipShape, int width, int height) {
         // create a rect to hold the bounds
+        width = (int)(clipShape.getBounds2D().getWidth() + clipShape.getBounds2D().getX());
+        height = (int)(clipShape.getBounds2D().getHeight() + clipShape.getBounds2D().getY());
         Rectangle effectBounds = new Rectangle(0,0,
                 width  + getEffectWidth()*2 + 1,
                 height + getEffectWidth()*2 + 1);
@@ -101,6 +103,9 @@ public class AbstractPathEffect implements PathEffect {
             paintBorderGlow(g, clipShape, width, height);
         }
         
+        //g.setColor(Color.MAGENTA);
+        //g.draw(clipShape.getBounds2D());
+        //g.drawRect(0,0,width,height);
         
     }
     

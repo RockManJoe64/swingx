@@ -178,14 +178,11 @@ public class ShapePainter extends AbstractPathPainter {
     }
     
     private void fillShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
-            g.setPaint(calculateFillPaint(component, w, h));
-            g.fill(shape);
+        g.setPaint(calculateFillPaint(component, w, h));
+        g.fill(shape);
         if(getPathEffect() != null) {
             Paint pt = calculateFillPaint(component, w, h);
-            if(!(pt instanceof Color)) {
-                pt = Color.BLUE;
-            }
-            getPathEffect().apply(g, shape, w, h, (Color)pt);
+            getPathEffect().apply(g, shape, w, h);
         }
     }
 

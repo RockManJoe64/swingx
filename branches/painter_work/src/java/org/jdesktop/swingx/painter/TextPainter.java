@@ -125,12 +125,9 @@ public class TextPainter extends AbstractPathPainter {
         
         g.drawString(text, 0, 0 + metrics.getAscent());
         if(getPathEffect() != null) {
-            if(!(paint instanceof Color)) {
-                paint = Color.BLUE;
-            }
             getPathEffect().apply(g,
                     provideShape(component,width,height),
-                    width,height,(Color)paint);
+                    width,height);
         }
         g.translate(-res.x,-res.y);
     }
