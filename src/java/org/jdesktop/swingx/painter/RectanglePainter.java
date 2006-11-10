@@ -194,13 +194,10 @@ public class RectanglePainter extends AbstractPathPainter {
         }
         
         g.setPaint(p);
-        if(!(p instanceof Color)) {
-            p = Color.BLUE;
-        }
         
         g.fill(shape);
         if(getPathEffect() != null) {
-            getPathEffect().apply(g, shape, width, height, (Color)p);
+            getPathEffect().apply(g, shape, width, height);
         }
     }
     

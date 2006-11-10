@@ -26,5 +26,5 @@ public interface PathEffect {
     /*
      * Applies the shape effect. This effect will be drawn on top of the graphics context.
      */
-    public abstract void apply(Graphics2D g, Shape clipShape, int width, int height, Color fillColor);
+    public abstract void apply(Graphics2D g, Shape clipShape, int width, int height);
 }
