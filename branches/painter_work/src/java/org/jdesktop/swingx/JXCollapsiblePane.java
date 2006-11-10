@@ -42,13 +42,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
- * <code>JXCollapsiblePane</code> provides a component which can collapse or
+ * <p><code>JXCollapsiblePane</code> provides a component which can collapse or
  * expand its content area with animation and fade in/fade out effects.
- * It also acts as a standard container for other Swing components.
+ * It also acts as a standard container for other Swing components.</p>
  *
  * <p>
  * In this example, the <code>JXCollapsiblePane</code> is used to build
- * a Search pane which can be shown and hidden on demand.
+ * a Search pane which can be shown and hidden on demand.</p>
  *
  * <pre>
  * <code>
@@ -90,8 +90,10 @@ import javax.swing.Timer;
  * under the name {@link #TOGGLE_ACTION}. Bind this action to a button and
  * pressing the button will automatically toggle the pane between expanded
  * and collapsed states. Additionally, you can define the icons to use through
- * the {@link #EXPAND_ICON} and {@link #COLLAPSE_ICON} properties on the action.
- * Example
+ * the {@link #EXPAND_ICON} and {@link #COLLAPSE_ICON} properties on the action.</p>
+ * 
+ * <p>
+ * Example</p>
  * <pre>
  * <code>
  * // get the built-in toggle action
@@ -110,7 +112,7 @@ import javax.swing.Timer;
  * Note: <code>JXCollapsiblePane</code> requires its parent container to have a
  * {@link java.awt.LayoutManager} using {@link #getPreferredSize()} when
  * calculating its layout (example {@link org.jdesktop.swingx.VerticalLayout},
- * {@link java.awt.BorderLayout}).
+ * {@link java.awt.BorderLayout}).</p>
  *
  * @javabean.attribute
  *          name="isContainer"
@@ -126,7 +128,7 @@ import javax.swing.Timer;
  *          shortDescription="A pane which hides its content with an animation."
  *          stopClass="java.awt.Component"
  *
- * @author rbair (from the JDNC project)
+ * @author rbair (from the SwingLabs project)
  * @author <a href="mailto:fred@L2FProd.com">Frederic Lavigne</a>
  */
 public class JXCollapsiblePane extends JXPanel {
@@ -152,9 +154,9 @@ public class JXCollapsiblePane extends JXPanel {
      * property. The PropertyChangeEvent will takes the following different values
      * for {@link PropertyChangeEvent#getNewValue()}:
      * <ul>
-     * <li><code>reinit</code> every time the animation starts
-     * <li><code>expanded</code> when the animation ends and the pane is expanded
-     * <li><code>collapsed</code> when the animation ends and the pane is collapsed
+     * <li><code>reinit</code> every time the animation starts</li>
+     * <li><code>expanded</code> when the animation ends and the pane is expanded</li>
+     * <li><code>collapsed</code> when the animation ends and the pane is collapsed</li>
      * </ul>
      */
     public final static String ANIMATION_STATE_KEY = "animationState";
@@ -371,11 +373,11 @@ public class JXCollapsiblePane extends JXPanel {
      * reduce (when collapsing) or enlarge (when expanding) the height of its
      * content area until it becomes 0 or until it reaches the preferred height of
      * the components it contains. The transparency of the content area will also
-     * change during the animation.
+     * change during the animation.</p>
      *
      * <p>
      * If not animated, the <code>JXCollapsiblePane</code> will simply hide
-     * (collapsing) or show (expanding) its content area.
+     * (collapsing) or show (expanding) its content area.</p>
      *
      * @param animated
      * @javabean.property bound="true" preferred="true"
@@ -448,13 +450,13 @@ public class JXCollapsiblePane extends JXPanel {
      * If the component is collapsed and <code>val</code> is false, then this
      * call expands the JXCollapsiblePane, such that the entire JXCollapsiblePane
      * will be visible. If {@link #isAnimated()} returns true, the expansion will
-     * be accompanied by an animation.
+     * be accompanied by an animation.</p>
      *
      * <p>
      * However, if the component is expanded and <code>val</code> is true, then
      * this call collapses the JXCollapsiblePane, such that the entire
      * JXCollapsiblePane will be invisible. If {@link #isAnimated()} returns true,
-     * the collapse will be accompanied by an animation.
+     * the collapse will be accompanied by an animation.</p>
      *
      * @see #isAnimated()
      * @see #setAnimated(boolean)
