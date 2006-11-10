@@ -20,6 +20,17 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -482,8 +493,125 @@ public class PainterDemoSet extends javax.swing.JFrame {
         musicTable.setRowSelectionAllowed(true);
         musicTable.setColumnSelectionAllowed(false);
         addDemo(new JScrollPane(musicTable), null, "JTable with custom renderer");
+        
+        addGlossDemos();
+        addPinstripeDemos();
     }
 
+    private void addGlossDemos() {
+        RectanglePainter rect = new RectanglePainter(20,20,20,20, 20,20);
+        rect.setFillPaint(Color.RED);
+        rect.setBorderPaint(Color.RED.darker());
+        rect.setStyle(RectanglePainter.Style.BOTH);
+        rect.setBorderWidth(5);
+        rect.setAntialiasing(RectanglePainter.Antialiasing.On);
+        addDemo("Gloss on rectangle",new MattePainter(Color.BLACK), rect,new GlossPainter());
+        
+        rect = new RectanglePainter(20,20,20,20, 20,20, true, Color.RED, 5f, Color.RED.darker());
+        rect.setClipPreserved(true);
+        rect.setAntialiasing(RectanglePainter.Antialiasing.On);
+        addDemo("Gloss clipped on rectangle",new MattePainter(Color.BLACK), rect,new GlossPainter());
+        
+        try {
+            loadCitations();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    Map citeMap = new HashMap();
+    private void loadCitations() throws Exception {
+        p("doing citations");
+        URL url = this.getClass().getResource("PainterDemoSet.java");
+        Scanner scanner = new Scanner(new InputStreamReader(url.openStream()));
+        //File file = new File("src/beaninfo/org/jdesktop/swingx/painter/demo/PainterDemoSet.java");
+        //FileReader reader = new FileReader(file);
+        //Scanner scanner = new Scanner(reader);
+        scanner.useDelimiter(".*\\$startcite.*");
+        while(scanner.hasNext()) {
+            String cite = scanner.next();
+            //p("cite = " + cite);
+            if(cite.contains("$name-")) {
+                //p("contains");
+                Pattern pat = Pattern.compile("\\$name-(.*)-(.*)\\$endcite",Pattern.DOTALL);
+                Matcher matcher = pat.matcher(cite);
+                matcher.find();
+                for(int i=0; i<=matcher.groupCount(); i++) {
+                    //p("got: " + matcher.group(i));
+                }
+                citeMap.put(matcher.group(1),matcher.group(2));
+                p("added citation: " + matcher.group(1) +  " = " + matcher.group(2));
+            }
+        }
+    }
+    
+    private void addPinstripeDemos() {
+        
+        //$startcite
+        //$name-pinstripe1-
+        MattePainter black = new MattePainter(Color.BLACK);
+        RectanglePainter rect = new RectanglePainter(20,20,20,20, 20,20, true, Color.RED, 5f, Color.RED.darker());
+        rect.setAntialiasing(RectanglePainter.Antialiasing.On);
+        PinstripePainter pin = new PinstripePainter(Color.WHITE, 45, 1, 10);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        addDemo("45deg white pinstripe on black", "pinstripe1", black, pin);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-pinstripe2-
+        pin = new PinstripePainter(Color.WHITE, 0, 1, 10);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        addDemo("vertical white pinstripe on black", "pinstripe2", black, pin);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-pinstripe3-
+        pin = new PinstripePainter(Color.WHITE, 90, 1, 10);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        addDemo("horizontal white pinstripe on black", "pinstripe3",  black, pin);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-pinstripe4-
+        pin = new PinstripePainter(Color.WHITE, 45, 3, 10);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        addDemo("3px wide white pinstripe on black","pinstripe4", black, pin);
+        //$endcite
+        
+        
+        
+
+        //$startcite
+        //$name-pinstripe5-
+        pin = new PinstripePainter(Color.WHITE, 45, 10, 2);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        addDemo("10px wide pinstripe w/ 2px spacing on black",  "pinstripe5", black, pin);
+        //$endcite
+    
+    
+        //$startcite
+        //$name-pinstripe6-
+        pin = new PinstripePainter(Color.WHITE, 45, 3, 15);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setPaint(new GradientPaint(new Point(0,0), Color.WHITE, new Point(10,10), Color.BLACK));
+        addDemo("pinstripe w/ 10px gradient ",  "pinstripe6", black, pin);
+        //$endcite
+    
+        //$startcite
+        //$name-pinstripe7-
+        pin = new PinstripePainter(Color.WHITE, 45, 3, 15);
+        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setPaint(new GradientPaint(new Point(0,0), Color.WHITE, new Point(200,200), Color.BLACK));
+        
+        addDemo("pinstripe w/ 200px gradient ",  "pinstripe7", black, pin);
+        //$endcite
+    
+    }
+
+    
     private RectanglePainter create50pxRectPainter() {
         RectanglePainter rectnorm;
         
@@ -514,12 +642,38 @@ public class PainterDemoSet extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         jSplitPane1 = new javax.swing.JSplitPane();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        citationText = new javax.swing.JTextArea();
+        painterPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         painterList = new javax.swing.JList();
-        painterPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        jSplitPane1.setDividerLocation(250);
+        jSplitPane1.setDividerLocation(240);
+        jSplitPane2.setDividerLocation(150);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        citationText.setColumns(20);
+        citationText.setRows(5);
+        jScrollPane2.setViewportView(citationText);
+
+        jSplitPane2.setBottomComponent(jScrollPane2);
+
+        painterPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        org.jdesktop.layout.GroupLayout painterPanelLayout = new org.jdesktop.layout.GroupLayout(painterPanel);
+        painterPanel.setLayout(painterPanelLayout);
+        painterPanelLayout.setHorizontalGroup(
+            painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 448, Short.MAX_VALUE)
+        );
+        painterPanelLayout.setVerticalGroup(
+            painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 144, Short.MAX_VALUE)
+        );
+        jSplitPane2.setTopComponent(painterPanel);
+
+        jSplitPane1.setRightComponent(jSplitPane2);
+
         painterList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -535,41 +689,29 @@ public class PainterDemoSet extends javax.swing.JFrame {
 
         jSplitPane1.setLeftComponent(jScrollPane1);
 
-        painterPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        org.jdesktop.layout.GroupLayout painterPanelLayout = new org.jdesktop.layout.GroupLayout(painterPanel);
-        painterPanel.setLayout(painterPanelLayout);
-        painterPanelLayout.setHorizontalGroup(
-            painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 421, Short.MAX_VALUE)
-        );
-        painterPanelLayout.setVerticalGroup(
-            painterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 307, Short.MAX_VALUE)
-        );
-        jSplitPane1.setRightComponent(painterPanel);
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 707, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
         );
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void painterListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_painterListValueChanged
         Demo demo = (Demo)painterList.getSelectedValue();
         painterPanel.removeAll();
         painterPanel.add(demo.component,"Center");
         //demo.component.repaint();
+        citationText.setText((String) citeMap.get(demo.citeid));
         painterPanel.revalidate();
         painterPanel.repaint();
     }//GEN-LAST:event_painterListValueChanged
-    
+        
     /**
      * @param args the command line arguments
      */
@@ -582,14 +724,20 @@ public class PainterDemoSet extends javax.swing.JFrame {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea citationText;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JList painterList;
     private javax.swing.JPanel painterPanel;
     // End of variables declaration//GEN-END:variables
     
     private void addDemo(JComponent component, Painter painter, String string) {
-        ((DefaultListModel)painterList.getModel()).addElement(new Demo(component,string));
+        addDemo(component, painter, string, "");
+    }
+    private void addDemo(JComponent component, Painter painter, String string, String citename) {
+        ((DefaultListModel)painterList.getModel()).addElement(new Demo(component, string, citename));
         //painterPanel.removeAll();
         //painterPanel.add(component, "Center");
         if(component instanceof JXPanel) {
@@ -603,6 +751,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
     
     private void addDemo(String text, Painter ... painters) {
         addDemo(new JXPanel(),new CompoundPainter(painters),text);
+    }
+    private void addDemo(String text, String citename, Painter ... painters) {
+        addDemo(new JXPanel(),new CompoundPainter(painters),text, citename);
     }
     
     private JList createJListWithData() {
@@ -623,14 +774,25 @@ public class PainterDemoSet extends javax.swing.JFrame {
             }
         });
     }
+
+    private void p(String string) {
+        System.out.println(string);
+    }
+
     
     
     private class Demo {
         public JComponent component;
         public String title;
+        public String citeid;
         public Demo(JComponent component, String title) {
             this.component = component;
             this.title = title;
+        }
+        public Demo(JComponent component, String title, String citeid) {
+            this.component = component;
+            this.title = title;
+            this.citeid = citeid;
         }
         public String toString() {
             return this.title;
