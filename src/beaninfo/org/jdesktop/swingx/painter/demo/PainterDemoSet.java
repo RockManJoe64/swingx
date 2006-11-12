@@ -26,7 +26,9 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -54,6 +56,7 @@ import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
 import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.effects.ShadowPathEffect;
 import org.jdesktop.swingx.util.ShapeUtils;
+import org.jdesktop.swingx.util.StringUtils;
 
 /**
  *
@@ -533,6 +536,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
             //p("cite = " + cite);
             if(cite.contains("$name-")) {
                 //p("contains");
+                String[] ret = StringUtils.regexSearch(cite,"\\$name-(.*)-(.*)\\$endcite");
+                citeMap.put(ret[1], ret[2]);
+                /*
                 Pattern pat = Pattern.compile("\\$name-(.*)-(.*)\\$endcite",Pattern.DOTALL);
                 Matcher matcher = pat.matcher(cite);
                 matcher.find();
@@ -540,10 +546,23 @@ public class PainterDemoSet extends javax.swing.JFrame {
                     //p("got: " + matcher.group(i));
                 }
                 citeMap.put(matcher.group(1),matcher.group(2));
-                p("added citation: " + matcher.group(1) +  " = " + matcher.group(2));
+                 */
+                //p("added citation: " + matcher.group(1) +  " = " + matcher.group(2));
             }
         }
     }
+    /*
+    private String[] regexSearch(String source, String pattern) {
+        Pattern pat = Pattern.compile(pattern,Pattern.DOTALL);
+        Matcher matcher = pat.matcher(source);
+        matcher.find();
+        String[] list = new String[matcher.groupCount()+1];
+        for(int i=0; i<=matcher.groupCount(); i++) {
+            list[i] = matcher.group(i);
+        }
+        return list;
+    }
+     */
     
     private void addPinstripeDemos() {
         
