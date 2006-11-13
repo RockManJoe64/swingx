@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -33,11 +33,13 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import javax.swing.JComponent;
 
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
 import org.jdesktop.swingx.painter.Painter;
+import org.jdesktop.swingx.painter.PainterSet;
 
 /**
  * A simple JPanel extension that adds translucency support.
@@ -82,10 +84,14 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     private Dimension oldSize;
     
-    /** 
+    
+    private PainterSet painterSet;
+    
+    /**
      * Creates a new instance of JXPanel
      */
     public JXPanel() {
+        initPainterSet();
     }
     
     /**
@@ -93,27 +99,39 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     public JXPanel(boolean isDoubleBuffered) {
         super(isDoubleBuffered);
+        initPainterSet();
     }
-
+    
     /**
      * @param layout
      */
     public JXPanel(LayoutManager layout) {
         super(layout);
+        initPainterSet();
     }
-
+    
     /**
      * @param layout
      * @param isDoubleBuffered
      */
     public JXPanel(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
+        initPainterSet();
+    }
+    
+    private void initPainterSet() {
+        setPainterSet(new PainterSet());
+        getPainterSet().setPainter(new Painter() {
+            public void paint(Graphics2D g, JComponent component, int width, int height) {
+                JXPanel.super.paintComponent(g);
+            }
+        }, PainterSet.COMPONENT);
     }
     
     /**
      * Set the alpha transparency level for this component. This automatically
      * causes a repaint of the component.
-     * 
+     *
      * <p>TODO add support for animated changes in translucency</p>
      *
      * @param alpha must be a value between 0 and 1 inclusive.
@@ -136,7 +154,7 @@ public class JXPanel extends JPanel implements Scrollable {
             } else if (alpha == 1) {
                 //restore the oldOpaque if it was true (since opaque is false now)
                 if (oldOpaque) {
-                   setOpaque(true);
+                    setOpaque(true);
                 }
             }
             firePropertyChange("alpha", oldAlpha, alpha);
@@ -151,13 +169,13 @@ public class JXPanel extends JPanel implements Scrollable {
     public float getAlpha() {
         return alpha;
     }
-
+    
     /**
      * Unlike other properties, alpha can be set on a component, or on one of
      * its parents. If the alpha of a parent component is .4, and the alpha on
      * this component is .5, effectively the alpha for this component is .4
      * because the lowest alpha in the heirarchy &quot;wins&quot;
-     */ 
+     */
     public float getEffectiveAlpha() {
         if (inheritAlpha) {
             float a = alpha;
@@ -241,7 +259,9 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     public void setBackgroundPainter(Painter p) {
         Painter old = getBackgroundPainter();
-        this.backgroundPainter = p;
+        
+        getPainterSet().setPainter(p,PainterSet.BACKGROUND);
+        //this.backgroundPainter = p;
         
         if (p != null) {
             setOpaque(false);
@@ -252,7 +272,8 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     public Painter getBackgroundPainter() {
-        return backgroundPainter;
+        return getPainterSet().getPainter(PainterSet.BACKGROUND);
+        //return backgroundPainter;
     }
     
     /**
@@ -264,7 +285,8 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     public void setForegroundPainter(Painter p) {
         Painter old = getForegroundPainter();
-        this.foregroundPainter = p;
+        //this.foregroundPainter = p;
+        getPainterSet().setPainter(p, PainterSet.FOREGROUND);
         
         if (p != null) {
             setOpaque(false);
@@ -275,7 +297,8 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     public Painter getForegroundPainter() {
-        return foregroundPainter;
+        return getPainterSet().getPainter(PainterSet.FOREGROUND);
+        //return foregroundPainter;
     }
     
     /**
@@ -290,10 +313,10 @@ public class JXPanel extends JPanel implements Scrollable {
         super.paint(g2d);
         g2d.setComposite(oldComp);
     }
-
+    
     /**
      * overridden to provide gradient painting
-     * 
+     *
      * TODO: Chris says that in OGL we actually suffer here by caching the
      * gradient paint since the OGL pipeline will render gradients on
      * hardware for us. The decision to use cacheing is based on my experience
@@ -301,26 +324,20 @@ public class JXPanel extends JPanel implements Scrollable {
      * extensive analysis.
      */
     protected void paintComponent(Graphics g) {
-        if (backgroundPainter != null) {
-            Graphics2D g2 = (Graphics2D)g.create();
-            Insets ins = this.getInsets();
-            g2.translate(ins.left, ins.top);
-            backgroundPainter.paint(g2, this, 
-                    this.getWidth()  - ins.left - ins.right,
-                    this.getHeight() - ins.top  - ins.bottom);
-            g2.dispose();
-        } else {
-            super.paintComponent(g);
-        }
-        
-        if (foregroundPainter != null) {
-            Graphics2D g2 = (Graphics2D)g.create();
-            Insets ins = this.getInsets();
-            g2.translate(ins.left, ins.top);
-            foregroundPainter.paint(g2, this, 
-                    this.getWidth()  - ins.left - ins.right,
-                    this.getHeight() - ins.top  - ins.bottom);
-            g2.dispose();
-        }        
+        Graphics2D g2 = (Graphics2D)g.create();
+        Insets ins = this.getInsets();
+        g2.translate(ins.left, ins.top);
+        getPainterSet().paint(g2, this,
+                this.getWidth()  - ins.left - ins.right,
+                this.getHeight() - ins.top  - ins.bottom);
+        g2.dispose();
+    }
+
+    public PainterSet getPainterSet() {
+        return painterSet;
+    }
+
+    public void setPainterSet(PainterSet painterSet) {
+        this.painterSet = painterSet;
     }
 }

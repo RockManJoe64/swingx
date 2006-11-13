@@ -13,8 +13,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.lang.reflect.Method;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
+import org.jdesktop.swingx.painter.PainterSet;
 
 /**
  *
@@ -25,65 +28,69 @@ public class JXLabel extends JLabel {
     /** Creates a new instance of JXLabel */
     public JXLabel() {
         super();
+        initPainterSet();
     }
     public JXLabel(String text) {
         super(text);
+        initPainterSet();
+    }
+    private void initPainterSet() {
+        setPainterSet(new PainterSet());
+        getPainterSet().setPainter(new AbstractPainter() {
+            protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+                JXLabel.super.paintComponent(g);
+            }
+        }, PainterSet.COMPONENT);
     }
     
-    private Painter backgroundPainter;
-    private Painter foregroundPainter;
+    //private Painter backgroundPainter;
+    //private Painter foregroundPainter;
+    private PainterSet painterSet;
 
     public Painter getBackgroundPainter() {
-        return backgroundPainter;
+        return getPainterSet().getPainter(PainterSet.BACKGROUND);
     }
 
     public void setBackgroundPainter(Painter backgroundPainter) {
         Painter old = this.getBackgroundPainter();
-        this.backgroundPainter = backgroundPainter;
+        getPainterSet().setPainter(backgroundPainter, PainterSet.BACKGROUND);
         if (backgroundPainter != null) {
             setOpaque(false);
         }
-        firePropertyChange("backgroundPainter", old, backgroundPainter);
+        firePropertyChange("backgroundPainter", old, getBackgroundPainter());
         repaint();
     }
     
     public Painter getForegroundPainter() {
-        return foregroundPainter;
+        return getPainterSet().getPainter(PainterSet.FOREGROUND);
     }
     
     public void setForegroundPainter(Painter painter) {
         Painter old = this.getForegroundPainter();
-        this.foregroundPainter = painter;
-        if (foregroundPainter != null) {
+        getPainterSet().setPainter(painter, PainterSet.BACKGROUND);
+        if (painter != null) {
             setOpaque(false);
         }
-        firePropertyChange("foregroundPainter", old, foregroundPainter);
+        firePropertyChange("foregroundPainter", old, getForegroundPainter());
         repaint();
     }
     
     protected void paintComponent(Graphics g) {
-        if (backgroundPainter != null) {
-            Graphics2D g2 = (Graphics2D)g.create();
-            //Insets ins = this.getBorder().getBorderInsets(this);
-            Insets ins = this.getInsets();
-            //g2.translate(ins.left, ins.top);
-            backgroundPainter.paint(g2, this, 
-                    this.getWidth(),
-                    this.getHeight());
-            g2.dispose();
-        }
-        
-        if (foregroundPainter != null) {
-            Graphics2D g2 = (Graphics2D)g.create();
-            Insets ins = this.getInsets();
-            //g2.translate(ins.left, ins.top);
-            foregroundPainter.paint(g2, this, 
-                    this.getWidth(),
-                    this.getHeight());
-            g2.dispose();
-        } else {
-            super.paintComponent(g);
-        }        
+        Graphics2D g2 = (Graphics2D)g.create();
+        Insets ins = this.getInsets();
+        g2.translate(ins.left, ins.top);
+        getPainterSet().paint(g2, this,
+                this.getWidth()  - ins.left - ins.right,
+                this.getHeight() - ins.top  - ins.bottom);
+        g2.dispose();
+    }
+
+    public PainterSet getPainterSet() {
+        return painterSet;
+    }
+
+    private void setPainterSet(PainterSet painterSet) {
+        this.painterSet = painterSet;
     }
     
 }

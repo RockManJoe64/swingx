@@ -191,7 +191,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
             System.arraycopy(effects, 0, this.effects, 0, effects.length);
         }
         firePropertyChange("effects", old, getEffects());
-        firePropertyChange("effects", old, getEffects());
+        //firePropertyChange("effects", old, getEffects());
     }
     
     /**
@@ -283,7 +283,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
     }
     
     
-    private Antialiasing antialiasing = Antialiasing.Default;
+    private Antialiasing antialiasing = Antialiasing.On;
     public Antialiasing getAntialiasing() {
         return antialiasing;
     }
@@ -413,6 +413,7 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         if (clip != null) {
             g.setClip(clip);
         }
+        g.setFont(c.getFont());
         
         antialiasing.configureGraphics(g);
         /*

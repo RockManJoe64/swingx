@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public abstract class StringUtils {
     
     
-    public String[] regexSearch(String source, String pattern) {
+    public static String[] regexSearch(String source, String pattern) {
         Pattern pat = Pattern.compile(pattern,Pattern.DOTALL);
         Matcher matcher = pat.matcher(source);
         matcher.find();

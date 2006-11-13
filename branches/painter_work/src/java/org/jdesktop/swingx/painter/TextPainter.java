@@ -59,11 +59,15 @@ public class TextPainter extends AbstractPathPainter {
     }
     
     public TextPainter(String text) {
-        this(text, null);
+        this(text, (Font)null, (Paint)null);
     }
     
     public TextPainter(String text, Font font) {
         this(text, font, null);
+    }
+    
+    public TextPainter(String text, Paint paint) {
+        this(text, null, paint);
     }
     
     public TextPainter(String text, Font font, Paint paint) {
@@ -104,6 +108,7 @@ public class TextPainter extends AbstractPathPainter {
         }
         
         String text = calculateText(component);
+        System.out.println("text calced to: " + text);
         
         // get the font metrics
         FontMetrics metrics = g.getFontMetrics(g.getFont());
@@ -136,6 +141,9 @@ public class TextPainter extends AbstractPathPainter {
         // prep the text
         String text = getText();
         //make components take priority if(text == null || text.trim().equals("")) {
+        if(text != null && !text.trim().equals("")) {
+            return text;
+        }
         if(component instanceof JTextComponent) {
             text = ((JTextComponent)component).getText();
         }
