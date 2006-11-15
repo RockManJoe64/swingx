@@ -108,7 +108,6 @@ public class TextPainter extends AbstractPathPainter {
         }
         
         String text = calculateText(component);
-        System.out.println("text calced to: " + text);
         
         // get the font metrics
         FontMetrics metrics = g.getFontMetrics(g.getFont());

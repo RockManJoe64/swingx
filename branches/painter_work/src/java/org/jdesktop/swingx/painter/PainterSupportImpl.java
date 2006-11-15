@@ -24,13 +24,7 @@ import javax.swing.JComponent;
  * @author joshy
  * 
  */
-public class PainterSet extends CompoundPainter {
-   
-    public static final int BACKGROUND = -100;
-    public static final int COMPONENT = 0;
-    public static final int FOREGROUND = 100;
-    public static final int VALIDATION = 200;
-    public static final int OVERLAY = 300;
+public class PainterSupportImpl extends CompoundPainter implements PainterSupport {
 
     private Map<Integer, List<Painter>> layers = new HashMap<Integer, List<Painter>>();
 
