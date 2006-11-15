@@ -68,6 +68,10 @@ import org.jdesktop.swingx.util.StringUtils;
  * @author  joshy
  */
 public class PainterDemoSet extends javax.swing.JFrame {
+    private static final MultipleGradientPaint gradient = new LinearGradientPaint(
+                new Point2D.Double(0,0), new Point2D.Double(100,0),
+                new float[] { 0f, 0.5f, 1f }, 
+                new Color[] { Color.BLACK, Color.BLUE, Color.LIGHT_GRAY});
     
     /** Creates new form PainterDemoSet */
     public PainterDemoSet() {
@@ -76,79 +80,451 @@ public class PainterDemoSet extends javax.swing.JFrame {
         painterPanel.setLayout(new BorderLayout());
         CompoundPainter comp;
         
-        Color[] colors = { Color.BLACK, Color.BLUE, Color.WHITE};
-        float[] floats = { 0f, 0.5f, 1f};
-        MultipleGradientPaint gradient = new LinearGradientPaint(
-                new Point2D.Double(0,0), new Point2D.Double(100,0),
-                floats,colors);
+        //Color[] colors = { Color.BLACK, Color.BLUE, Color.WHITE};
+        //float[] floats = { 0f, 0.5f, 1f};
         
         
         // a rectangle filled with a gradient
-        RectanglePainter stdrect = new RectanglePainter(0,0,0,0);
-        stdrect.setFillPaint(gradient);
-        stdrect.setBorderPaint(Color.BLACK);
-        stdrect.setBorderWidth(4f);
-        comp = new CompoundPainter(stdrect, new TextPainter("This is some stuff"));
-        addDemo(new JXButton("Cool Text Yo"), comp, "button with gradient and text");
+        //RectanglePainter stdrect = new RectanglePainter(0,0,0,0);
+        //stdrect.setFillPaint(gradient);
+        //stdrect.setBorderPaint(Color.BLACK);
+        //stdrect.setBorderWidth(4f);
+        //comp = new CompoundPainter(stdrect, new TextPainter("This is some stuff"));
+        //addDemo(new JXButton("Cool Text Yo"), comp, "button with gradient and text");
         
-        Shape starShape = ShapeUtils.generatePolygon(5,30,15,true);
-        // build a star shape with 5 points and 30 degree angles
-        ShapePainter star = null;
+        ShapePainter star;
+        shapeDemos();
         
-        // star filled
-        star = new ShapePainter(starShape, Color.RED);
+        
+        textDemos(gradient);
+        
+        MattePainter gray = new MattePainter(Color.GRAY);
+        //RectanglePainter rectnorm;
+        rectangleDemos();
+        transformDemos();
+        addGlossDemos();
+        addPinstripeDemos();
+        addPainterSetAPIDemos();
+        listDemos(gradient);
+        tableDemos();
+        miscDemos(gradient);
+    }
+    
+    Map citeMap = new HashMap();
+    private void loadCitations() throws Exception {
+        p("doing citations");
+        URL url = this.getClass().getResource("PainterDemoSet.java");
+        Scanner scanner = new Scanner(new InputStreamReader(url.openStream()));
+        //File file = new File("src/beaninfo/org/jdesktop/swingx/painter/demo/PainterDemoSet.java");
+        //FileReader reader = new FileReader(file);
+        //Scanner scanner = new Scanner(reader);
+        scanner.useDelimiter(".*\\$startcite.*");
+        while(scanner.hasNext()) {
+            String cite = scanner.next();
+            //p("cite = " + cite);
+            if(cite.contains("$name-")) {
+                //p("contains");
+                String[] ret = StringUtils.regexSearch(cite,"\\$name-(.*)-(.*)\\$endcite");
+                citeMap.put(ret[1], ret[2]);
+                /*
+                Pattern pat = Pattern.compile("\\$name-(.*)-(.*)\\$endcite",Pattern.DOTALL);
+                Matcher matcher = pat.matcher(cite);
+                matcher.find();
+                for(int i=0; i<=matcher.groupCount(); i++) {
+                    //p("got: " + matcher.group(i));
+                }
+                citeMap.put(matcher.group(1),matcher.group(2));
+                 */
+                //p("added citation: " + matcher.group(1) +  " = " + matcher.group(2));
+            }
+        }
+    }
+    /*
+    private String[] regexSearch(String source, String pattern) {
+        Pattern pat = Pattern.compile(pattern,Pattern.DOTALL);
+        Matcher matcher = pat.matcher(source);
+        matcher.find();
+        String[] list = new String[matcher.groupCount()+1];
+        for(int i=0; i<=matcher.groupCount(); i++) {
+            list[i] = matcher.group(i);
+        }
+        return list;
+    }
+     */
+    
+    
+    private void miscDemos(final MultipleGradientPaint gradient) {
+        addDemo(new JPanel(), "---- Misc Demos");
+        Font font2 = new Font("SansSerif", Font.BOLD, 80);
+        ShapePainter star;
+        
+        
+        
+        // a generated triangle with a gradient
+        //$startcite
+        //$name-misc01-
+        ShapePainter triangle = new ShapePainter(ShapeUtils.generatePolygon(3,50,30));
+        triangle.setFillPaint(gradient);
+        addDemo(new JXPanel(),triangle,"Triangle w/ gradient","misc01");
+        //$endcite
+        
+        
+        //$startcite
+        //$name-misc02-
+        // a text painter using the neon border path effect
+        TextPainter coollogo = new TextPainter("Neon");
+        coollogo.setFont(new Font("SansSerif",Font.BOLD,100));
+        coollogo.setFillPaint(Color.BLACK);
+        NeonBorderEffect neon1 = new NeonBorderEffect(Color.BLACK, Color.RED.brighter(), 10);
+        neon1.setBorderPosition(NeonBorderEffect.BorderPosition.Centered);
+        coollogo.setPathEffect(neon1);
+        addDemo("A Cool Logo","misc02",new MattePainter(Color.BLACK),coollogo);
+        //$endcite
+        
+        
+        
+        //$startcite
+        //$name-misc03-
+        // create a coming soon badge
+        star = new ShapePainter(ShapeUtils.generatePolygon(30,50,45,true),Color.RED);
         star.setStyle(ShapePainter.Style.FILLED);
-        addDemo(new JXPanel(),star,"Star style = filled");
-        // star outline
-        star = new ShapePainter(starShape, Color.RED);
-        star.setStyle(ShapePainter.Style.OUTLINE);
-        addDemo(new JXPanel(),star,"Star style = outline");
-        // star both
-        star = new ShapePainter(starShape, Color.RED);
-        star.setStyle(ShapePainter.Style.BOTH);
-        addDemo(new JXPanel(),star,"Star style = both");
-        // star both
-        star = new ShapePainter(starShape, Color.RED);
-        star.setStyle(ShapePainter.Style.BOTH);
-        star.setBorderWidth(6f);
-        addDemo(new JXPanel(),star,"Star border width = 5");
+        star.setBorderPaint(Color.BLUE);
+        ShadowPathEffect starShadow = new ShadowPathEffect();
+        starShadow.setOffset(new Point(1,1));
+        starShadow.setEffectWidth(5);
+        star.setPathEffect(starShadow);
+        addDemo(new JXPanel(), new CompoundPainter(
+                new MattePainter(Color.GRAY),
+                star,
+                new TextPainter("Coming Soon!",
+                new Font("SansSerif", Font.PLAIN, 12), Color.WHITE)
+                ),
+                "Coming Soon Badge","misc03");
+        //$endcite
+    }
+    
+    private void tableDemos() {
+        addDemo(new JPanel(), "---- Table Renderer Demos");
+        // itunes like table demo
+        JTable musicTable = createJTableWithData(false);
+        //musicTable.setIntercellSpacing(new Dimension(0,0));
+        musicTable.setGridColor(Color.GRAY.darker());
+        PainterTableCellRenderer tableRenderer = new PainterTableCellRenderer();
+        MultipleGradientPaint shading = new LinearGradientPaint(
+                new Point(0,0), new Point(0,10),
+                new float[] {0f, 1f} ,
+                new Color[] {Color.GRAY, Color.GRAY.darker()});
+        tableRenderer.setBackgroundPainter(new MattePainter(shading));
+        shading = new LinearGradientPaint(
+                new Point(0,0), new Point(0,10),
+                new float[] {0f, 1f} ,
+                new Color[] {Color.BLUE, Color.BLUE.darker()});
         
-        // left/top aligned star
-        star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setVertical(ShapePainter.VerticalAlignment.TOP);
-        addDemo(new JXPanel(),star,"Star, left & top aligned");
-        // left/top aligned with insets
-        star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setVertical(ShapePainter.VerticalAlignment.TOP);
-        star.setInsets(new Insets(50,50,50,50));
-        addDemo(new JXPanel(),star,"Star, left & top aligned, 50px insets");
-        // left aligned only with left insets
-        star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setInsets(new Insets(0,50,0,0));
-        addDemo(new JXPanel(),star,"Star, left aligned, 50px left insets");
-        // left aligned only with left top insets
-        star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setInsets(new Insets(50,50,0,0));
-        addDemo(new JXPanel(),star,"Star, left aligned, 50px left & top insets");
+        TextPainter selectionText = new TextPainter();
+        selectionText.setFillPaint(Color.BLACK);
+        selectionText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        tableRenderer.setSelectionBackgroundPainter(new MattePainter(shading));
         
-        // the same star, but with a drop shadow
-        star = new ShapePainter(starShape, Color.RED);
-        star.setStyle(ShapePainter.Style.FILLED);
-        star.setPathEffect(new ShadowPathEffect());
-        addDemo(new JXPanel(), star, "Star with drop shadow");
+        musicTable.setDefaultRenderer(Object.class, tableRenderer);
+        
+        PainterTableCellRenderer headerRenderer = new PainterTableCellRenderer();
+        CompoundPainter headerPainter = new CompoundPainter(
+                new MattePainter(new Color(200,200,200)),
+                new PinstripePainter(new Color(220,220,220),45,5,8),
+                new RectanglePainter(new Color(200,200,200,0), Color.BLACK));
+        headerRenderer.setBackgroundPainter(headerPainter);
         
         
+        for(int i=0; i<musicTable.getColumnCount(); i++) {
+            TableColumn col = musicTable.getColumn(musicTable.getColumnName(i));
+            col.setHeaderRenderer(headerRenderer);
+        }
+        //musicTable.setEnabled(false);
+        
+        musicTable.setRowSelectionAllowed(true);
+        musicTable.setColumnSelectionAllowed(false);
+        addDemo(new JScrollPane(musicTable), "JTable with custom renderer");
+    }
+    
+    private void transformDemos() {
+        Font font2 = new Font("SansSerif", Font.BOLD, 80);
+        addDemo(new JPanel(), "---- Affine Transform Demos");
+        CompoundPainter comp;
+        RectanglePainter rectnorm;
+        
+        
+        // affine transforms
+        TextPainter normText = new TextPainter("Text", font2);
+        comp = new CompoundPainter(normText);
+        addDemo(new JXPanel(), comp, "Normal Text");
+        
+        TextPainter rotText = new TextPainter("Text", font2);
+        comp = new CompoundPainter(rotText);
+        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
+        addDemo(new JXPanel(), comp, "Rotated Text");
+        
+        TextPainter shearText = new TextPainter("Text", font2);
+        comp = new CompoundPainter(shearText);
+        comp.setTransform(AffineTransform.getShearInstance(-0.2,0));
+        addDemo(new JXPanel(), comp, "Sheared Text");
+        
+        TextPainter scaleText = new TextPainter("Text", font2);
+        comp = new CompoundPainter(scaleText);
+        comp.setTransform(AffineTransform.getScaleInstance(2,2));
+        addDemo(new JXPanel(), comp, "Scaled Text");
+        
+        rotText = new TextPainter("Text", font2);
+        rectnorm = new RectanglePainter(30,30,30,30,30,30,true,Color.RED,4f,Color.RED.darker());
+        comp = new CompoundPainter(rectnorm,rotText);
+        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
+        addDemo(new JXPanel(), comp, "Rotated Text w/ effects on rect");
+    }
+    
+    private void listDemos(final MultipleGradientPaint gradient) {
+        addDemo(new JPanel(), "---- List Renderer Demos");
+        
+        
+        //a list with painter effects
+        PainterListCellRenderer renderer = new PainterListCellRenderer();
+        
+        // the list background
+        RectanglePainter listRect = new RectanglePainter(1,1,1,1,10,10,true, Color.RED.brighter(), 1, Color.RED.darker());
+        CompoundPainter listNormalBg = new CompoundPainter(
+                new MattePainter(Color.WHITE),
+                listRect);
+        renderer.setBackgroundPainter(listNormalBg);
+        
+        // the list foreground
+        TextPainter listText = new TextPainter();
+        listText.setFillPaint(Color.WHITE);
+        listText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        listText.setInsets(new Insets(0,8,0,0));
+        
+        renderer.setForegroundPainter(listText);
+        
+        // the list selection
+        Painter selectionPainter = new CompoundPainter(
+                new MattePainter(gradient),
+                listText);
+        renderer.setSelectionPainter(selectionPainter);
+        
+        // set it on the list
+        JList list = createJListWithData();
+        list.setCellRenderer(renderer);
+        addDemo(list,"JList with red bg + gradient selection");
+        
+        // another list with normal even odds, plus reuse previous selection painter
+        PainterListCellRenderer evenodd = new PainterListCellRenderer() {
+            public Component getListCellRendererComponent(JList list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                // initialize the renderer (which is 'this')
+                super.getListCellRendererComponent(list, value,
+                        index, isSelected, cellHasFocus);
+                setOpaque(true);
+                if(index % 2 == 0) {
+                    setBackground(Color.WHITE);
+                } else {
+                    setBackground(Color.LIGHT_GRAY);
+                }
+                return this;
+            }
+            
+        };
+        evenodd.setSelectionPainter(selectionPainter);
+        list = createJListWithData();
+        list.setCellRenderer(evenodd);
+        addDemo(list,"JList with even/odd + gradient selection");
+    }
+    
+    private void rectangleDemos() {
+        MattePainter gray = new MattePainter(Color.GRAY);
+        addDemo(new JPanel(), "---- Rectangle Painter Demos");
+        
+        RectanglePainter rectnorm = null;
+        
+        // rect w/ 0 insets
+        //$startcite
+        //$name-rect01-
+        rectnorm = createStandardRectPainter();
+        rectnorm.setInsets(new Insets(0,0,0,0));
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle, green on gray, 0px insets","rect01");
+        //$endcite
+
+        
+        //$startcite
+        //$name-rect02-
+        // normal rectangle
+        rectnorm = createStandardRectPainter();
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle, green on gray, 20px insets","rect02");
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect03-
+        // rect w/ 20px top insets
+        rectnorm = createStandardRectPainter();
+        rectnorm.setInsets(new Insets(50,0,0,0));
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle 50px top insets","rect03");
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect04-
+        // do the fixed size demos
+        rectnorm = create50pxRectPainter();
+        addDemo("Rectangle, 50x50, default aligned (center)", "rect04", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect05-
+        // rect 50x50 left aligned
+        rectnorm = create50pxRectPainter();
+        rectnorm.setHorizontal(RectanglePainter.HorizontalAlignment.LEFT);
+        addDemo("Rectangle, 50x50, left aligned", "rect05", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect06-
+        // rect 50x50 top aligned
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        addDemo("Rectangle, 50x50, top aligned", "rect06", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect07-
+        // rect 50x50 top aligned w/ horiz stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setHorizontalStretch(true);
+        addDemo("Rectangle, 50x50, top aligned w/ horiz stretch", "rect07", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect08-
+        // rect 50x50 top aligned w/ vert stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setVerticalStretch(true);
+        addDemo("Rectangle, 50x50, top aligned w/ vert stretch", "rect08", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect09-
+        // rect 50x50 top aligned w/ vert & horiz stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setHorizontalStretch(true);
+        rectnorm.setVerticalStretch(true);
+        addDemo("Rectangle, 50x50, top aligned w/ horiz & vert stretch", "rect09", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect10-
+        // rect 50x50 center aligned w/ vert & horiz stretch
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVerticalStretch(true);
+        rectnorm.setHorizontalStretch(true);
+        addDemo("Rectangle, 50x50, center aligned w/ horiz & vert stretch", "rect10", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect11-
+        // rect 50x50 center aligned w/ vert & horiz stretch & 20px insets
+        rectnorm = create50pxRectPainter();
+        rectnorm.setVerticalStretch(true);
+        rectnorm.setHorizontalStretch(true);
+        rectnorm.setInsets(new Insets(20,20,20,20));
+        addDemo("Rectangle, 50x50, w/ horiz & vert stretch & 20px insets", "rect11", gray, rectnorm);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect12-
+        // rectangle with shadow
+        RectanglePainter rectshad = createStandardRectPainter();
+        ShadowPathEffect rectShadEffect = new ShadowPathEffect();
+        //rectShadEffect.setOffset(new Point(10,10));
+        rectshad.setPathEffect(rectShadEffect);
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectshad),"Rectangle with shadow", "rect12" );
+        //$endcite
+        
+        
+        
+        //$startcite
+        //$name-rect13-
+        // rectangle with glow
+        RectanglePainter rectglow = createStandardRectPainter();
+        rectglow.setPathEffect(new GlowPathEffect());
+        addDemo(new JXPanel(),new CompoundPainter(gray,rectglow),"Rectangle with glow", "rect13");
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect14-
+        // rectangle with inner shadow
+        RectanglePainter rectinshad = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        InnerShadowPathEffect rectinshadEffect = new InnerShadowPathEffect();
+        rectinshad.setPathEffect(rectinshadEffect);
+        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
+                rectinshad),"Rectangle with inner shadow", "rect14");
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect15-
+        // rectangle with inner glow
+        RectanglePainter rectinglow = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        InnerGlowPathEffect rectinglowEffect = new InnerGlowPathEffect();
+        rectinglow.setPathEffect(rectinglowEffect);
+        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
+                rectinglow),"Rectangle with inner glow", "rect15" );
+        //$endcite
+        
+        
+        //$startcite
+        //$name-rect16-
+        // rectangle with cool border
+        RectanglePainter rectneon = new RectanglePainter(20,20,20,20, 30,30, true,
+                Color.GREEN, 3, Color.GREEN.darker());
+        rectneon.setStyle(RectanglePainter.Style.FILLED);
+        rectneon.setPathEffect(new NeonBorderEffect(Color.WHITE, Color.ORANGE, 20));
+        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
+                rectneon),"Rectangle with neon border", "rect16" );
+        //$endcite
+
+        
+        //$startcite
+        //$name-rect17-
+        // rectangle w/ pink neon border
+        rectneon = createStandardRectPainter();
+        rectneon.setFillPaint(Color.BLACK);
+        rectneon.setStyle(AbstractPainter.Style.FILLED);
+        rectneon.setPathEffect(new NeonBorderEffect(new Color(255,100,100), new Color(255,255,255), 30));
+        addDemo("Rectangle w/ pink neon border", "rect17", new MattePainter(Color.BLACK), rectneon);
+        //$endcite
+    }
+    
+    private void textDemos(final MultipleGradientPaint gradient) {
+        addDemo(new JPanel(), "---- Text Demos");
+        CompoundPainter comp;
         
         // normal text
         Font font = new Font("SansSerif", Font.BOLD, 80);
+        
+        
         TextPainter textnorm = new TextPainter("Neon", font, Color.RED);
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textnorm);
         addDemo(new JXPanel(),comp,"Text with no effects");
-        
         
         // text AA on
         MattePainter gray = new MattePainter(Color.GRAY);
@@ -219,276 +595,70 @@ public class PainterDemoSet extends javax.swing.JFrame {
         textinglow.setPathEffect(new InnerGlowPathEffect());
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textinglow);
         addDemo(new JXPanel(), comp, "Text with inner glow");
+    }
+    
+    private void shapeDemos() {
+        addDemo(new JPanel(), "---- Shape Demos");
+        Shape starShape = ShapeUtils.generatePolygon(5,30,15,true);
+        // build a star shape with 5 points and 30 degree angles
+        ShapePainter star = null;
         
-        
-        
-        
-        
-        RectanglePainter rectnorm = null;
-        
-        // rect w/ 0 insets
-        rectnorm = createStandardRectPainter();
-        rectnorm.setInsets(new Insets(0,0,0,0));
-        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle, green on gray, 0px insets");
-        
-        // normal rectangle
-        rectnorm = createStandardRectPainter();
-        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle, green on gray, 20px insets");
-        
-        // rect w/ 20px top insets
-        rectnorm = createStandardRectPainter();
-        rectnorm.setInsets(new Insets(50,0,0,0));
-        addDemo(new JXPanel(),new CompoundPainter(gray,rectnorm),"Rectangle 50px top insets");
-        
-        // do the fixed size demos
-        rectnorm = create50pxRectPainter();
-        addDemo("Rectangle, 50x50, default aligned (center)", gray, rectnorm);
-        // rect 50x50 left aligned
-        rectnorm = create50pxRectPainter();
-        rectnorm.setHorizontal(RectanglePainter.HorizontalAlignment.LEFT);
-        addDemo("Rectangle, 50x50, left aligned", gray, rectnorm);
-        
-        // rect 50x50 top aligned
-        rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        addDemo("Rectangle, 50x50, top aligned", gray, rectnorm);
-        // rect 50x50 top aligned w/ horiz stretch
-        rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        rectnorm.setHorizontalStretch(true);
-        addDemo("Rectangle, 50x50, top aligned w/ horiz stretch", gray, rectnorm);
-        // rect 50x50 top aligned w/ vert stretch
-        rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        rectnorm.setVerticalStretch(true);
-        addDemo("Rectangle, 50x50, top aligned w/ vert stretch", gray, rectnorm);
-        // rect 50x50 top aligned w/ vert & horiz stretch
-        rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        rectnorm.setHorizontalStretch(true);
-        rectnorm.setVerticalStretch(true);
-        addDemo("Rectangle, 50x50, top aligned w/ horiz & vert stretch", gray, rectnorm);
-        // rect 50x50 center aligned w/ vert & horiz stretch
-        rectnorm = create50pxRectPainter();
-        rectnorm.setVerticalStretch(true);
-        rectnorm.setHorizontalStretch(true);
-        addDemo("Rectangle, 50x50, center aligned w/ horiz & vert stretch", gray, rectnorm);
-        
-        // rect 50x50 center aligned w/ vert & horiz stretch & 20px insets
-        rectnorm = create50pxRectPainter();
-        rectnorm.setVerticalStretch(true);
-        rectnorm.setHorizontalStretch(true);
-        rectnorm.setInsets(new Insets(20,20,20,20));
-        addDemo("Rectangle, 50x50, w/ horiz & vert stretch & 20px insets", gray, rectnorm);
-        
-        // rectangle with shadow
-        RectanglePainter rectshad = createStandardRectPainter();
-        ShadowPathEffect rectShadEffect = new ShadowPathEffect();
-        //rectShadEffect.setOffset(new Point(10,10));
-        rectshad.setPathEffect(rectShadEffect);
-        addDemo(new JXPanel(),new CompoundPainter(gray,rectshad),"Rectangle with shadow");
-        
-        // rectangle with glow
-        RectanglePainter rectglow = createStandardRectPainter();
-        rectglow.setPathEffect(new GlowPathEffect());
-        addDemo(new JXPanel(),new CompoundPainter(gray,rectglow),"Rectangle with glow");
-        
-        // rectangle with inner shadow
-        RectanglePainter rectinshad = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
-        InnerShadowPathEffect rectinshadEffect = new InnerShadowPathEffect();
-        rectinshad.setPathEffect(rectinshadEffect);
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectinshad),"Rectangle with inner shadow");
-        
-        // rectangle with inner glow
-        RectanglePainter rectinglow = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
-        InnerGlowPathEffect rectinglowEffect = new InnerGlowPathEffect();
-        rectinglow.setPathEffect(rectinglowEffect);
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectinglow),"Rectangle with inner glow");
-        
-        
-        // rectangle with cool border
-        RectanglePainter rectneon = new RectanglePainter(20,20,20,20, 30,30, true,
-                Color.GREEN, 3, Color.GREEN.darker());
-        rectneon.setStyle(RectanglePainter.Style.FILLED);
-        rectneon.setPathEffect(new NeonBorderEffect(Color.WHITE, Color.ORANGE, 20));
-        addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
-                rectneon),"Rectangle with neon border");
-        
-        // rectangle w/ pink neon border
-        rectneon = createStandardRectPainter();
-        rectneon.setFillPaint(Color.BLACK);
-        rectneon.setStyle(AbstractPainter.Style.FILLED);
-        rectneon.setPathEffect(new NeonBorderEffect(new Color(255,100,100), new Color(255,255,255), 30));
-        addDemo("Rectangle w/ pink neon border", new MattePainter(Color.BLACK), rectneon);
-        
-        
-        //a list with painter effects
-        PainterListCellRenderer renderer = new PainterListCellRenderer();
-        
-        // the list background
-        RectanglePainter listRect = new RectanglePainter(1,1,1,1,10,10,true, Color.RED.brighter(), 1, Color.RED.darker());
-        CompoundPainter listNormalBg = new CompoundPainter(
-                new MattePainter(Color.WHITE),
-                listRect);
-        renderer.setBackgroundPainter(listNormalBg);
-        
-        // the list foreground
-        TextPainter listText = new TextPainter();
-        listText.setFillPaint(Color.WHITE);
-        listText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
-        listText.setInsets(new Insets(0,8,0,0));
-        
-        renderer.setForegroundPainter(listText);
-        
-        // the list selection
-        Painter selectionPainter = new CompoundPainter(
-                new MattePainter(gradient),
-                listText);
-        renderer.setSelectionPainter(selectionPainter);
-        
-        // set it on the list
-        JList list = createJListWithData();
-        list.setCellRenderer(renderer);
-        addDemo(list,"JList with red bg + gradient selection");
-        
-        // another list with normal even odds, plus reuse previous selection painter
-        PainterListCellRenderer evenodd = new PainterListCellRenderer() {
-            public Component getListCellRendererComponent(JList list, Object value,
-                    int index, boolean isSelected, boolean cellHasFocus) {
-                // initialize the renderer (which is 'this')
-                super.getListCellRendererComponent(list, value,
-                        index, isSelected, cellHasFocus);
-                setOpaque(true);
-                if(index % 2 == 0) {
-                    setBackground(Color.WHITE);
-                } else {
-                    setBackground(Color.LIGHT_GRAY);
-                }
-                return this;
-            }
-            
-        };
-        evenodd.setSelectionPainter(selectionPainter);
-        list = createJListWithData();
-        list.setCellRenderer(evenodd);
-        addDemo(list,"JList with even/odd + gradient selection");
-        
-        
-        
-        // a generated triangle with a gradient
-        ShapePainter triangle = new ShapePainter(ShapeUtils.generatePolygon(3,50,30));
-        triangle.setFillPaint(gradient);
-        addDemo(new JXPanel(),triangle,"Triangle w/ gradient");
-        
-        
-        // affine transforms
-        TextPainter normText = new TextPainter("Text", font);
-        comp = new CompoundPainter(normText);
-        addDemo(new JXPanel(), comp, "Normal Text");
-        
-        TextPainter rotText = new TextPainter("Text", font);
-        comp = new CompoundPainter(rotText);
-        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
-        addDemo(new JXPanel(), comp, "Rotated Text");
-        
-        TextPainter shearText = new TextPainter("Text", font);
-        comp = new CompoundPainter(shearText);
-        comp.setTransform(AffineTransform.getShearInstance(-0.2,0));
-        addDemo(new JXPanel(), comp, "Sheared Text");
-        
-        TextPainter scaleText = new TextPainter("Text", font);
-        comp = new CompoundPainter(scaleText);
-        comp.setTransform(AffineTransform.getScaleInstance(2,2));
-        addDemo(new JXPanel(), comp, "Scaled Text");
-        
-        rotText = new TextPainter("Text", font);
-        rectnorm = new RectanglePainter(30,30,30,30,30,30,true,Color.RED,4f,Color.RED.darker());
-        comp = new CompoundPainter(rectnorm,rotText);
-        comp.setTransform(AffineTransform.getRotateInstance(-Math.PI*2/8,100,100));
-        addDemo(new JXPanel(), comp, "Rotated Text w/ effects on rect");
-        
-        
-        
-        
-        // a text painter using the neon border path effect
-        TextPainter coollogo = new TextPainter("Neon");
-        coollogo.setFont(new Font("SansSerif",Font.BOLD,100));
-        coollogo.setFillPaint(Color.BLACK);
-        NeonBorderEffect neon1 = new NeonBorderEffect(Color.BLACK, Color.RED.brighter(), 10);
-        neon1.setBorderPosition(NeonBorderEffect.BorderPosition.Centered);
-        coollogo.setPathEffect(neon1);
-        addDemo("A Cool Logo",new MattePainter(Color.BLACK),coollogo);
-        
-        
-        
-        // create a coming soon badge
-        star = new ShapePainter(ShapeUtils.generatePolygon(30,50,45,true),Color.RED);
+        // star filled
+        star = new ShapePainter(starShape, Color.RED);
         star.setStyle(ShapePainter.Style.FILLED);
-        star.setBorderPaint(Color.BLUE);
-        ShadowPathEffect starShadow = new ShadowPathEffect();
-        starShadow.setOffset(new Point(1,1));
-        starShadow.setEffectWidth(5);
-        star.setPathEffect(starShadow);
-        addDemo(new JXPanel(), new CompoundPainter(
-                new MattePainter(Color.GRAY),
-                star,
-                new TextPainter("Coming Soon!",
-                new Font("SansSerif", Font.PLAIN, 12), Color.WHITE)
-                ),
-                "Coming Soon Badge");
+        addDemo(new JXPanel(),star,"Star style = filled");
+        // star outline
+        star = new ShapePainter(starShape, Color.RED);
+        star.setStyle(ShapePainter.Style.OUTLINE);
+        addDemo(new JXPanel(),star,"Star style = outline");
+        // star both
+        star = new ShapePainter(starShape, Color.RED);
+        star.setStyle(ShapePainter.Style.BOTH);
+        addDemo(new JXPanel(),star,"Star style = both");
+        // star both
+        star = new ShapePainter(starShape, Color.RED);
+        star.setStyle(ShapePainter.Style.BOTH);
+        star.setBorderWidth(6f);
+        addDemo(new JXPanel(),star,"Star border width = 5");
         
+        // left/top aligned star
+        star = new ShapePainter(starShape, Color.RED);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVertical(ShapePainter.VerticalAlignment.TOP);
+        addDemo(new JXPanel(),star,"Star, left & top aligned");
         
-        // itunes like table demo
-        JTable musicTable = createJTableWithData(false);
-        //musicTable.setIntercellSpacing(new Dimension(0,0));
-        musicTable.setGridColor(Color.GRAY.darker());
-        PainterTableCellRenderer tableRenderer = new PainterTableCellRenderer();
-        MultipleGradientPaint shading = new LinearGradientPaint(
-                new Point(0,0), new Point(0,10),
-                new float[] {0f, 1f} ,
-                new Color[] {Color.GRAY, Color.GRAY.darker()});
-        tableRenderer.setBackgroundPainter(new MattePainter(shading));
-        shading = new LinearGradientPaint(
-                new Point(0,0), new Point(0,10),
-                new float[] {0f, 1f} ,
-                new Color[] {Color.BLUE, Color.BLUE.darker()});
+        // left/bottom aligned star
+        star = new ShapePainter(starShape, Color.RED);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVertical(ShapePainter.VerticalAlignment.BOTTOM);
+        addDemo(new JXPanel(),star,"Star, left & bottom aligned");
         
-        TextPainter selectionText = new TextPainter();
-        selectionText.setFillPaint(Color.BLACK);
-        selectionText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
-        tableRenderer.setSelectionBackgroundPainter(new MattePainter(shading));
+        // left/top aligned with insets
+        star = new ShapePainter(starShape, Color.RED);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVertical(ShapePainter.VerticalAlignment.TOP);
+        star.setInsets(new Insets(50,50,50,50));
+        addDemo(new JXPanel(),star,"Star, left & top aligned, 50px insets");
+        // left aligned only with left insets
+        star = new ShapePainter(starShape, Color.RED);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setInsets(new Insets(0,50,0,0));
+        addDemo(new JXPanel(),star,"Star, left aligned, 50px left insets");
+        // left aligned only with left top insets
+        star = new ShapePainter(starShape, Color.RED);
+        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setInsets(new Insets(50,50,0,0));
+        addDemo(new JXPanel(),star,"Star, left aligned, 50px left & top insets");
         
-        musicTable.setDefaultRenderer(Object.class, tableRenderer);
-        
-        PainterTableCellRenderer headerRenderer = new PainterTableCellRenderer();
-        CompoundPainter headerPainter = new CompoundPainter(
-                new MattePainter(new Color(200,200,200)),
-                new PinstripePainter(new Color(220,220,220),45,5,8),
-                new RectanglePainter(new Color(200,200,200,0), Color.BLACK));
-        headerRenderer.setBackgroundPainter(headerPainter);
-        
-        
-        for(int i=0; i<musicTable.getColumnCount(); i++) {
-            TableColumn col = musicTable.getColumn(musicTable.getColumnName(i));
-            col.setHeaderRenderer(headerRenderer);
-        }
-        //musicTable.setEnabled(false);
-        
-        musicTable.setRowSelectionAllowed(true);
-        musicTable.setColumnSelectionAllowed(false);
-        addDemo(new JScrollPane(musicTable), "JTable with custom renderer");
-        
-        addGlossDemos();
-        addPinstripeDemos();
-        
-        addPainterSetAPIDemos();
+        // the same star, but with a drop shadow
+        star = new ShapePainter(starShape, Color.RED);
+        star.setStyle(ShapePainter.Style.FILLED);
+        star.setPathEffect(new ShadowPathEffect());
+        addDemo(new JXPanel(), star, "Star with drop shadow");
     }
     
     private void addGlossDemos() {
+        addDemo(new JPanel(), "---- Gloss Demos");
         RectanglePainter rect = new RectanglePainter(20,20,20,20, 20,20);
         rect.setFillPaint(Color.RED);
         rect.setBorderPaint(Color.RED.darker());
@@ -509,49 +679,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         }
     }
     
-    Map citeMap = new HashMap();
-    private void loadCitations() throws Exception {
-        p("doing citations");
-        URL url = this.getClass().getResource("PainterDemoSet.java");
-        Scanner scanner = new Scanner(new InputStreamReader(url.openStream()));
-        //File file = new File("src/beaninfo/org/jdesktop/swingx/painter/demo/PainterDemoSet.java");
-        //FileReader reader = new FileReader(file);
-        //Scanner scanner = new Scanner(reader);
-        scanner.useDelimiter(".*\\$startcite.*");
-        while(scanner.hasNext()) {
-            String cite = scanner.next();
-            //p("cite = " + cite);
-            if(cite.contains("$name-")) {
-                //p("contains");
-                String[] ret = StringUtils.regexSearch(cite,"\\$name-(.*)-(.*)\\$endcite");
-                citeMap.put(ret[1], ret[2]);
-                /*
-                Pattern pat = Pattern.compile("\\$name-(.*)-(.*)\\$endcite",Pattern.DOTALL);
-                Matcher matcher = pat.matcher(cite);
-                matcher.find();
-                for(int i=0; i<=matcher.groupCount(); i++) {
-                    //p("got: " + matcher.group(i));
-                }
-                citeMap.put(matcher.group(1),matcher.group(2));
-                 */
-                //p("added citation: " + matcher.group(1) +  " = " + matcher.group(2));
-            }
-        }
-    }
-    /*
-    private String[] regexSearch(String source, String pattern) {
-        Pattern pat = Pattern.compile(pattern,Pattern.DOTALL);
-        Matcher matcher = pat.matcher(source);
-        matcher.find();
-        String[] list = new String[matcher.groupCount()+1];
-        for(int i=0; i<=matcher.groupCount(); i++) {
-            list[i] = matcher.group(i);
-        }
-        return list;
-    }
-     */
-    
     private void addPinstripeDemos() {
+        addDemo(new JPanel(), "---- Pinstripe Demos");
         
         //$startcite
         //$name-pinstripe1-
@@ -617,6 +746,133 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
     }
     
+    private void addPainterSetAPIDemos() {
+        addDemo(new JPanel(), "---- PainterSet API tests");
+        
+        //$startcite
+        //$name-painterset1-
+        JXPanel panel = new JXPanel();
+        panel.setBackgroundPainter(new MattePainter(Color.GREEN));
+        addDemo(panel,"panel w/ green matte background","painterset1");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset2-
+        panel = new JXPanel();
+        panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
+        addDemo(panel,"panel w/ blue pinstripe foreground","painterset2");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset3-
+        panel = new JXPanel();
+        panel.setBackgroundPainter(new MattePainter(Color.GREEN));
+        panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
+        addDemo(panel,"panel w/ blue pinstripe fg, green matte bg","painterset3");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset4-
+        panel = new JXPanel();
+        panel.setBackgroundPainter(new MattePainter(Color.GREEN));
+        panel.setPainter(new RectanglePainter(new Insets(20,20,20,20),
+                50,50,10,10,true,Color.RED,5,Color.RED.darker()),
+                PainterSupportImpl.COMPONENT);
+        panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
+        addDemo(panel,"panel, blue stripe fg, green bg, red rect comp","painterset4");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset5-
+        panel = new JXPanel();
+        panel.setForegroundPainter(new PinstripePainter(Color.BLUE,0));
+        panel.setForegroundPainter(new PinstripePainter(Color.RED,90));
+        addDemo(panel,"red fg replaces blue fg","painterset5");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset6-
+        panel = new JXPanel();
+        AbstractPainter pt = new TextPainter("Some Text");
+        panel.setForegroundPainter(new CompoundPainter(new RectanglePainter(20,20,5,Color.BLUE) ,pt));
+        //panel.getPainterSet().setTransform(AffineTransform.getRotateInstance(Math.PI*2/16,100,100));
+        addDemo(panel,"BROKEN : text fg + rotate entire set","painterset6");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset7-
+        JXLabel label = new JXLabel("A JLabel");
+        addDemo(label,"normal label","painterset7");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset8-
+        label = new JXLabel("A JLabel");
+        label.setBackgroundPainter(new MattePainter(Color.RED));
+        addDemo(label,"normal label w/ red bg","painterset8");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset9-
+        label = new JXLabel("An invalid JLabel");
+        Shape star = ShapeUtils.generatePolygon(20, 30,25,true);
+        ShapePainter shapePainter = new ShapePainter(star,new Color(255,0,0,200));
+        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        label.setBackgroundPainter(shapePainter);
+        addDemo(label,"label + shape painter in bg layer","painterset9");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset10-
+        label = new JXLabel("An invalid JLabel");
+        star = ShapeUtils.generatePolygon(20, 30,25,true);
+        shapePainter = new ShapePainter(star, new Color(255,0,0,200));
+        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION);
+        addDemo(label,"label + shape painter in validation layer","painterset10");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset11-
+        label = new JXLabel("An invalid JLabel");
+        star = ShapeUtils.generatePolygon(20, 30,25,true);
+        shapePainter = new ShapePainter(star, new Color(255,0,0,200));
+        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        label.addPainter(shapePainter, PainterSupportImpl.VALIDATION);
+        TextPainter tp = new TextPainter("!!!",Color.GREEN);
+        label.addPainter(tp, PainterSupportImpl.VALIDATION);
+        addDemo(label,"label, 2 validation using addPainter","painterset11");
+        //$endcite
+        
+        //$startcite
+        //$name-painterset12-
+        label = new JXLabel("An invalid JLabel");
+        star = ShapeUtils.generatePolygon(20, 30,25,true);
+        shapePainter = new ShapePainter(star, new Color(255,0,0,200));
+        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION);
+        tp = new TextPainter("!!!",Color.GREEN);
+        label.setPainter(tp, PainterSupportImpl.VALIDATION);
+        addDemo(label,"label, 2 validation using setPainter","painterset12");
+        //$endcite
+        
+        
+        //$startcite
+        //$name-painterset13-
+        label = new JXLabel("An normal label");
+        label.setFont(label.getFont().deriveFont(36f));
+        Painter ptr = label.getPainter(PainterSupportImpl.COMPONENT);
+        if(ptr instanceof AbstractPainter) {
+            ((AbstractPainter)ptr).setEffects(new ImageEffect(new ShadowFilter()));
+        }
+        addDemo(label, "label w/ image effect","painterset13");
+        //$endcite
+        
+    }
     
     private RectanglePainter create50pxRectPainter() {
         RectanglePainter rectnorm;
@@ -657,8 +913,10 @@ public class PainterDemoSet extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         jSplitPane1.setDividerLocation(240);
+        jSplitPane1.setContinuousLayout(true);
         jSplitPane2.setDividerLocation(150);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setContinuousLayout(true);
         citationText.setColumns(20);
         citationText.setRows(5);
         jScrollPane2.setViewportView(citationText);
@@ -790,134 +1048,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
     private void p(String string) {
         System.out.println(string);
     }
+
     
-    private void addPainterSetAPIDemos() {
-        addDemo(new JPanel(), "---- PainterSet API tests");
-        
-        //$startcite
-        //$name-painterset1-
-        JXPanel panel = new JXPanel();
-        panel.setBackgroundPainter(new MattePainter(Color.GREEN));
-        addDemo(panel,"panel w/ green matte background","painterset1");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset2-
-        panel = new JXPanel();
-        panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
-        addDemo(panel,"panel w/ blue pinstripe foreground","painterset2");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset3-
-        panel = new JXPanel();
-        panel.setBackgroundPainter(new MattePainter(Color.GREEN));
-        panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
-        addDemo(panel,"panel w/ blue pinstripe fg, green matte bg","painterset3");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset4-
-        panel = new JXPanel();
-        panel.setBackgroundPainter(new MattePainter(Color.GREEN));
-        panel.setPainter(new RectanglePainter(new Insets(20,20,20,20),
-                50,50,10,10,true,Color.RED,5,Color.RED.darker()),
-                PainterSupportImpl.COMPONENT);
-        panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
-        addDemo(panel,"panel, blue stripe fg, green bg, red rect comp","painterset4");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset5-
-        panel = new JXPanel();
-        panel.setForegroundPainter(new PinstripePainter(Color.BLUE,0));
-        panel.setForegroundPainter(new PinstripePainter(Color.RED,90));
-        addDemo(panel,"red fg replaces blue fg","painterset5");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset6-
-        panel = new JXPanel();
-        AbstractPainter pt = new TextPainter("Some Text");
-        panel.setForegroundPainter(new CompoundPainter(new RectanglePainter(20,20,5,Color.BLUE) ,pt));
-        //panel.getPainterSet().setTransform(AffineTransform.getRotateInstance(Math.PI*2/16,100,100));
-        addDemo(panel,"BROKEN : text fg + rotate entire set","painterset6");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset7-
-        JXLabel label = new JXLabel("A JLabel");
-        addDemo(label,"normal label","painterset7");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset8-
-        label = new JXLabel("A JLabel");
-        label.setBackgroundPainter(new MattePainter(Color.RED));
-        addDemo(label,"normal label w/ red bg","painterset8");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset9-
-        label = new JXLabel("An invalid JLabel");
-        Shape star = ShapeUtils.generatePolygon(20, 30,25,true);
-        ShapePainter shapePainter = new ShapePainter(star,new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.setBackgroundPainter(shapePainter);
-        addDemo(label,"label + shape painter in bg layer","painterset9");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset10-
-        label = new JXLabel("An invalid JLabel");
-        star = ShapeUtils.generatePolygon(20, 30,25,true);
-        shapePainter = new ShapePainter(star, new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION);
-        addDemo(label,"label + shape painter in validation layer","painterset10");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset11-
-        label = new JXLabel("An invalid JLabel");
-        star = ShapeUtils.generatePolygon(20, 30,25,true);
-        shapePainter = new ShapePainter(star, new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.addPainter(shapePainter, PainterSupportImpl.VALIDATION);
-        TextPainter tp = new TextPainter("!!!",Color.GREEN);
-        label.addPainter(tp, PainterSupportImpl.VALIDATION);
-        addDemo(label,"label, 2 validation using addPainter","painterset11");
-        //$endcite
-        
-        //$startcite
-        //$name-painterset12-
-        label = new JXLabel("An invalid JLabel");
-        star = ShapeUtils.generatePolygon(20, 30,25,true);
-        shapePainter = new ShapePainter(star, new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION);
-        tp = new TextPainter("!!!",Color.GREEN);
-        label.setPainter(tp, PainterSupportImpl.VALIDATION);
-        addDemo(label,"label, 2 validation using setPainter","painterset12");
-        //$endcite
-        
-        
-        //$startcite
-        //$name-painterset13-
-        label = new JXLabel("An normal label");
-        label.setFont(label.getFont().deriveFont(36f));
-        Painter ptr = label.getPainter(PainterSupportImpl.COMPONENT);
-        if(ptr instanceof AbstractPainter) {
-            ((AbstractPainter)ptr).setEffects(new ImageEffect(new ShadowFilter()));
-        }
-        addDemo(label, "label w/ image effect","painterset13");
-        //$endcite
-        
-    }
     
     
     
