@@ -13,47 +13,47 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.lang.reflect.Method;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.PainterSet;
+import org.jdesktop.swingx.painter.PainterSupport;
+import org.jdesktop.swingx.painter.PainterSupportImpl;
 
 /**
  *
  * @author joshy
  */
-public class JXLabel extends JLabel {
+public class JXLabel extends JLabel implements PainterSupport {
     
     /** Creates a new instance of JXLabel */
     public JXLabel() {
         super();
-        initPainterSet();
+        initPainterSupport();
     }
     public JXLabel(String text) {
         super(text);
-        initPainterSet();
+        initPainterSupport();
     }
-    private void initPainterSet() {
-        setPainterSet(new PainterSet());
-        getPainterSet().setPainter(new AbstractPainter() {
+    private void initPainterSupport() {
+        setPainterSupport(new PainterSupportImpl());
+        getPainterSupport().setPainter(new AbstractPainter() {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXLabel.super.paintComponent(g);
             }
-        }, PainterSet.COMPONENT);
+        }, PainterSupportImpl.COMPONENT);
     }
     
-    //private Painter backgroundPainter;
-    //private Painter foregroundPainter;
-    private PainterSet painterSet;
+    private PainterSupportImpl painterSupport;
 
     public Painter getBackgroundPainter() {
-        return getPainterSet().getPainter(PainterSet.BACKGROUND);
+        return getPainterSupport().getPainter(PainterSupportImpl.BACKGROUND);
     }
 
     public void setBackgroundPainter(Painter backgroundPainter) {
         Painter old = this.getBackgroundPainter();
-        getPainterSet().setPainter(backgroundPainter, PainterSet.BACKGROUND);
+        getPainterSupport().setPainter(backgroundPainter, PainterSupportImpl.BACKGROUND);
         if (backgroundPainter != null) {
             setOpaque(false);
         }
@@ -62,12 +62,12 @@ public class JXLabel extends JLabel {
     }
     
     public Painter getForegroundPainter() {
-        return getPainterSet().getPainter(PainterSet.FOREGROUND);
+        return getPainterSupport().getPainter(PainterSupportImpl.FOREGROUND);
     }
     
     public void setForegroundPainter(Painter painter) {
         Painter old = this.getForegroundPainter();
-        getPainterSet().setPainter(painter, PainterSet.BACKGROUND);
+        getPainterSupport().setPainter(painter, PainterSupportImpl.BACKGROUND);
         if (painter != null) {
             setOpaque(false);
         }
@@ -79,18 +79,42 @@ public class JXLabel extends JLabel {
         Graphics2D g2 = (Graphics2D)g.create();
         Insets ins = this.getInsets();
         g2.translate(ins.left, ins.top);
-        getPainterSet().paint(g2, this,
+        getPainterSupport().paint(g2, this,
                 this.getWidth()  - ins.left - ins.right,
                 this.getHeight() - ins.top  - ins.bottom);
         g2.dispose();
     }
 
-    public PainterSet getPainterSet() {
-        return painterSet;
+    private PainterSupportImpl getPainterSupport() {
+        return painterSupport;
     }
 
-    private void setPainterSet(PainterSet painterSet) {
-        this.painterSet = painterSet;
+    private void setPainterSupport(PainterSupportImpl painterSet) {
+        this.painterSupport = painterSet;
+    }
+
+    public void addPainter(Painter painter) {
+        painterSupport.addPainter(painter);
+    }
+
+    public void addPainter(Painter painter, int level) {
+        painterSupport.addPainter(painter,level);
+    }
+
+    public List<Painter> getOrderedPainters() {
+        return painterSupport.getOrderedPainters();
+    }
+
+    public Painter getPainter(int level) {
+        return painterSupport.getPainter(level);
+    }
+
+    public List<Painter> getPainters(int level) {
+        return painterSupport.getPainters(level);
+    }
+
+    public void setPainter(Painter painter, int level) {
+        painterSupport.setPainter(painter,level);
     }
     
 }

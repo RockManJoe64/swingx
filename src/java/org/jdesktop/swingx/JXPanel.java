@@ -33,13 +33,16 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import javax.swing.JComponent;
 
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
+import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.PainterSet;
+import org.jdesktop.swingx.painter.PainterSupport;
+import org.jdesktop.swingx.painter.PainterSupportImpl;
 
 /**
  * A simple JPanel extension that adds translucency support.
@@ -49,9 +52,10 @@ import org.jdesktop.swingx.painter.PainterSet;
  *
  * @author rbair
  */
-public class JXPanel extends JPanel implements Scrollable {
+public class JXPanel extends JPanel implements Scrollable, PainterSupport {
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
+    private PainterSupportImpl painterSupport;
     
     /**
      * The alpha level for this component.
@@ -85,13 +89,11 @@ public class JXPanel extends JPanel implements Scrollable {
     private Dimension oldSize;
     
     
-    private PainterSet painterSet;
-    
     /**
      * Creates a new instance of JXPanel
      */
     public JXPanel() {
-        initPainterSet();
+        initPainterSupport();
     }
     
     /**
@@ -99,7 +101,7 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     public JXPanel(boolean isDoubleBuffered) {
         super(isDoubleBuffered);
-        initPainterSet();
+        initPainterSupport();
     }
     
     /**
@@ -107,7 +109,7 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     public JXPanel(LayoutManager layout) {
         super(layout);
-        initPainterSet();
+        initPainterSupport();
     }
     
     /**
@@ -116,16 +118,16 @@ public class JXPanel extends JPanel implements Scrollable {
      */
     public JXPanel(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
-        initPainterSet();
+        initPainterSupport();
     }
     
-    private void initPainterSet() {
-        setPainterSet(new PainterSet());
-        getPainterSet().setPainter(new Painter() {
-            public void paint(Graphics2D g, JComponent component, int width, int height) {
+    private void initPainterSupport() {
+        painterSupport = new PainterSupportImpl();
+        painterSupport.setPainter(new AbstractPainter() {
+            protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXPanel.super.paintComponent(g);
             }
-        }, PainterSet.COMPONENT);
+        }, PainterSupport.COMPONENT);
     }
     
     /**
@@ -260,8 +262,7 @@ public class JXPanel extends JPanel implements Scrollable {
     public void setBackgroundPainter(Painter p) {
         Painter old = getBackgroundPainter();
         
-        getPainterSet().setPainter(p,PainterSet.BACKGROUND);
-        //this.backgroundPainter = p;
+        painterSupport.setPainter(p,BACKGROUND);
         
         if (p != null) {
             setOpaque(false);
@@ -272,8 +273,7 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     public Painter getBackgroundPainter() {
-        return getPainterSet().getPainter(PainterSet.BACKGROUND);
-        //return backgroundPainter;
+        return painterSupport.getPainter(BACKGROUND);
     }
     
     /**
@@ -286,7 +286,7 @@ public class JXPanel extends JPanel implements Scrollable {
     public void setForegroundPainter(Painter p) {
         Painter old = getForegroundPainter();
         //this.foregroundPainter = p;
-        getPainterSet().setPainter(p, PainterSet.FOREGROUND);
+        painterSupport.setPainter(p, FOREGROUND);
         
         if (p != null) {
             setOpaque(false);
@@ -297,8 +297,7 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     public Painter getForegroundPainter() {
-        return getPainterSet().getPainter(PainterSet.FOREGROUND);
-        //return foregroundPainter;
+        return painterSupport.getPainter(FOREGROUND);
     }
     
     /**
@@ -327,17 +326,33 @@ public class JXPanel extends JPanel implements Scrollable {
         Graphics2D g2 = (Graphics2D)g.create();
         Insets ins = this.getInsets();
         g2.translate(ins.left, ins.top);
-        getPainterSet().paint(g2, this,
+        painterSupport.paint(g2, this,
                 this.getWidth()  - ins.left - ins.right,
                 this.getHeight() - ins.top  - ins.bottom);
         g2.dispose();
     }
 
-    public PainterSet getPainterSet() {
-        return painterSet;
+    public void addPainter(Painter painter) {
+        painterSupport.addPainter(painter);
     }
 
-    public void setPainterSet(PainterSet painterSet) {
-        this.painterSet = painterSet;
+    public void addPainter(Painter painter, int level) {
+        painterSupport.addPainter(painter,level);
+    }
+
+    public List<Painter> getOrderedPainters() {
+        return painterSupport.getOrderedPainters();
+    }
+
+    public Painter getPainter(int level) {
+        return painterSupport.getPainter(level);
+    }
+
+    public List<Painter> getPainters(int level) {
+        return painterSupport.getPainters(level);
+    }
+
+    public void setPainter(Painter painter, int level) {
+        painterSupport.setPainter(painter,level);
     }
 }

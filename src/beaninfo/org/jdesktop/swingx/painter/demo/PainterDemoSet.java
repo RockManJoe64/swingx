@@ -820,9 +820,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-painterset4-
         panel = new JXPanel();
         panel.setBackgroundPainter(new MattePainter(Color.GREEN));
-        panel.getPainterSet().setPainter(new RectanglePainter(new Insets(20,20,20,20),
+        panel.setPainter(new RectanglePainter(new Insets(20,20,20,20),
                 50,50,10,10,true,Color.RED,5,Color.RED.darker()),
-                PainterSet.COMPONENT);
+                PainterSupportImpl.COMPONENT);
         panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
         addDemo(panel,"panel, blue stripe fg, green bg, red rect comp","painterset4");
         //$endcite
@@ -840,8 +840,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         panel = new JXPanel();
         AbstractPainter pt = new TextPainter("Some Text");
         panel.setForegroundPainter(new CompoundPainter(new RectanglePainter(20,20,5,Color.BLUE) ,pt));
-        panel.getPainterSet().setTransform(AffineTransform.getRotateInstance(Math.PI*2/16,100,100));
-        addDemo(panel,"text fg + rotate entire set","painterset6");
+        //panel.getPainterSet().setTransform(AffineTransform.getRotateInstance(Math.PI*2/16,100,100));
+        addDemo(panel,"BROKEN : text fg + rotate entire set","painterset6");
         //$endcite
         
         //$startcite
@@ -875,7 +875,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
         shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.getPainterSet().setPainter(shapePainter, PainterSet.VALIDATION);
+        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION);
         addDemo(label,"label + shape painter in validation layer","painterset10");
         //$endcite
         
@@ -886,9 +886,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
         shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.getPainterSet().addPainter(shapePainter, PainterSet.VALIDATION);
+        label.addPainter(shapePainter, PainterSupportImpl.VALIDATION);
         TextPainter tp = new TextPainter("!!!",Color.GREEN);
-        label.getPainterSet().addPainter(tp, PainterSet.VALIDATION);
+        label.addPainter(tp, PainterSupportImpl.VALIDATION);
         addDemo(label,"label, 2 validation using addPainter","painterset11");
         //$endcite
         
@@ -899,9 +899,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
         shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.getPainterSet().setPainter(shapePainter, PainterSet.VALIDATION);
+        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION);
         tp = new TextPainter("!!!",Color.GREEN);
-        label.getPainterSet().setPainter(tp, PainterSet.VALIDATION);
+        label.setPainter(tp, PainterSupportImpl.VALIDATION);
         addDemo(label,"label, 2 validation using setPainter","painterset12");
         //$endcite
         
@@ -910,7 +910,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-painterset13-
         label = new JXLabel("An normal label");
         label.setFont(label.getFont().deriveFont(36f));
-        Painter ptr = label.getPainterSet().getPainter(PainterSet.COMPONENT);
+        Painter ptr = label.getPainter(PainterSupportImpl.COMPONENT);
         if(ptr instanceof AbstractPainter) {
             ((AbstractPainter)ptr).setEffects(new ImageEffect(new ShadowFilter()));
         }
