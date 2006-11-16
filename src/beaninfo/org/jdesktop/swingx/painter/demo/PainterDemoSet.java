@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -21,9 +22,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.CookieHandler;
@@ -35,6 +38,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -108,6 +112,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         listDemos(gradient);
         tableDemos();
         miscDemos(gradient);
+        imageDemos();
         try {
             loadCitations();
         } catch (Exception ex) {
@@ -281,7 +286,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         
         //$startcite
-        //$name-asdf- 
+        //$name-asdf-
         TextPainter shearText = new TextPainter("Text", font2);
         comp = new CompoundPainter(shearText);
         comp.setTransform(AffineTransform.getShearInstance(-0.2,0));
@@ -755,7 +760,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         star.setVertical(ShapePainter.VerticalAlignment.BOTTOM);
         addDemo(new JXPanel(),star,"Star, left & bottom aligned","star06");
         //$endcite
-
+        
         
         //$startcite
         //$name-star07-
@@ -766,7 +771,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         star.setInsets(new Insets(50,50,50,50));
         addDemo(new JXPanel(),star,"Star, left & top aligned, 50px insets","star07");
         //$endcite
-
+        
         
         
         //$startcite
@@ -1023,6 +1028,97 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$endcite
         
     }
+    
+    
+    private void imageDemos() {
+        addDemo(new JPanel(), "---- ImagePainter Demos");
+        
+        //$startcite
+        //$name-image02-
+        try {
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
+            ImagePainter ip = new ImagePainter(img);
+            addDemo("small image, default alignment (center)","image02",ip);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        //$endcite
+        
+        
+        //$startcite
+        //$name-image01-
+        try {
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("moon.jpg"));
+            ImagePainter ip = new ImagePainter(img);
+            addDemo("big image, default alignment (center)","image01",ip);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        //$endcite
+        
+        
+        //bottom aligned
+        //$startcite
+        //$name-image03-
+        try {
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("moon.jpg"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setVertical(ImagePainter.VerticalAlignment.BOTTOM);
+            addDemo("bottom aligned","image03",ip);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        //$endcite
+        
+        
+        //right aligned
+        //$startcite
+        //$name-image04-
+        try {
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("moon.jpg"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setHorizontal(ImagePainter.HorizontalAlignment.RIGHT);
+            addDemo("right aligned","image04",ip);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        //$endcite
+        
+        
+        //top aligned with horizontal repeat
+        //$startcite
+        //$name-image05-
+        try {
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setVertical(ImagePainter.VerticalAlignment.TOP);
+            ip.setHorizontalRepeat(true);
+            addDemo("top aligned, horizontal repeat","image05",ip);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        //$endcite
+        
+        
+        
+        //top aligned with horizontal repeat downset by 10px
+        //top aligned with horizontal repeat
+        try {
+            //$startcite
+            //$name-image06-
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setVertical(ImagePainter.VerticalAlignment.TOP);
+            ip.setHorizontalRepeat(true);
+            ip.setInsets(new Insets(20,0,0,0));
+            addDemo("top aligned, horizontal repeat, top = 20px","image06",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+    }
+    
     
     private RectanglePainter create50pxRectPainter() {
         RectanglePainter rectnorm;
