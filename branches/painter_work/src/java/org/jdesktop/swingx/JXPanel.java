@@ -41,7 +41,7 @@ import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.PainterSupport;
+import org.jdesktop.swingx.painter.JXComponent;
 import org.jdesktop.swingx.painter.PainterSupportImpl;
 
 /**
@@ -52,7 +52,7 @@ import org.jdesktop.swingx.painter.PainterSupportImpl;
  *
  * @author rbair
  */
-public class JXPanel extends JPanel implements Scrollable, PainterSupport {
+public class JXPanel extends JPanel implements Scrollable, JXComponent {
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
     private PainterSupportImpl painterSupport;
@@ -127,7 +127,7 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXPanel.super.paintComponent(g);
             }
-        }, PainterSupport.COMPONENT);
+        }, JXComponent.COMPONENT_LAYER);
     }
     
     /**
@@ -262,7 +262,7 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
     public void setBackgroundPainter(Painter p) {
         Painter old = getBackgroundPainter();
         
-        painterSupport.setPainter(p,BACKGROUND);
+        painterSupport.setPainter(p,BACKGROUND_LAYER);
         
         if (p != null) {
             setOpaque(false);
@@ -273,7 +273,7 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
     }
     
     public Painter getBackgroundPainter() {
-        return painterSupport.getPainter(BACKGROUND);
+        return painterSupport.getPainter(BACKGROUND_LAYER);
     }
     
     /**
@@ -286,7 +286,7 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
     public void setForegroundPainter(Painter p) {
         Painter old = getForegroundPainter();
         //this.foregroundPainter = p;
-        painterSupport.setPainter(p, FOREGROUND);
+        painterSupport.setPainter(p, FOREGROUND_LAYER);
         
         if (p != null) {
             setOpaque(false);
@@ -297,7 +297,7 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
     }
     
     public Painter getForegroundPainter() {
-        return painterSupport.getPainter(FOREGROUND);
+        return painterSupport.getPainter(FOREGROUND_LAYER);
     }
     
     /**
@@ -340,8 +340,8 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
         painterSupport.addPainter(painter,level);
     }
 
-    public List<Painter> getOrderedPainters() {
-        return painterSupport.getOrderedPainters();
+    public List<Painter> getPainters() {
+        return painterSupport.getPainters();
     }
 
     public Painter getPainter(int level) {
@@ -354,5 +354,9 @@ public class JXPanel extends JPanel implements Scrollable, PainterSupport {
 
     public void setPainter(Painter painter, int level) {
         painterSupport.setPainter(painter,level);
+    }
+
+    public void setPainters(List<Painter> painters) {
+        painterSupport.setPainters(painters);
     }
 }

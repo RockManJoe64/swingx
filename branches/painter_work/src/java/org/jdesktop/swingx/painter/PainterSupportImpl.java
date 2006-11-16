@@ -22,27 +22,24 @@ import javax.swing.JComponent;
 /**
  *
  * @author joshy
- * 
+ *
  */
-public class PainterSupportImpl extends CompoundPainter implements PainterSupport {
-
+public class PainterSupportImpl extends AbstractPainter implements JXComponent {
+    
     private Map<Integer, List<Painter>> layers = new HashMap<Integer, List<Painter>>();
-
+    
     /**
      *implementation detail */
     
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Graphics2D g2 = (Graphics2D) g.create();
-        if(getTransform() != null) {
-            g2.setTransform(getTransform());
-        }
-        for(Painter p : getOrderedPainters()) {
+        for(Painter p : getPainters()) {
             p.paint(g2,component,width,height);
         }
         g2.dispose();
     }
     
-   
+    
     /** Get the painter at the requested level. If there is more than one painter
      * at that level, it will return the first one.
      */
@@ -63,7 +60,7 @@ public class PainterSupportImpl extends CompoundPainter implements PainterSuppor
             return new ArrayList<Painter>();
         }
     }
-
+    
     /** Replace all painters at the specified level with the new painter
      */
     public void setPainter(Painter painter, int level) {
@@ -84,17 +81,17 @@ public class PainterSupportImpl extends CompoundPainter implements PainterSuppor
         layers.get(level).add(painter);
     }
     
-    /** Add this painter at the FOREGROUND level. If there are any 
+    /** Add this painter at the FOREGROUND level. If there are any
      * painters already at that level then the new painter will be added
      * after them (ie: drawn on top of them).
      */
     public void addPainter(Painter painter) {
-        addPainter(painter,FOREGROUND);
+        addPainter(painter,FOREGROUND_LAYER);
     }
     
     /** Get all of the painters as a list, ordered by layer
      */
-    public List<Painter> getOrderedPainters() {
+    public List<Painter> getPainters() {
         List<Integer> set = new ArrayList(layers.keySet());
         Collections.sort(set);
         
@@ -107,15 +104,15 @@ public class PainterSupportImpl extends CompoundPainter implements PainterSuppor
         return list2;
     }
     
-    /*
-    private class Layer {
-        public int layer;
-        public Painter painter;
-        public Layer(int layer, Painter painter) {
-            this.layer = layer;
-            this.painter = painter;
+    /** set all of the painters as an ordered list. All painters will be
+     * placed at the component level. This removes any existing painters.
+     * If a null value is passed in then the internal list of painters will be empty
+     */
+    public void setPainters(List<Painter> painters) {
+        layers.clear();
+        if(painters != null) {
+            layers.put(COMPONENT_LAYER,painters);
         }
     }
-     */
     
 }
