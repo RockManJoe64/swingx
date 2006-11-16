@@ -15,20 +15,19 @@ import java.util.List;
  *
  * @author joshy
  */
-public interface PainterSupport {
+public interface JXComponent {
    
-    int BACKGROUND = -100;
+    int BACKGROUND_LAYER = -100;
 
-    int COMPONENT = 0;
+    int COMPONENT_LAYER = 0;
 
-    int FOREGROUND = 100;
+    int FOREGROUND_LAYER = 100;
 
-    int OVERLAY = 300;
+    int VALIDATION_LAYER = 200;
 
-    int VALIDATION = 200;
-
+    int OVERLAY_LAYER = 300;
     /**
-     * Add this painter at the FOREGROUND level. If there are any 
+     * Add this painter at the FOREGROUND_LEVEL. If there are any 
      * painters already at that level then the new painter will be added
      * after them (ie: drawn on top of them).
      */
@@ -44,7 +43,13 @@ public interface PainterSupport {
     /**
      * Get all of the painters as a list, ordered by layer
      */
-    List<Painter> getOrderedPainters();
+    List<Painter> getPainters();
+    
+    /** set all of the painters as an ordered list. All painters will be
+     * placed at the COMPONENT_LEVEL. This removes any existing painters.
+     * If a null value is passed in then the internal list of painters will be empty
+     */
+    public void setPainters(List<Painter> list);
 
     /**
      * Get the painter at the requested level. If there is more than one painter

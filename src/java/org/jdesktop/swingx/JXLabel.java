@@ -18,14 +18,14 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.PainterSupport;
+import org.jdesktop.swingx.painter.JXComponent;
 import org.jdesktop.swingx.painter.PainterSupportImpl;
 
 /**
  *
  * @author joshy
  */
-public class JXLabel extends JLabel implements PainterSupport {
+public class JXLabel extends JLabel implements JXComponent {
     
     /** Creates a new instance of JXLabel */
     public JXLabel() {
@@ -42,18 +42,18 @@ public class JXLabel extends JLabel implements PainterSupport {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXLabel.super.paintComponent(g);
             }
-        }, PainterSupportImpl.COMPONENT);
+        }, PainterSupportImpl.COMPONENT_LAYER);
     }
     
     private PainterSupportImpl painterSupport;
 
     public Painter getBackgroundPainter() {
-        return getPainterSupport().getPainter(PainterSupportImpl.BACKGROUND);
+        return getPainterSupport().getPainter(PainterSupportImpl.BACKGROUND_LAYER);
     }
 
     public void setBackgroundPainter(Painter backgroundPainter) {
         Painter old = this.getBackgroundPainter();
-        getPainterSupport().setPainter(backgroundPainter, PainterSupportImpl.BACKGROUND);
+        getPainterSupport().setPainter(backgroundPainter, PainterSupportImpl.BACKGROUND_LAYER);
         if (backgroundPainter != null) {
             setOpaque(false);
         }
@@ -62,12 +62,12 @@ public class JXLabel extends JLabel implements PainterSupport {
     }
     
     public Painter getForegroundPainter() {
-        return getPainterSupport().getPainter(PainterSupportImpl.FOREGROUND);
+        return getPainterSupport().getPainter(PainterSupportImpl.FOREGROUND_LAYER);
     }
     
     public void setForegroundPainter(Painter painter) {
         Painter old = this.getForegroundPainter();
-        getPainterSupport().setPainter(painter, PainterSupportImpl.BACKGROUND);
+        getPainterSupport().setPainter(painter, PainterSupportImpl.BACKGROUND_LAYER);
         if (painter != null) {
             setOpaque(false);
         }
@@ -101,8 +101,8 @@ public class JXLabel extends JLabel implements PainterSupport {
         painterSupport.addPainter(painter,level);
     }
 
-    public List<Painter> getOrderedPainters() {
-        return painterSupport.getOrderedPainters();
+    public List<Painter> getPainters() {
+        return painterSupport.getPainters();
     }
 
     public Painter getPainter(int level) {
@@ -115,6 +115,10 @@ public class JXLabel extends JLabel implements PainterSupport {
 
     public void setPainter(Painter painter, int level) {
         painterSupport.setPainter(painter,level);
+    }
+
+    public void setPainters(List<Painter> painters) {
+        painterSupport.setPainters(painters);
     }
     
 }
