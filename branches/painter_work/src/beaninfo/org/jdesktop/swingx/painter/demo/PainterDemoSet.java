@@ -1117,6 +1117,62 @@ public class PainterDemoSet extends javax.swing.JFrame {
             ex.printStackTrace();
         }
         
+        
+        // set a border on the image
+        try {
+            //$startcite
+            //$name-image08-
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setBorderPaint(Color.BLACK);
+            ip.setBorderWidth(3);
+            addDemo("image with black border","image08",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        // set a colored background on an image w/ transparent parts
+        try {
+            //$startcite
+            //$name-image09-
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("a-glyph.png"));
+            ImagePainter ip = new ImagePainter(img);
+            addDemo("An image of 'A' with transparent parts","image09",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        // set a colored background on an image w/ transparent parts
+        try {
+            //$startcite
+            //$name-image10-
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("a-glyph.png"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setFillPaint(Color.RED);
+            addDemo("red background visible through transparent parts","image10",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        
+        
+        // set a dropshadow path effect on the image
+        try {
+            //$startcite
+            //$name-image07-
+            BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
+            ImagePainter ip = new ImagePainter(img);
+            ip.setPathEffect(new ShadowPathEffect());
+            addDemo("image with shadow path effect","image07",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        
     }
     
     
