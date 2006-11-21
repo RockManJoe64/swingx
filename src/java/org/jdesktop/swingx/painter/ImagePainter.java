@@ -21,9 +21,11 @@
 
 package org.jdesktop.swingx.painter;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.TexturePaint;
@@ -66,7 +68,7 @@ import javax.swing.SwingUtilities;
  *
  * @author Richard
  */
-public class ImagePainter extends PositionedPainter {
+public class ImagePainter extends AbstractPathPainter {
     /**
      * Logger to use
      */
@@ -88,7 +90,7 @@ public class ImagePainter extends PositionedPainter {
      * is centered.
      */
     public ImagePainter() {
-        super();
+        this(null);
     }
     
     /**
@@ -98,8 +100,7 @@ public class ImagePainter extends PositionedPainter {
      * @param image the image to be painted
      */
     public ImagePainter(BufferedImage image) {
-        super();
-        this.img = image;
+        this(image,HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
     }
     
     /**
@@ -113,6 +114,8 @@ public class ImagePainter extends PositionedPainter {
         this.img = image;
         this.setVertical(vertical);
         this.setHorizontal(horizontal);
+        this.setFillPaint(null);
+        this.setBorderPaint(null);
     }
     
     /**
@@ -146,6 +149,39 @@ public class ImagePainter extends PositionedPainter {
             loadImage();
         }
         
+        Shape shape = provideShape(component,width,height);
+        switch (getStyle()) {
+            case BOTH:
+                drawBackground(g,shape,width,height);
+                drawBorder(g,shape,width,height);
+                break;
+            case FILLED:
+                drawBackground(g,shape,width,height);
+                break;
+            case OUTLINE:
+                drawBorder(g,shape,width,height);
+                break;
+            case NONE:
+                break;
+        }
+    }
+    
+    private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
+        Paint p = getFillPaint();
+        
+        if(p != null) {
+            if(isSnapPaint()) {
+                p = calculateSnappedPaint(p, width, height);
+            }
+            g.setPaint(p);
+            g.fill(shape);
+        }
+        
+        if(getPathEffect() != null) {
+            getPathEffect().apply(g, shape, width, height);
+        }
+        
+        
         if (img != null) {
             int imgWidth = img.getWidth(null);
             int imgHeight = img.getHeight(null);
@@ -175,8 +211,18 @@ public class ImagePainter extends PositionedPainter {
                 g.setClip(clip);
             }
         }
+        
     }
-
+    
+    private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
+        if(getBorderPaint() != null) {
+            g.setPaint(getBorderPaint());
+            g.setStroke(new BasicStroke(getBorderWidth()));
+            g.draw(shape);
+        }
+    }
+    
+    
     private double imageScale = 1.0;
     
     public void setImageScale(double imageScale) {
@@ -217,25 +263,37 @@ public class ImagePainter extends PositionedPainter {
     }
     
     public static URL baseURL;
-
+    
     public boolean isHorizontalRepeat() {
         return horizontalRepeat;
     }
-
+    
     public void setHorizontalRepeat(boolean horizontalRepeat) {
         boolean old = this.isHorizontalRepeat();
         this.horizontalRepeat = horizontalRepeat;
         firePropertyChange("horizontalRepeat",old,this.horizontalRepeat);
     }
-
+    
     public boolean isVerticalRepeat() {
         return verticalRepeat;
     }
-
+    
     public void setVerticalRepeat(boolean verticalRepeat) {
         boolean old = this.isVerticalRepeat();
         this.verticalRepeat = verticalRepeat;
         firePropertyChange("verticalRepeat",old,this.verticalRepeat);
     }
-
+    
+    public Shape provideShape(JComponent comp, int width, int height) {
+        if(getImage() != null) {
+            BufferedImage img = getImage();
+            int imgWidth = img.getWidth();
+            int imgHeight = img.getHeight();
+            Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
+            return rect;
+        }
+        return new Rectangle(0,0,0,0);
+        
+    }
+    
 }

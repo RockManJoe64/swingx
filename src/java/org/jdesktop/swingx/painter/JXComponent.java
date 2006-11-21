@@ -66,5 +66,12 @@ public interface JXComponent {
      * Replace all painters at the specified level with the new painter
      */
     void setPainter(Painter painter, int level);
-    
+
+    /*
+
+    void removePainter(Painter painter);
+    void removePainters(int level);
+    void removePainters();
+    List<Integer> getLevels(); ???
+     */
 }
