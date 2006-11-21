@@ -92,6 +92,8 @@ public class JXImageView extends JXPanel {
     /* ======= instance variables ========= */
     // the image this view will show
     private Image image;
+    // the url of the image, if available
+    private URL imageURL;
     
     // support for error listeners
     private ErrorSupport errorSupport = new ErrorSupport(this);
@@ -153,9 +155,11 @@ public class JXImageView extends JXPanel {
      * @param image the new image to set, or null.
      */
     public void setImage(Image image) {
+        Image oldImage = getImage();
         this.image = image;
         setImageLocation(null);
         setScale(1.0);
+        firePropertyChange("image",oldImage,image);
         repaint();
     }
     
@@ -165,6 +169,7 @@ public class JXImageView extends JXPanel {
      * @throws java.io.IOException thrown if the image cannot be loaded
      */
     public void setImage(URL url) throws IOException {
+        setImageURL(url);
         setImage(ImageIO.read(url));
     }
     
@@ -175,7 +180,9 @@ public class JXImageView extends JXPanel {
      */
     public void setImage(File file) throws IOException {
         System.out.println("reading: " + file.getAbsolutePath());
+        setImageURL(file.toURL());
         setImage(ImageIO.read(file));
+        System.out.println("the url = " + getImageURL());
     }
     
     /**
@@ -662,5 +669,13 @@ public class JXImageView extends JXPanel {
 
     public void setExportFormat(String exportFormat) {
         this.exportFormat = exportFormat;
+    }
+
+    public URL getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(URL imageURL) {
+        this.imageURL = imageURL;
     }
 }
