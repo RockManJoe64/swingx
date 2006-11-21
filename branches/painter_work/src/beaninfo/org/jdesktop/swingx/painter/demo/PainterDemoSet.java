@@ -56,6 +56,7 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
+import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.*;
 import org.jdesktop.swingx.painter.effects.GlowPathEffect;
 import org.jdesktop.swingx.painter.effects.ImageEffect;
@@ -64,6 +65,7 @@ import org.jdesktop.swingx.painter.effects.InnerShadowPathEffect;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
 import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.effects.ShadowPathEffect;
+import org.jdesktop.swingx.util.PaintUtils;
 import org.jdesktop.swingx.util.ShapeUtils;
 import org.jdesktop.swingx.util.StringUtils;
 
@@ -96,6 +98,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //comp = new CompoundPainter(stdrect, new TextPainter("This is some stuff"));
         //addDemo(new JXButton("Cool Text Yo"), comp, "button with gradient and text");
         
+        imageDemos();
         ShapePainter star;
         shapeDemos();
         
@@ -103,7 +106,6 @@ public class PainterDemoSet extends javax.swing.JFrame {
         textDemos(gradient);
         
         MattePainter gray = new MattePainter(Color.GRAY);
-        //RectanglePainter rectnorm;
         rectangleDemos();
         transformDemos();
         addGlossDemos();
@@ -112,7 +114,6 @@ public class PainterDemoSet extends javax.swing.JFrame {
         listDemos(gradient);
         tableDemos();
         miscDemos(gradient);
-        imageDemos();
         try {
             loadCitations();
         } catch (Exception ex) {
@@ -1167,6 +1168,31 @@ public class PainterDemoSet extends javax.swing.JFrame {
             ImagePainter ip = new ImagePainter(img);
             ip.setPathEffect(new ShadowPathEffect());
             addDemo("image with shadow path effect","image07",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        
+        
+        // set an image using a remote url
+        try {
+            //$startcite
+            //$name-image11-
+            ImagePainter ip = new ImagePainter();
+            ip.setImageString("http://java.sun.com/developer/techDocs/hi/repository/graphicsRepository/toolbarButtonGraphics/general/Delete24.gif");
+            addDemo("image loaded from remote URL","image11",ip);
+            //$endcite
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        // load an image painter using persisted xml
+        try {
+            //$startcite
+            //$name-image12-
+            Painter ptr = PainterUtil.loadPainter(new File("/Users/joshy/Desktop/blah.xml"));
+            addDemo("image loaded from remote URL","image12",ptr);
             //$endcite
         } catch (Exception ex) {
             ex.printStackTrace();

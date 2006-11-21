@@ -79,8 +79,19 @@ public class PainterUtil {
     }
     
     public static void main(String[] args) throws Exception {
-        MattePainter mp = new MattePainter(Color.RED);
-        savePainterToFile(mp, new File("test.xml"));
+        ImagePainter ip = new ImagePainter();
+        ip.setBaseURL("file:/Users/joshy/Pictures/");
+        ip.setImageString("cooltikis.jpg");
+        File outfile = new File("/Users/joshy/Desktop/test.xml");
+        outfile.createNewFile();
+        p("outfile = " + outfile.getAbsolutePath());
+        p("exists = " + outfile.exists());
+        savePainterToFile(ip, outfile, outfile.getParentFile().toURL());
+        p("---------");
+        ip = (ImagePainter)loadPainter(outfile,outfile.getParentFile().toURL());
+        p("final image painter = " + ip);
+        p("image = " + ip.getImage());
+        //loadPainter(new File("test.xml"),new File(".").toURL());
     }
     /*
     public static Painter loadPainter(URL uRL) throws IOException {
@@ -93,7 +104,7 @@ public class PainterUtil {
         Thread.currentThread().setContextClassLoader(PainterUtil.class.getClassLoader());
         //u.p("checking the class: " + MattePainter.class.getName());
         XMLDecoder dec = new XMLDecoder(new FileInputStream(in));
-        
+        dec.setOwner(new PersistenceOwner(baseURL));
         dec.setExceptionListener(new ExceptionListener() {
             public void exceptionThrown(Exception ex) {
                 System.out.println(ex.getMessage());
@@ -117,33 +128,27 @@ public class PainterUtil {
             }
         });
         Object obj = dec.readObject();
-        //setAAOn((Painter)obj);
-        //        u.p("object = " + obj);
         return (Painter)obj;
     }
     
-    public static void setAAOn(Painter painter) {
-        if(painter instanceof AbstractPainter) {
-            ((AbstractPainter)painter).setAntialiasing(AbstractPainter.Antialiasing.On);
-        }
-        if(painter instanceof CompoundPainter) {
-            Painter[] pt = ((CompoundPainter)painter).getPainters();
-            for(Painter p : pt) {
-                setAAOn(p);
-            }
-        }
+    static public void savePainterToFile(Painter compoundPainter, File file) throws IOException {
+        savePainterToFile(compoundPainter,file,file.getParentFile().toURL());
     }
     
-    static public void savePainterToFile(Painter compoundPainter, File file) throws IOException {
+    static public void savePainterToFile(Painter compoundPainter, File file, URL baseURL) throws IOException {
         //System.setErr(null);
         //        u.p("writing out to: " + file.getCanonicalPath());
         setTransient(ImagePainter.class, "image");
+        setTransient(ImagePainter.class, "imageString");
         //setTransient(CompoundPainter.class,"antialiasing");
         //setTransient(AbstractPainter.class,"antialiasing");
         //setTransient(AbstractPainter.class,"renderingHints");
         //setPropertyDelegate();
         
         XMLEncoder e = new XMLEncoder(new FileOutputStream(file));
+        e.setOwner(new PersistenceOwner(baseURL));
+        p("owner = " + e.getOwner());
+        //e.setOwner(compoundPainter);
         
         // serialize the enums
         e.setPersistenceDelegate(AbstractPainter.Antialiasing.class, new TypeSafeEnumPersistenceDelegate());
@@ -155,6 +160,7 @@ public class PainterUtil {
         
         
         e.setPersistenceDelegate(AbstractPainter.class, new AbstractPainterDelegate());
+        e.setPersistenceDelegate(ImagePainter.class, new ImagePainterDelegate());
         e.setPersistenceDelegate(RenderingHints.class, new RenderingHintsDelegate());
         e.setPersistenceDelegate(GradientPaint.class, new GradientPaintDelegate());
         e.setPersistenceDelegate(Arc2D.Float.class, new Arc2DDelegate());
@@ -226,6 +232,7 @@ public class PainterUtil {
             throw new IllegalArgumentException( "Could not instantiate value: " + oldInstance );
         }
     }
+    
     public static final class RenderingHintsDelegate extends PersistenceDelegate {
         protected Expression instantiate(Object oldInstance, Encoder out) {
             //u.p("rh inst");
@@ -245,13 +252,31 @@ public class PainterUtil {
     public static final class AbstractPainterDelegate extends DefaultPersistenceDelegate {
         protected void initialize(Class type, Object oldInstance,
                 Object newInstance, Encoder out) {
-            System.out.println("ap delegate called");
-            // Note, the "size" property will be set here.
+            p("ap delegate called");
             super.initialize(type, oldInstance,  newInstance, out);
-            
-            //AbstractPainter ap = (AbstractPainter)oldInstance;
-            //RenderingHints rh = ap.getRenderingHints();
-            //out.writeStatement(new Statement(oldInstance, "setRenderingHints", new Object[]{rh}));
+        }
+    }
+    
+    public static final class ImagePainterDelegate extends DefaultPersistenceDelegate {
+        protected void initialize(Class type, Object oldInstance,
+                Object newInstance, Encoder out) {
+            p("image painter delegate called");
+            super.initialize(type, oldInstance,  newInstance, out);
+            p("old instance = " + oldInstance);
+            p("owner = " + ((XMLEncoder)out).getOwner());
+            PersistenceOwner owner = (PersistenceOwner)((XMLEncoder)out).getOwner();
+            ImagePainter ip = (ImagePainter)oldInstance;
+            p("need to convert string: " + ip.getImageString());
+            String s = owner.toXMLURL(ip.getImageString());
+            p("converted to: " + s);
+            s =  "cooltikis.jpg";
+            //out.writeExpression(new Expression(oldInstance,owner,"fromXMLURL",new Object[]{ip.getImageString()}));
+            //out.writeStatement(new Statement(owner,"fromXMLURL",new Object[]{ip.getImageString()}));
+            //out.writeStatement(new Statement(oldInstance,"setImageString",new Object[]{
+            //new Expression(oldInstance,owner,"fromXMLURL",new Object[]{ip.getImageString()})
+            //}));
+            out.writeStatement(new Statement(oldInstance,"setResolver",new Object[]{owner}));
+            out.writeStatement(new Statement(oldInstance,"setImageString",new Object[]{ip.getImageString()}));
         }
     }
     
@@ -311,5 +336,27 @@ public class PainterUtil {
             return ((JXButton)comp).getBackgroundPainter();
         }
         return null;
+    }
+    
+    private static void p(String s) {
+        System.out.println(s);
+    }
+    
+    public static class PersistenceOwner {
+        private URL baseURL;
+        public PersistenceOwner(URL baseURL) {
+            this.baseURL = baseURL;
+        }
+        
+        public String toXMLURL(String url) {
+            return "fdadsdf1";
+        }
+        
+        public String fromXMLURL(String url) {
+            p("from xml url called on: " + url);
+            String s = baseURL.toString() + url;
+            p("returning: " + s);
+            return s;
+        }
     }
 }

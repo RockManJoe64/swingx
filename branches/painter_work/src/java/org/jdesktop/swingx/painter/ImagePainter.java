@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.jdesktop.swingx.editors.PainterUtil;
 
 /**
  * <p>A Painter instance that paints an image. Any Image is acceptable. This
@@ -138,6 +139,10 @@ public class ImagePainter extends AbstractPathPainter {
      * @return the image used for painting the background of this panel
      */
     public BufferedImage getImage() {
+        p("image url = " + getImageString());
+        if(img == null && imageURL != null) {
+            loadImage();
+        }
         return img;
     }
     
@@ -234,11 +239,35 @@ public class ImagePainter extends AbstractPathPainter {
         return imageScale;
     }
     
+    private PainterUtil.PersistenceOwner resolver = null;
+    public void setResolver(PainterUtil.PersistenceOwner resolver) {
+        p("resolver has been set: " + resolver);
+        this.resolver = resolver;
+    }
+    public PainterUtil.PersistenceOwner getResolver() {
+        return this.resolver;
+    }
+    
     private void loadImage() {
         try {
-            URL url = new URL(getBaseURL(),getImageString());
-            System.out.println("loading: " + url.toString());
-            setImage(ImageIO.read(url));
+            String img = getImageString();
+            if(resolver != null) {
+                img = resolver.fromXMLURL(img);
+            }
+            p("image string = " + img);
+            if(img != null) {
+                if(img.startsWith("http")) {
+                    URL url = new URL(img);
+                    setImage(ImageIO.read(url));
+                    return;
+                } else {
+                    p("base url = " + getBaseURL());
+                    p("image string = " + getImageString());
+                    URL url = new URL(getBaseURL()+getImageString());
+                    p("final url = " + url);
+                    setImage(ImageIO.read(url));
+                }
+            }
         } catch (IOException ex) {
             System.out.println("ex: " + ex.getMessage());
             ex.printStackTrace();
@@ -252,17 +281,22 @@ public class ImagePainter extends AbstractPathPainter {
     }
     
     public void setImageString(String imageString) {
+        System.out.println("setting image string to: " + imageString);
         String old = this.getImageString();
         this.imageString = imageString;
         loadImage();
         firePropertyChange("imageString",old,imageString);
     }
     
-    private URL getBaseURL() {
+    public String getBaseURL() {
         return baseURL;
     }
     
-    public static URL baseURL;
+    private String baseURL;
+    
+    public void setBaseURL(String baseURL) {
+        this.baseURL = baseURL;
+    }
     
     public boolean isHorizontalRepeat() {
         return horizontalRepeat;
@@ -294,6 +328,10 @@ public class ImagePainter extends AbstractPathPainter {
         }
         return new Rectangle(0,0,0,0);
         
+    }
+
+    private void p(String string) {
+        System.out.println(string);
     }
     
 }

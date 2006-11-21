@@ -147,13 +147,13 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
             }
         });
         
-        
+        /*
         try {
             ImagePainter.baseURL = new File("../PainterTest/src/samples/").toURL();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
-        }
+        }*/
         
         
         //setup the none item
@@ -186,12 +186,8 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
     
     public PainterSet setupNewPainter(CompoundPainter painter) {
         if(painter == null) {
-            TextPainter tp = new TextPainter();
-            tp.setFillPaint(Color.WHITE);
-            tp.setFont(new Font("SanSerif",Font.BOLD, 36));
-            MattePainter mp = new MattePainter(Color.BLUE);
-            ShapePainter sp = new ShapePainter();
-            painter = new CompoundPainter(mp,sp,tp);
+            ImagePainter ip = new ImagePainter();
+            painter = new CompoundPainter(ip);
         }
         
         PainterSet set = new PainterSet();

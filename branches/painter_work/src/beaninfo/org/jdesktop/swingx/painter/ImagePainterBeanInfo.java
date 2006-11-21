@@ -12,6 +12,7 @@ package org.jdesktop.swingx.painter;
 import org.jdesktop.swingx.EnumerationValue;
 import org.jdesktop.swingx.editors.EnumerationValuePropertyEditor;
 import org.jdesktop.swingx.editors.ImageEditor;
+import org.jdesktop.swingx.editors.ImageURLEditor;
 import org.jdesktop.swingx.editors.InsetsPropertyEditor;
 import org.jdesktop.swingx.editors.Point2DPropertyEditor;
 
@@ -28,10 +29,8 @@ public class ImagePainterBeanInfo extends PositionedPainterBeanInfo {
     
     protected void initialize() {
         super.initialize();
-        //setPropertyEditor(ImageEditor.class,"image");
-        //setPropertyEditor(URLEditor.class,"imageURL");
-        //setPropertyEditor(StylePropertyEditor.class,"style");
-        //setPropertyEditor(Point2DPropertyEditor.class,"imagePosition");
+        setPropertyEditor(ImageEditor.class,"image");
+        setPropertyEditor(ImageURLEditor.class,"imageString");
     }
 
     
