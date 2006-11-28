@@ -23,6 +23,11 @@ package org.jdesktop.swingx.painter;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.JavaBean;
 
@@ -73,6 +78,25 @@ public class CompoundPainter extends AbstractPainter {
         if (painters != null) {
             System.arraycopy(painters, 0, this.painters, 0, painters.length);
         }
+    }
+    
+    public CompoundPainter(Map<Integer,List<Painter>> painterSet) {
+        // create a flat list of painters
+        List<Painter> painterList = new ArrayList<Painter>();
+        
+        // loop through the painter by layer order
+        Set<Integer> layerSet = painterSet.keySet();
+        List<Integer> layerList = new ArrayList(layerSet);
+        Collections.sort(layerList);
+        for(Integer n : layerList) {
+            List<Painter> layer = painterSet.get(n);
+            for(Painter p : layer) {
+                painterList.add(p);
+            }
+        }
+        
+        this.painters = painterList.toArray(new Painter[0]);
+        
     }
     
     /**
