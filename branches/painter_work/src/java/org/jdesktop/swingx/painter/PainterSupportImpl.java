@@ -33,33 +33,19 @@ public class PainterSupportImpl extends AbstractPainter implements JXComponent {
     
     public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
         Graphics2D g2 = (Graphics2D) g.create();
-        for(Painter p : getPainters()) {
-            p.paint(g2,component,width,height);
+        
+        Set<Integer> layerSet = layers.keySet();
+        List<Integer> layerList = new ArrayList(layerSet);
+        Collections.sort(layerList);
+        for(Integer n : layerList) {
+            List<Painter> layer = layers.get(n);
+            for(Painter p : layer) {
+                p.paint(g2,component,width,height);
+            }
         }
         g2.dispose();
     }
     
-    
-    /** Get the painter at the requested level. If there is more than one painter
-     * at that level, it will return the first one.
-     */
-    public Painter getPainter(int level) {
-        if(layers.containsKey(level)) {
-            return layers.get(level).get(0);
-        } else {
-            return null;
-        }
-    }
-    
-    /** Get a list of all painters at the requested level
-     */
-    public List<Painter> getPainters(int level) {
-        if(layers.containsKey(level)) {
-            return layers.get(level);
-        } else {
-            return new ArrayList<Painter>();
-        }
-    }
     
     /** Replace all painters at the specified level with the new painter
      */
@@ -69,50 +55,43 @@ public class PainterSupportImpl extends AbstractPainter implements JXComponent {
         layers.put(level,list);
     }
     
-    /** Add this specified painter at the specified level. If there are any
-     *  painters already at that level, then the new painter will be added
-     *  after them (ie: drawn on top of them)
-     */
-    public void addPainter(Painter painter, int level) {
-        if(!layers.containsKey(level)) {
+    public void setPainters(Map<Integer, List<Painter>> painters) {
+        layers = painters;
+    }
+
+    public void setBackgroundPainter(Painter painter) {
+        setPainter(JXComponent.BACKGROUND_LAYER, painter);
+    }
+
+    public void setForegroundPainter(Painter painter) {
+        setPainter(JXComponent.FOREGROUND_LAYER, painter);
+    }
+
+    public Painter getBackgroundPainter() {
+        return getPainter(JXComponent.BACKGROUND_LAYER);
+    }
+
+    public Painter getForegroundPainter() {
+        return getPainter(JXComponent.FOREGROUND_LAYER);
+    }
+
+    public Map<Integer, List<Painter>> getPainters() {
+        return layers;
+    }
+
+    public Painter getPainter(Integer layer) {
+        if(!layers.containsKey(layer)) {
+            return null;
+        }
+        return layers.get(layer).get(0);
+    }
+    
+    public void setPainter(Integer layer, Painter painter) {
+        if(!layers.containsKey(layer)) {
             List<Painter> list = new ArrayList<Painter>();
-            layers.put(level,list);
+            layers.put(layer,list);
         }
-        layers.get(level).add(painter);
-    }
-    
-    /** Add this painter at the FOREGROUND level. If there are any
-     * painters already at that level then the new painter will be added
-     * after them (ie: drawn on top of them).
-     */
-    public void addPainter(Painter painter) {
-        addPainter(painter,FOREGROUND_LAYER);
-    }
-    
-    /** Get all of the painters as a list, ordered by layer
-     */
-    public List<Painter> getPainters() {
-        List<Integer> set = new ArrayList(layers.keySet());
-        Collections.sort(set);
-        
-        List<Painter> list2 = new ArrayList<Painter>();
-        for(Integer i : set) {
-            for(Painter pt : layers.get(i)) {
-                list2.add(pt);
-            }
-        }
-        return list2;
-    }
-    
-    /** set all of the painters as an ordered list. All painters will be
-     * placed at the component level. This removes any existing painters.
-     * If a null value is passed in then the internal list of painters will be empty
-     */
-    public void setPainters(List<Painter> painters) {
-        layers.clear();
-        if(painters != null) {
-            layers.put(COMPONENT_LAYER,painters);
-        }
+        layers.get(layer).add(0,painter);
     }
     
 }

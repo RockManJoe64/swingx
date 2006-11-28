@@ -34,6 +34,7 @@ import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 
 import javax.swing.JPanel;
@@ -262,7 +263,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     public void setBackgroundPainter(Painter p) {
         Painter old = getBackgroundPainter();
         
-        painterSupport.setPainter(p,BACKGROUND_LAYER);
+        painterSupport.setBackgroundPainter(p);
         
         if (p != null) {
             setOpaque(false);
@@ -273,7 +274,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     }
     
     public Painter getBackgroundPainter() {
-        return painterSupport.getPainter(BACKGROUND_LAYER);
+        return painterSupport.getBackgroundPainter();
     }
     
     /**
@@ -297,7 +298,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     }
     
     public Painter getForegroundPainter() {
-        return painterSupport.getPainter(FOREGROUND_LAYER);
+        return painterSupport.getForegroundPainter();
     }
     
     /**
@@ -332,31 +333,20 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
         g2.dispose();
     }
 
-    public void addPainter(Painter painter) {
-        painterSupport.addPainter(painter);
+
+    public void setPainters(Map<Integer, List<Painter>> painters) {
+        painterSupport.setPainters(painters);
     }
 
-    public void addPainter(Painter painter, int level) {
-        painterSupport.addPainter(painter,level);
-    }
-
-    public List<Painter> getPainters() {
+    public Map<Integer, List<Painter>> getPainters() {
         return painterSupport.getPainters();
     }
 
-    public Painter getPainter(int level) {
-        return painterSupport.getPainter(level);
+    public void setPainter(Integer layer, Painter painter) {
+        painterSupport.setPainter(layer,painter);
     }
 
-    public List<Painter> getPainters(int level) {
-        return painterSupport.getPainters(level);
-    }
-
-    public void setPainter(Painter painter, int level) {
-        painterSupport.setPainter(painter,level);
-    }
-
-    public void setPainters(List<Painter> painters) {
-        painterSupport.setPainters(painters);
+    public Painter getPainter(Integer layer) {
+        return painterSupport.getPainter(layer);
     }
 }

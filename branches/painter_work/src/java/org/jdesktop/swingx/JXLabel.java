@@ -14,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.jdesktop.swingx.painter.AbstractPainter;
@@ -48,12 +49,12 @@ public class JXLabel extends JLabel implements JXComponent {
     private PainterSupportImpl painterSupport;
 
     public Painter getBackgroundPainter() {
-        return getPainterSupport().getPainter(PainterSupportImpl.BACKGROUND_LAYER);
+        return getPainterSupport().getBackgroundPainter();
     }
 
     public void setBackgroundPainter(Painter backgroundPainter) {
         Painter old = this.getBackgroundPainter();
-        getPainterSupport().setPainter(backgroundPainter, PainterSupportImpl.BACKGROUND_LAYER);
+        getPainterSupport().setBackgroundPainter(backgroundPainter);
         if (backgroundPainter != null) {
             setOpaque(false);
         }
@@ -62,12 +63,12 @@ public class JXLabel extends JLabel implements JXComponent {
     }
     
     public Painter getForegroundPainter() {
-        return getPainterSupport().getPainter(PainterSupportImpl.FOREGROUND_LAYER);
+        return getPainterSupport().getForegroundPainter();
     }
     
     public void setForegroundPainter(Painter painter) {
         Painter old = this.getForegroundPainter();
-        getPainterSupport().setPainter(painter, PainterSupportImpl.BACKGROUND_LAYER);
+        getPainterSupport().setForegroundPainter(painter);
         if (painter != null) {
             setOpaque(false);
         }
@@ -93,32 +94,20 @@ public class JXLabel extends JLabel implements JXComponent {
         this.painterSupport = painterSet;
     }
 
-    public void addPainter(Painter painter) {
-        painterSupport.addPainter(painter);
+    public Map<Integer, List<Painter>> getPainters() {
+        return getPainterSupport().getPainters();
     }
 
-    public void addPainter(Painter painter, int level) {
-        painterSupport.addPainter(painter,level);
+    public void setPainters(Map<Integer, List<Painter>> painters) {
+        getPainterSupport().setPainters(painters);
     }
 
-    public List<Painter> getPainters() {
-        return painterSupport.getPainters();
+    public void setPainter(Integer layer, Painter painter) {
+        getPainterSupport().setPainter(layer,painter);
     }
 
-    public Painter getPainter(int level) {
-        return painterSupport.getPainter(level);
+    public Painter getPainter(Integer layer) {
+        return getPainterSupport().getPainter(layer);
     }
 
-    public List<Painter> getPainters(int level) {
-        return painterSupport.getPainters(level);
-    }
-
-    public void setPainter(Painter painter, int level) {
-        painterSupport.setPainter(painter,level);
-    }
-
-    public void setPainters(List<Painter> painters) {
-        painterSupport.setPainters(painters);
-    }
-    
 }

@@ -926,9 +926,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-painterset4-
         panel = new JXPanel();
         panel.setBackgroundPainter(new MattePainter(Color.GREEN));
-        panel.setPainter(new RectanglePainter(new Insets(20,20,20,20),
-                50,50,10,10,true,Color.RED,5,Color.RED.darker()),
-                PainterSupportImpl.COMPONENT_LAYER);
+        panel.setPainter(JXComponent.COMPONENT_LAYER,
+                new RectanglePainter(new Insets(20,20,20,20),
+                50,50,10,10,true,Color.RED,5,Color.RED.darker()));
         panel.setForegroundPainter(new PinstripePainter(Color.BLUE));
         addDemo(panel,"panel, blue stripe fg, green bg, red rect comp","painterset4");
         //$endcite
@@ -946,12 +946,19 @@ public class PainterDemoSet extends javax.swing.JFrame {
         panel = new JXPanel();
         AbstractPainter pt = new TextPainter("Some Text");
         panel.setForegroundPainter(new CompoundPainter(new RectanglePainter(20,20,5,Color.BLUE) ,pt));
-        List<Painter> list = panel.getPainters();
-        CompoundPainter comp = new CompoundPainter(list.toArray(new Painter[0]));
+        // pull out all of the painters and wrap them in a compound painter
+        Map<Integer,List<Painter>> painters = panel.getPainters();
+        CompoundPainter comp = new CompoundPainter(painters);
         comp.setTransform(AffineTransform.getRotateInstance(Math.PI*2/16,100,100));
-        list = new ArrayList<Painter>();
+        
+        // create a new set of painters containing only the compound painter 
+        List<Painter> list = new ArrayList<Painter>();
         list.add(comp);
-        panel.setPainters(list);
+        painters = new HashMap<Integer,List<Painter>>();        
+        painters.put(0,list);
+        
+        // put the new set back into the panel
+        panel.setPainters(painters);
         addDemo(panel,"rotate entire set of painters","painterset6");
         //$endcite
         
@@ -986,7 +993,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
         shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION_LAYER);
+        label.setPainter(JXComponent.VALIDATION_LAYER, shapePainter);
         addDemo(label,"label + shape painter in validation layer","painterset10");
         //$endcite
         
@@ -997,9 +1004,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
         shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.addPainter(shapePainter, PainterSupportImpl.VALIDATION_LAYER);
+        label.setPainter(JXComponent.VALIDATION_LAYER, shapePainter);
         TextPainter tp = new TextPainter("!!!",Color.GREEN);
-        label.addPainter(tp, PainterSupportImpl.VALIDATION_LAYER);
+        label.setPainter(JXComponent.VALIDATION_LAYER, tp);
         addDemo(label,"label, 2 validation using addPainter","painterset11");
         //$endcite
         
@@ -1010,9 +1017,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
         shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
-        label.setPainter(shapePainter, PainterSupportImpl.VALIDATION_LAYER);
+        label.setPainter(JXComponent.VALIDATION_LAYER,shapePainter);
         tp = new TextPainter("!!!",Color.GREEN);
-        label.setPainter(tp, PainterSupportImpl.VALIDATION_LAYER);
+        label.setPainter(JXComponent.VALIDATION_LAYER, tp);
         addDemo(label,"label, 2 validation using setPainter","painterset12");
         //$endcite
         
