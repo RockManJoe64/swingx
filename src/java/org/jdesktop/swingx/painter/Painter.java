@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
+ * Copyright 2006 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -67,7 +67,7 @@ import javax.swing.JComponent;
  * 
  * @author rbair
  */
-public interface Painter<T extends JComponent> {
+public interface Painter<T extends Object> {
     /**
      * <p>Paints on the given Graphics2D object some effect which may or may not
      * be related to the given component. For example, BackgroundPainter will
@@ -87,5 +87,5 @@ public interface Painter<T extends JComponent> {
      * @param width
      * @param height
      */
-    public void paint(Graphics2D g, T component, int width, int height);
+    public void paint(Graphics2D g, T object, int width, int height);
 }

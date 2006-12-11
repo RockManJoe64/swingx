@@ -20,7 +20,7 @@ import javax.swing.JLabel;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.JXComponent;
-import org.jdesktop.swingx.painter.PainterSupportImpl;
+import org.jdesktop.swingx.painter.PainterSupport;
 
 /**
  *
@@ -38,15 +38,15 @@ public class JXLabel extends JLabel implements JXComponent {
         initPainterSupport();
     }
     private void initPainterSupport() {
-        setPainterSupport(new PainterSupportImpl());
+        setPainterSupport(new PainterSupport());
         getPainterSupport().setPainter(new AbstractPainter() {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXLabel.super.paintComponent(g);
             }
-        }, PainterSupportImpl.COMPONENT_LAYER);
+        }, PainterSupport.COMPONENT_LAYER);
     }
     
-    private PainterSupportImpl painterSupport;
+    private PainterSupport painterSupport;
 
     public Painter getBackgroundPainter() {
         return getPainterSupport().getBackgroundPainter();
@@ -86,11 +86,11 @@ public class JXLabel extends JLabel implements JXComponent {
         g2.dispose();
     }
 
-    private PainterSupportImpl getPainterSupport() {
+    private PainterSupport getPainterSupport() {
         return painterSupport;
     }
 
-    private void setPainterSupport(PainterSupportImpl painterSet) {
+    private void setPainterSupport(PainterSupport painterSet) {
         this.painterSupport = painterSet;
     }
 

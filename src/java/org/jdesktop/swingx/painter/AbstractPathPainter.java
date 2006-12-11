@@ -31,7 +31,7 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
 public abstract class AbstractPathPainter extends PositionedPainter {
 
     private boolean snapPaint;
-    private PathEffect pathEffect;
+    private PathEffect[] pathEffect;
     private Style style = Style.BOTH;
     /**
      * The stroke width to use when painting. If null, the default Stroke for
@@ -246,11 +246,11 @@ public abstract class AbstractPathPainter extends PositionedPainter {
     // shape effect stuff
     public abstract Shape provideShape(JComponent comp, int width, int height);
     
-    public void setPathEffect(PathEffect pathEffect) {
+    public void setPathEffects(PathEffect... pathEffect) {
         this.pathEffect = pathEffect;
     }
     
-    public PathEffect getPathEffect() {
+    public PathEffect[] getPathEffects() {
         return this.pathEffect;
     }
 
