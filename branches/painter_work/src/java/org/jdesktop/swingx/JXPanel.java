@@ -43,7 +43,7 @@ import javax.swing.Scrollable;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.JXComponent;
-import org.jdesktop.swingx.painter.PainterSupportImpl;
+import org.jdesktop.swingx.painter.PainterSupport;
 
 /**
  * A simple JPanel extension that adds translucency support.
@@ -56,7 +56,7 @@ import org.jdesktop.swingx.painter.PainterSupportImpl;
 public class JXPanel extends JPanel implements Scrollable, JXComponent {
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
-    private PainterSupportImpl painterSupport;
+    private PainterSupport painterSupport;
     
     /**
      * The alpha level for this component.
@@ -123,7 +123,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     }
     
     private void initPainterSupport() {
-        painterSupport = new PainterSupportImpl();
+        painterSupport = new PainterSupport();
         painterSupport.setPainter(new AbstractPainter() {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXPanel.super.paintComponent(g);

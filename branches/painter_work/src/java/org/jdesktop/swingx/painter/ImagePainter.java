@@ -41,6 +41,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.editors.PainterUtil;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 
 /**
  * <p>A Painter instance that paints an image. Any Image is acceptable. This
@@ -182,8 +183,10 @@ public class ImagePainter extends AbstractPathPainter {
             g.fill(shape);
         }
         
-        if(getPathEffect() != null) {
-            getPathEffect().apply(g, shape, width, height);
+        if(getPathEffects() != null) {
+            for(PathEffect ef : getPathEffects()) {
+                ef.apply(g, shape, width, height);
+            }
         }
         
         

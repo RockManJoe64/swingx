@@ -24,7 +24,7 @@ import javax.swing.JComponent;
  * @author joshy
  *
  */
-public class PainterSupportImpl extends AbstractPainter implements JXComponent {
+public class PainterSupport<T extends JComponent> extends AbstractPainter implements JXComponent {
     
     private Map<Integer, List<Painter>> layers = new HashMap<Integer, List<Painter>>();
     
@@ -93,5 +93,6 @@ public class PainterSupportImpl extends AbstractPainter implements JXComponent {
         }
         layers.get(layer).add(0,painter);
     }
+
     
 }

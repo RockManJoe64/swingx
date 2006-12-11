@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -114,6 +115,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         listDemos(gradient);
         tableDemos();
         miscDemos(gradient);
+        genericsDemos();
         try {
             loadCitations();
         } catch (Exception ex) {
@@ -189,7 +191,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         coollogo.setFillPaint(Color.BLACK);
         NeonBorderEffect neon1 = new NeonBorderEffect(Color.BLACK, Color.RED.brighter(), 10);
         neon1.setBorderPosition(NeonBorderEffect.BorderPosition.Centered);
-        coollogo.setPathEffect(neon1);
+        coollogo.setPathEffects(neon1);
         addDemo("A Cool Logo","misc02",new MattePainter(Color.BLACK),coollogo);
         //$endcite
         
@@ -204,7 +206,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         ShadowPathEffect starShadow = new ShadowPathEffect();
         starShadow.setOffset(new Point(1,1));
         starShadow.setEffectWidth(5);
-        star.setPathEffect(starShadow);
+        star.setPathEffects(starShadow);
         addDemo(new JXPanel(), new CompoundPainter(
                 new MattePainter(Color.GRAY),
                 star,
@@ -492,7 +494,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         RectanglePainter rectshad = createStandardRectPainter();
         ShadowPathEffect rectShadEffect = new ShadowPathEffect();
         //rectShadEffect.setOffset(new Point(10,10));
-        rectshad.setPathEffect(rectShadEffect);
+        rectshad.setPathEffects(rectShadEffect);
         addDemo(new JXPanel(),new CompoundPainter(gray,rectshad),"Rectangle with shadow", "rect12" );
         //$endcite
         
@@ -502,7 +504,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect13-
         // rectangle with glow
         RectanglePainter rectglow = createStandardRectPainter();
-        rectglow.setPathEffect(new GlowPathEffect());
+        rectglow.setPathEffects(new GlowPathEffect());
         addDemo(new JXPanel(),new CompoundPainter(gray,rectglow),"Rectangle with glow", "rect13");
         //$endcite
         
@@ -513,7 +515,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         RectanglePainter rectinshad = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         InnerShadowPathEffect rectinshadEffect = new InnerShadowPathEffect();
-        rectinshad.setPathEffect(rectinshadEffect);
+        rectinshad.setPathEffects(rectinshadEffect);
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectinshad),"Rectangle with inner shadow", "rect14");
         //$endcite
@@ -525,7 +527,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         RectanglePainter rectinglow = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         InnerGlowPathEffect rectinglowEffect = new InnerGlowPathEffect();
-        rectinglow.setPathEffect(rectinglowEffect);
+        rectinglow.setPathEffects(rectinglowEffect);
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectinglow),"Rectangle with inner glow", "rect15" );
         //$endcite
@@ -537,7 +539,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         RectanglePainter rectneon = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
         rectneon.setStyle(RectanglePainter.Style.FILLED);
-        rectneon.setPathEffect(new NeonBorderEffect(Color.WHITE, Color.ORANGE, 20));
+        rectneon.setPathEffects(new NeonBorderEffect(Color.WHITE, Color.ORANGE, 20));
         addDemo(new JXPanel(),new CompoundPainter(new MattePainter(Color.GRAY),
                 rectneon),"Rectangle with neon border", "rect16" );
         //$endcite
@@ -549,7 +551,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         rectneon = createStandardRectPainter();
         rectneon.setFillPaint(Color.BLACK);
         rectneon.setStyle(AbstractPainter.Style.FILLED);
-        rectneon.setPathEffect(new NeonBorderEffect(new Color(255,100,100), new Color(255,255,255), 30));
+        rectneon.setPathEffects(new NeonBorderEffect(new Color(255,100,100), new Color(255,255,255), 30));
         addDemo("Rectangle w/ pink neon border", "rect17", new MattePainter(Color.BLACK), rectneon);
         //$endcite
     }
@@ -663,7 +665,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         TextPainter textshadow = new TextPainter("Neon", font, Color.RED);
         ShadowPathEffect shadow = new ShadowPathEffect();
         //shadow.setOffset(new Point(3,3));
-        textshadow.setPathEffect(shadow);
+        textshadow.setPathEffects(shadow);
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textshadow);
         addDemo(new JXPanel(),comp,"Text with shadow","text11");
         //$endcite
@@ -675,7 +677,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         TextPainter textglow = new TextPainter("Neon", font, Color.RED);
         GlowPathEffect glow = new GlowPathEffect();
         //glow.setOffset(new Point(0,0));
-        textglow.setPathEffect(glow);
+        textglow.setPathEffects(glow);
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textglow);
         addDemo(new JXPanel(),comp,"Text with glow","text12");
         //$endcite
@@ -685,7 +687,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text13-
         // text w/ inner shadow effect
         TextPainter textinshad = new TextPainter("Neon", font, Color.RED);
-        textinshad.setPathEffect(new InnerShadowPathEffect());
+        textinshad.setPathEffects(new InnerShadowPathEffect());
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textinshad);
         addDemo(new JXPanel(), comp, "Text with inner shadow","text13");
         //$endcite
@@ -695,7 +697,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text14-
         // text w/ inner glow effect
         TextPainter textinglow = new TextPainter("Neon", font, Color.RED);
-        textinglow.setPathEffect(new InnerGlowPathEffect());
+        textinglow.setPathEffects(new InnerGlowPathEffect());
         comp = new CompoundPainter(new MattePainter(Color.GRAY),textinglow);
         addDemo(new JXPanel(), comp, "Text with inner glow","text14");
         //$endcite
@@ -800,7 +802,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         // the same star, but with a drop shadow
         star = new ShapePainter(starShape, Color.RED);
         star.setStyle(ShapePainter.Style.FILLED);
-        star.setPathEffect(new ShadowPathEffect());
+        star.setPathEffects(new ShadowPathEffect());
         addDemo(new JXPanel(), star, "Star with drop shadow","star10");
         //$endcite
     }
@@ -1028,7 +1030,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-painterset13-
         label = new JXLabel("An normal label");
         label.setFont(label.getFont().deriveFont(36f));
-        Painter ptr = label.getPainter(PainterSupportImpl.COMPONENT_LAYER);
+        Painter ptr = label.getPainter(PainterSupport.COMPONENT_LAYER);
         if(ptr instanceof AbstractPainter) {
             ((AbstractPainter)ptr).setEffects(new ImageEffect(new ShadowFilter()));
         }
@@ -1173,7 +1175,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
             //$name-image07-
             BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
             ImagePainter ip = new ImagePainter(img);
-            ip.setPathEffect(new ShadowPathEffect());
+            ip.setPathEffects(new ShadowPathEffect());
             addDemo("image with shadow path effect","image07",ip);
             //$endcite
         } catch (Exception ex) {
@@ -1406,4 +1408,25 @@ public class PainterDemoSet extends javax.swing.JFrame {
         }
     }
     
+
+    private void genericsDemos() {
+        addDemo(new JPanel(), "---- Generics Demos");
+        
+        // normal text
+        Font font = new Font("SansSerif", Font.BOLD, 80);
+        
+        
+        //$startcite
+        //$name-generics01-
+        TextPainter textnorm = new TextPainter("Neon", font, Color.RED);
+        JXPanel panel = new JXPanel();
+        panel.setBackgroundPainter(new Painter<JXLabel>() {
+            public void paint(Graphics2D g, JXLabel object, int width, int height) {
+                System.out.println("painting a label: " + object);
+            }
+        });
+        addDemo(panel,"Text with no effects","generics01");
+        //$endcite
+        
+    }
 }

@@ -32,7 +32,7 @@ import org.jdesktop.swingx.painter.Painter;
  *
  * @author rbair
  */
-public class PainterUIResource implements Painter, UIResource {
+public class PainterUIResource implements Painter<JComponent>, UIResource {
     private Painter p;
     
     /** Creates a new instance of PainterUIResource */

@@ -72,7 +72,7 @@ public class PainterTreeModel implements TreeModel {
         if (parent instanceof ShapePainter) {
             ShapePainter ptr = (ShapePainter)parent;
             if(index >= ptr.getEffects().length) {
-                return ptr.getPathEffect();
+                return ptr.getPathEffects();
             }
         }
         
@@ -96,7 +96,7 @@ public class PainterTreeModel implements TreeModel {
         
         if (parent instanceof ShapePainter) {
             ShapePainter ptr = (ShapePainter)parent;
-            if(ptr.getPathEffect() != null) {
+            if(ptr.getPathEffects() != null) {
                 return ptr.getEffects().length + 1;
             } else {
                 return ptr.getEffects().length;
@@ -140,7 +140,7 @@ public class PainterTreeModel implements TreeModel {
         }
         
         if(node instanceof ShapePainter) {
-            if(((ShapePainter)node).getPathEffect() != null) {
+            if(((ShapePainter)node).getPathEffects() != null) {
                 return false;
             }
         }
@@ -198,7 +198,7 @@ public class PainterTreeModel implements TreeModel {
     }
     
     public void addShapeEffect(ShapePainter shapePainter, AbstractPathEffect eff) {
-        shapePainter.setPathEffect(eff);
+        shapePainter.setPathEffects(eff);
         fireStructureChanged();
     }
     

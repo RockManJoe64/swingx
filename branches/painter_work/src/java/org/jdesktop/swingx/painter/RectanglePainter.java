@@ -18,6 +18,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 
 
 
@@ -196,8 +197,10 @@ public class RectanglePainter extends AbstractPathPainter {
         g.setPaint(p);
         
         g.fill(shape);
-        if(getPathEffect() != null) {
-            getPathEffect().apply(g, shape, width, height);
+        if(getPathEffects() != null) {
+            for(PathEffect ef : getPathEffects()) {
+                ef.apply(g, shape, width, height);
+            }
         }
     }
     

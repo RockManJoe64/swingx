@@ -35,6 +35,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.text.JTextComponent;
+import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.util.Resize;
 
 /**
@@ -120,7 +121,7 @@ public class TextPainter extends AbstractPathPainter {
         g.translate(res.x, res.y);
         
         if(isSnapPaint()) {
-            paint = calculateSnappedPaint(paint, res.width, res.height);//width, height);
+            paint = calculateSnappedPaint(paint, res.width, res.height);
         }
         
         if (paint != null) {
@@ -128,10 +129,11 @@ public class TextPainter extends AbstractPathPainter {
         }
         
         g.drawString(text, 0, 0 + metrics.getAscent());
-        if(getPathEffect() != null) {
-            getPathEffect().apply(g,
-                    provideShape(component,width,height),
-                    width,height);
+        if(getPathEffects() != null) {
+            Shape shape = provideShape(component, width, height);
+            for(PathEffect ef : getPathEffects()) {
+                ef.apply(g, shape, width, height);
+            }
         }
         g.translate(-res.x,-res.y);
     }
@@ -174,7 +176,7 @@ public class TextPainter extends AbstractPathPainter {
         FontMetrics metrics = g2.getFontMetrics(font);
         GlyphVector vect = font.createGlyphVector(g2.getFontRenderContext(),text);
         Shape shape = vect.getOutline(0f,0f+ metrics.getAscent());//(float)-vect.getVisualBounds().getY()
-                //);
+        //);
         return shape;
     }
 }
