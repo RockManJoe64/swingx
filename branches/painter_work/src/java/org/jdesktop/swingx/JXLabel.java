@@ -39,19 +39,20 @@ public class JXLabel extends JLabel implements JXComponent {
     }
     private void initPainterSupport() {
         setPainterSupport(new PainterSupport());
-        getPainterSupport().setPainter(new AbstractPainter() {
+        getPainterSupport().setPainter(PainterSupport.COMPONENT_LAYER,
+                new AbstractPainter() {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXLabel.super.paintComponent(g);
             }
-        }, PainterSupport.COMPONENT_LAYER);
+        });
     }
     
     private PainterSupport painterSupport;
-
+    
     public Painter getBackgroundPainter() {
         return getPainterSupport().getBackgroundPainter();
     }
-
+    
     public void setBackgroundPainter(Painter backgroundPainter) {
         Painter old = this.getBackgroundPainter();
         getPainterSupport().setBackgroundPainter(backgroundPainter);
@@ -85,29 +86,29 @@ public class JXLabel extends JLabel implements JXComponent {
                 this.getHeight() - ins.top  - ins.bottom);
         g2.dispose();
     }
-
+    
     private PainterSupport getPainterSupport() {
         return painterSupport;
     }
-
+    
     private void setPainterSupport(PainterSupport painterSet) {
         this.painterSupport = painterSet;
     }
-
+    
     public Map<Integer, List<Painter>> getPainters() {
         return getPainterSupport().getPainters();
     }
-
+    
     public void setPainters(Map<Integer, List<Painter>> painters) {
         getPainterSupport().setPainters(painters);
     }
-
+    
     public void setPainter(Integer layer, Painter painter) {
         getPainterSupport().setPainter(layer,painter);
     }
-
+    
     public Painter getPainter(Integer layer) {
         return getPainterSupport().getPainter(layer);
     }
-
+    
 }

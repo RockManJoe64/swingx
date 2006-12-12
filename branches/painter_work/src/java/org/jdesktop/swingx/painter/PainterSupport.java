@@ -47,19 +47,16 @@ public class PainterSupport<T extends JComponent> extends AbstractPainter implem
     }
     
     
-    /** Replace all painters at the specified level with the new painter
-     */
-    public void setPainter(Painter painter, int level) {
-        List<Painter> list = new ArrayList<Painter>();
-        list.add(painter);
-        layers.put(level,list);
+    public Map<Integer, List<Painter>> getPainters() {
+        return layers;
     }
-    
+
     public void setPainters(Map<Integer, List<Painter>> painters) {
         layers = painters;
     }
 
     public void setBackgroundPainter(Painter painter) {
+        System.out.println("set bg painter: " + painter);
         setPainter(JXComponent.BACKGROUND_LAYER, painter);
     }
 
@@ -75,10 +72,6 @@ public class PainterSupport<T extends JComponent> extends AbstractPainter implem
         return getPainter(JXComponent.FOREGROUND_LAYER);
     }
 
-    public Map<Integer, List<Painter>> getPainters() {
-        return layers;
-    }
-
     public Painter getPainter(Integer layer) {
         if(!layers.containsKey(layer)) {
             return null;
@@ -86,13 +79,28 @@ public class PainterSupport<T extends JComponent> extends AbstractPainter implem
         return layers.get(layer).get(0);
     }
     
+    /** Replace all painters at the specified level with the new painter
+     */
     public void setPainter(Integer layer, Painter painter) {
+        List<Painter> list = new ArrayList<Painter>();
+        list.add(painter);
+        layers.put(layer, list);
+        /*
         if(!layers.containsKey(layer)) {
             List<Painter> list = new ArrayList<Painter>();
             layers.put(layer,list);
         }
-        layers.get(layer).add(0,painter);
+        layers.get(layer).add(0,painter);*/
     }
 
+    /** Replace all painters at the specified level with the new painter
+     *//*
+    public void setPainter(Painter painter, int level) {
+        System.out.println("setting painter: " + painter + " to level " + level);
+        List<Painter> list = new ArrayList<Painter>();
+        list.add(painter);
+        layers.put(level,list);
+    }*/
+    
     
 }

@@ -124,11 +124,12 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     
     private void initPainterSupport() {
         painterSupport = new PainterSupport();
-        painterSupport.setPainter(new AbstractPainter() {
+        painterSupport.setPainter(JXComponent.COMPONENT_LAYER,
+                new AbstractPainter() {
             protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
                 JXPanel.super.paintComponent(g);
             }
-        }, JXComponent.COMPONENT_LAYER);
+        });
     }
     
     /**
@@ -287,7 +288,8 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     public void setForegroundPainter(Painter p) {
         Painter old = getForegroundPainter();
         //this.foregroundPainter = p;
-        painterSupport.setPainter(p, FOREGROUND_LAYER);
+        painterSupport.setForegroundPainter(p);
+        //painterSupport.setPainter(p, FOREGROUND_LAYER);
         
         if (p != null) {
             setOpaque(false);
