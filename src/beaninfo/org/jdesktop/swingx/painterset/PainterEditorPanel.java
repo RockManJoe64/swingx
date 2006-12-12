@@ -45,7 +45,6 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.color.ColorUtil;
 import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.AbstractPainter;
-import org.jdesktop.swingx.painter.AffineTransformPainter;
 import org.jdesktop.swingx.painter.ComponentBackgroundPainter;
 import org.jdesktop.swingx.painter.CheckerboardPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
@@ -104,7 +103,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         painterClasses.add(RectanglePainter.class);
         painterClasses.add(ShapePainter.class);
         painterClasses.add(TextPainter.class);
-        painterClasses.add(AffineTransformPainter.class);
+        //painterClasses.add(AffineTransformPainter.class);
         painterClasses.add(CompoundPainter.class);
         
         effectClasses = new BeanArrayList<Class>();

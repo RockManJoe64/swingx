@@ -58,7 +58,7 @@ public class ShapeTest extends JXPanel {
         sp.setAntialiasing(AbstractPainter.Antialiasing.On);
         sp.setStyle(ShapePainter.Style.FILLED);
         effect = new NeonBorderEffect();
-        sp.setPathEffect(effect);
+        sp.setPathEffects(effect);
         MattePainter mp = new MattePainter(Color.BLUE);
         
         final ShapeTestPanel tp = new ShapeTestPanel(this);
@@ -94,18 +94,18 @@ public class ShapeTest extends JXPanel {
 
     
     boolean isEffectEnabled() {
-        if(sp.getPathEffect() == null) {
+        if(sp.getPathEffects() == null) {
             return false;
         }
         return true;
     }
 
     void removeEffect() {
-        sp.setPathEffect(null);
+        sp.setPathEffects(null);
     }
 
     void addEffect() {
-        sp.setPathEffect(effect);
+        sp.setPathEffects(effect);
         
     }
     
