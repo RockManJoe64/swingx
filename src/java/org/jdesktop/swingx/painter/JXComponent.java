@@ -40,7 +40,11 @@ public interface JXComponent {
      */
     public void setPainters(Map<Integer,List<Painter>> painters);
     
+    /** set the specified painter at the specified layer. This will replace
+     * any existing painters already at that level. */
     public void setPainter(Integer layer, Painter painter);
+    
+    /** return the painter at the specified layer */
     public Painter getPainter(Integer layer);
 
     public void setBackgroundPainter(Painter painter);

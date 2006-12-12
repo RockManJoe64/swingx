@@ -961,7 +961,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         // put the new set back into the panel
         panel.setPainters(painters);
-        addDemo(panel,"rotate entire set of painters","painterset6");
+        addDemo(panel,"Broken?: rotate entire set of painters","painterset6");
         //$endcite
         
         //$startcite
@@ -1008,7 +1008,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
         label.setPainter(JXComponent.VALIDATION_LAYER, shapePainter);
         TextPainter tp = new TextPainter("!!!",Color.GREEN);
-        label.setPainter(JXComponent.VALIDATION_LAYER, tp);
+        label.getPainters().get(JXComponent.VALIDATION_LAYER).add(tp);
+        //label.setPainter(JXComponent.VALIDATION_LAYER, tp);
         addDemo(label,"label, 2 validation using addPainter","painterset11");
         //$endcite
         
