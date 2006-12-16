@@ -51,7 +51,7 @@ import org.jdesktop.swingx.util.Resize;
  *
  * @author rbair
  */
-public class RadialGradientPainter extends AbstractGradientPainter {
+public class RadialGradientPainter<T> extends AbstractGradientPainter<T> {
     private RadialGradientPaint paint;
     private Resize resizeRadius = Resize.BOTH;
     

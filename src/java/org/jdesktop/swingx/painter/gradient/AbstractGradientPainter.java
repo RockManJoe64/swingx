@@ -64,7 +64,7 @@ import org.jdesktop.swingx.util.Resize;
  *
  * @author rbair
  */
-public abstract class AbstractGradientPainter extends AbstractPainter {
+public abstract class AbstractGradientPainter<T> extends AbstractPainter<T> {
     /**
      * Indicates in which direction (vertical, horizontal, both, none) to 
      * resize the gradient paint prior to painting
@@ -80,11 +80,11 @@ public abstract class AbstractGradientPainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
-        Paint p = calculateSizedPaint(component.getWidth(), component.getHeight());
+    public void paintBackground(Graphics2D g, T component, int width, int height) {
+        Paint p = calculateSizedPaint(width, height);
         if (p != null) {
             g.setPaint(p);
-            g.fillRect(0, 0, component.getWidth(), component.getHeight());
+            g.fillRect(0, 0, width, height);//component.getWidth(), component.getHeight());
         }
     }
 

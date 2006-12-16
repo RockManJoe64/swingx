@@ -16,7 +16,7 @@ import java.awt.Rectangle;
  *
  * @author joshy
  */
-public abstract class PositionedPainter extends AbstractPainter {
+public abstract class PositionedPainter<T> extends AbstractPainter<T> {
     
     /**
      * Specifies how to draw the image, i.e. what kind of Style to use

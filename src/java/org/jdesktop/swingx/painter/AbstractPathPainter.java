@@ -28,7 +28,7 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  *
  * @author joshy
  */
-public abstract class AbstractPathPainter extends PositionedPainter {
+public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
 
     private boolean snapPaint;
     private PathEffect[] pathEffect;
@@ -244,7 +244,7 @@ public abstract class AbstractPathPainter extends PositionedPainter {
     }
 
     // shape effect stuff
-    public abstract Shape provideShape(JComponent comp, int width, int height);
+    public abstract Shape provideShape(T comp, int width, int height);
     
     public void setPathEffects(PathEffect... pathEffect) {
         this.pathEffect = pathEffect;

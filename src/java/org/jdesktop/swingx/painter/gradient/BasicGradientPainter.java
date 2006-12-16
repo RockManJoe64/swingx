@@ -66,7 +66,7 @@ import javax.swing.UIManager;
  *
  * @author rbair
  */
-public class BasicGradientPainter extends AbstractGradientPainter {
+public class BasicGradientPainter<T> extends AbstractGradientPainter<T> {
 //    public static final GradientPaint WHITE_TO_CONTROL_HORZONTAL = new GradientPaint(
 //            new Point2D.Double(0, 0),
 //            Color.WHITE,

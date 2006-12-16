@@ -40,8 +40,8 @@ public class JXLabel extends JLabel implements JXComponent {
     private void initPainterSupport() {
         setPainterSupport(new PainterSupport());
         getPainterSupport().setPainter(PainterSupport.COMPONENT_LAYER,
-                new AbstractPainter() {
-            protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+                new AbstractPainter<JXLabel>() {
+            protected void paintBackground(Graphics2D g, JXLabel component, int width, int height) {
                 JXLabel.super.paintComponent(g);
             }
         });

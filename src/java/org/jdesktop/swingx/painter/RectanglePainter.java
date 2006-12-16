@@ -28,7 +28,7 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  *
  */
 
-public class RectanglePainter extends AbstractPathPainter {
+public class RectanglePainter<T> extends AbstractPathPainter<T> {
     private boolean rounded = false;
     //private Insets insets = new Insets(0,0,0,0);
     private int roundWidth = 20;
@@ -126,7 +126,7 @@ public class RectanglePainter extends AbstractPathPainter {
     
     
     /* ======== drawing code ============ */
-    protected Shape calculateShape(JComponent component, int width, int height) {
+    protected Shape calculateShape(T component, int width, int height) {
         Insets insets = getInsets();
         int x = insets.left;
         int y = insets.top;
@@ -159,7 +159,7 @@ public class RectanglePainter extends AbstractPathPainter {
     
     
     
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    public void paintBackground(Graphics2D g, T component, int width, int height) {
         Shape shape = calculateShape(component, width, height);
         switch (getStyle()) {
             case BOTH:
@@ -204,7 +204,7 @@ public class RectanglePainter extends AbstractPathPainter {
         }
     }
     
-    public Shape provideShape(JComponent comp, int width, int height) {
+    public Shape provideShape(T comp, int width, int height) {
         return calculateShape(comp,width,height);
     }
 }
