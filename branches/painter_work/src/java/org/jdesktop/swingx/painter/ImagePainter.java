@@ -70,7 +70,7 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  *
  * @author Richard
  */
-public class ImagePainter extends AbstractPathPainter {
+public class ImagePainter<T> extends AbstractPathPainter<T> {
     /**
      * Logger to use
      */
@@ -150,7 +150,7 @@ public class ImagePainter extends AbstractPathPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    public void paintBackground(Graphics2D g, T component, int width, int height) {
         if (img == null && imageURL != null) {
             loadImage();
         }
@@ -321,7 +321,7 @@ public class ImagePainter extends AbstractPathPainter {
         firePropertyChange("verticalRepeat",old,this.verticalRepeat);
     }
     
-    public Shape provideShape(JComponent comp, int width, int height) {
+    public Shape provideShape(T comp, int width, int height) {
         if(getImage() != null) {
             BufferedImage img = getImage();
             int imgWidth = img.getWidth();

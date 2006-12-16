@@ -54,7 +54,7 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
  *
  * @author rbair
  */
-public class MattePainter extends AbstractPathPainter {
+public class MattePainter<T> extends AbstractPathPainter<T> {
     
     /**
      * Creates a new MattePainter with "null" as the paint used
@@ -87,7 +87,7 @@ public class MattePainter extends AbstractPathPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    public void paintBackground(Graphics2D g, T component, int width, int height) {
         Paint p = getFillPaint();
         if (p != null) {
             if(isSnapPaint()) {
@@ -98,7 +98,7 @@ public class MattePainter extends AbstractPathPainter {
         }
     }
 
-    public Shape provideShape(JComponent comp, int width, int height) {
+    public Shape provideShape(T comp, int width, int height) {
         return new Rectangle(0,0,width,height);
     }
     

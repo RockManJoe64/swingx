@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -33,7 +33,7 @@ import javax.swing.JComponent;
  * <p>A Painter implementation that paints a checkerboard pattern. The light
  * and dark colors (Paint instances) are configurable, as are the size of the
  * squares (squareLength).</p>
- * 
+ *
  * <p>To configure a checkerboard pattern that used a gradient for the dark
  * tiles and Color.WHITE for the light tiles, you could:
  * <pre><code>
@@ -48,17 +48,17 @@ import javax.swing.JComponent;
  *  p.setSquareLength(32);
  *  panel.seBackgroundPainter(p);
  * </code></pre></p>
- * 
+ *
  * <p>Note that in this example, the "32" in the GradientPaint matches the "32"
  * set for the squareLength. This is necessary because GradientPaints don't
  * readjust themselves for the size of the square. They are fixed and immutable
  * at the time of creation.</p>
- * 
- * 
- * 
+ *
+ *
+ *
  * @author rbair
  */
-public class CheckerboardPainter extends AbstractPainter {
+public class CheckerboardPainter<T> extends AbstractPainter<T> {
     private transient Paint checkerPaint;
     
     private Paint darkPaint = new Color(204, 204, 204);
@@ -169,7 +169,7 @@ public class CheckerboardPainter extends AbstractPainter {
      * sizes and light and dark Paints in one TexturePaint. I may want to cache
      * this value in the future for performance reasons
      */
-    private Paint getCheckerPaint(JComponent c) {
+    private Paint getCheckerPaint(T c) {
         if (checkerPaint == null) {
             int sqlength = getSquareLength();
             int length = sqlength * 2;
@@ -177,19 +177,23 @@ public class CheckerboardPainter extends AbstractPainter {
             Graphics2D gfx = image.createGraphics();
             Paint p = getLightPaint();
             if (p == null) {
-                p = c.getForeground();
+                if(c instanceof JComponent) {
+                    p = ((JComponent)c).getForeground();
+                }
             }
             gfx.setPaint(p);
             gfx.fillRect(0, 0, length, length);
             p = getDarkPaint();
             if (p == null) {
-                p = c.getBackground();
+                if(c instanceof JComponent) {
+                    p = ((JComponent)c).getBackground();
+                }
             }
             gfx.setPaint(p);
             gfx.fillRect(0, 0, sqlength - 1, sqlength - 1);
             gfx.fillRect(sqlength, sqlength, sqlength - 1, sqlength - 1);
             gfx.dispose();
-
+            
             checkerPaint = new TexturePaint(image, new Rectangle(0, 0, image.getWidth(), image.getHeight()));
         }
         return checkerPaint;
@@ -198,8 +202,8 @@ public class CheckerboardPainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    public void paintBackground(Graphics2D g, T component, int width, int height) {
         g.setPaint(getCheckerPaint(component));
-        g.fillRect(0, 0, component.getWidth(), component.getHeight());
+        g.fillRect(0, 0, width, height);
     }
 }

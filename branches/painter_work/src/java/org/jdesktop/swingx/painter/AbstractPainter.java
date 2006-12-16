@@ -87,7 +87,7 @@ import org.jdesktop.swingx.util.PaintUtils;
  *
  * @author rbair
  */
-public abstract class AbstractPainter<T extends JComponent> extends JavaBean implements Painter<T> {
+public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> {
     //------------------------------------------------- Saved Graphics State
     private boolean stateSaved = false;
     private Stroke oldStroke;
@@ -364,15 +364,15 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         //same dimensions as the component, then simply paint the image
         BufferedImage image = cachedImage == null ? null : cachedImage.get();
         if (isUseCache() && image != null
-                && image.getWidth() == component.getWidth()
-                && image.getHeight() == component.getHeight()) {
+                && image.getWidth() == width
+                && image.getHeight() == height) {
             g.drawImage(image, 0, 0, null);
         } else {
             Effect[] effects = getEffects();
             if (effects.length > 0 || isUseCache()) {
                 image = PaintUtils.createCompatibleImage(
-                        component.getWidth(),
-                        component.getHeight(),
+                        width,
+                        height,
                         Transparency.TRANSLUCENT);
                 
                 Graphics2D gfx = image.createGraphics();
@@ -413,7 +413,9 @@ public abstract class AbstractPainter<T extends JComponent> extends JavaBean imp
         if (clip != null) {
             g.setClip(clip);
         }
-        g.setFont(c.getFont());
+        if(c instanceof JComponent) {
+            g.setFont(((JComponent)c).getFont());
+        }
         
         antialiasing.configureGraphics(g);
         /*

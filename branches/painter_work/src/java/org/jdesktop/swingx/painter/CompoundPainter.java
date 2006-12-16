@@ -58,7 +58,7 @@ import org.jdesktop.swingx.JavaBean;
  *
  * @author rbair
  */
-public class CompoundPainter extends AbstractPainter {
+public class CompoundPainter<T> extends AbstractPainter<T> {
     private Painter[] painters = new Painter[0];
     private AffineTransform transform;
     
@@ -127,7 +127,7 @@ public class CompoundPainter extends AbstractPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    public void paintBackground(Graphics2D g, T component, int width, int height) {
         Graphics2D g2 = (Graphics2D) g.create();
         if(getTransform() != null) {
             g2.setTransform(getTransform());

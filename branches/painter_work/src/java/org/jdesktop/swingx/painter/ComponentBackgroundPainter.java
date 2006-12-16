@@ -30,7 +30,7 @@ import javax.swing.JComponent;
  *
  * @author rbair
  */
-public class ComponentBackgroundPainter extends AbstractPainter {
+public class ComponentBackgroundPainter extends AbstractPainter<JComponent> {
     
     /**
      * Creates a new CompoundBackgroundPainter

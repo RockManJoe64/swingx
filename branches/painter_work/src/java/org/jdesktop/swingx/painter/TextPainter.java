@@ -50,7 +50,7 @@ import org.jdesktop.swingx.util.Resize;
  *
  * @author rbair
  */
-public class TextPainter extends AbstractPathPainter {
+public class TextPainter<T> extends AbstractPathPainter<T> {
     private String text = "";
     private Font font = null;
     
@@ -97,7 +97,7 @@ public class TextPainter extends AbstractPathPainter {
         return text;
     }
     
-    protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    protected void paintBackground(Graphics2D g, T component, int width, int height) {
         Font font = calculateFont(component);
         if (font != null) {
             g.setFont(font);
@@ -105,7 +105,9 @@ public class TextPainter extends AbstractPathPainter {
         
         Paint paint = getFillPaint();
         if(paint == null) {
-            paint = component.getForeground();
+            if(component instanceof JComponent) {
+                paint = ((JComponent)component).getForeground();
+            }
         }
         
         String text = calculateText(component);
@@ -138,7 +140,7 @@ public class TextPainter extends AbstractPathPainter {
         g.translate(-res.x,-res.y);
     }
     
-    private String calculateText(final JComponent component) {
+    private String calculateText(final T component) {
         // prep the text
         String text = getText();
         //make components take priority if(text == null || text.trim().equals("")) {
@@ -157,11 +159,13 @@ public class TextPainter extends AbstractPathPainter {
         return text;
     }
     
-    private Font calculateFont(final JComponent component) {
+    private Font calculateFont(final T component) {
         // prep the various text attributes
         Font font = getFont();
         if (font == null) {
-            font = component.getFont();
+            if(component instanceof JComponent) {
+                font = ((JComponent)component).getFont();
+            }
         }
         if (font == null) {
             font = new Font("Dialog", Font.PLAIN, 18);
@@ -169,10 +173,12 @@ public class TextPainter extends AbstractPathPainter {
         return font;
     }
     
-    public Shape provideShape(JComponent comp, int width, int height) {
+    public Shape provideShape(T comp, int width, int height) {
         Font font = calculateFont(comp);
         String text = calculateText(comp);
-        Graphics2D g2 = (Graphics2D)comp.getGraphics();
+        // this is a hack. it will break if you use a TextPainter on something
+        // other than a JComponent
+        Graphics2D g2 = (Graphics2D)((JComponent)comp).getGraphics();
         FontMetrics metrics = g2.getFontMetrics(font);
         GlyphVector vect = font.createGlyphVector(g2.getFontRenderContext(),text);
         Shape shape = vect.getOutline(0f,0f+ metrics.getAscent());//(float)-vect.getVisualBounds().getY()

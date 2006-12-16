@@ -125,8 +125,8 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     private void initPainterSupport() {
         painterSupport = new PainterSupport();
         painterSupport.setPainter(JXComponent.COMPONENT_LAYER,
-                new AbstractPainter() {
-            protected void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+                new AbstractPainter<JXPanel>() {
+            protected void paintBackground(Graphics2D g, JXPanel component, int width, int height) {
                 JXPanel.super.paintComponent(g);
             }
         });

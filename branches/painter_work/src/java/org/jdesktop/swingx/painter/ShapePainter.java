@@ -56,7 +56,7 @@ import org.jdesktop.swingx.util.Resize;
  *
  * @author rbair
  */
-public class ShapePainter extends AbstractPathPainter {
+public class ShapePainter<T> extends AbstractPathPainter<T> {
     
     /**
      * The Shape to fillPaint. If null, nothing is painted.
@@ -141,7 +141,7 @@ public class ShapePainter extends AbstractPathPainter {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int w, int h) {
+    public void paintBackground(Graphics2D g, T component, int w, int h) {
         //set the stroke if it is not null
         Stroke s = new BasicStroke(this.getBorderWidth());
         g.setStroke(s);
@@ -173,12 +173,12 @@ public class ShapePainter extends AbstractPathPainter {
         }
     }
     
-    private void drawShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
+    private void drawShape(Graphics2D g, Shape shape, T component, int w, int h) {
         g.setPaint(calculateStrokePaint(component, w, h));
         g.draw(shape);
     }
     
-    private void fillShape(Graphics2D g, Shape shape, JComponent component, int w, int h) {
+    private void fillShape(Graphics2D g, Shape shape, T component, int w, int h) {
         g.setPaint(calculateFillPaint(component, w, h));
         g.fill(shape);
         if(getPathEffects() != null) {
@@ -188,16 +188,18 @@ public class ShapePainter extends AbstractPathPainter {
             }
         }
     }
-
+    
     // shape effect stuff
-    public Shape provideShape(JComponent comp, int width, int height) {
+    public Shape provideShape(T comp, int width, int height) {
         return getShape();
     }
     
-    private Paint calculateStrokePaint(JComponent component, int width, int height) {
+    private Paint calculateStrokePaint(T component, int width, int height) {
         Paint p = getBorderPaint();
         if (p == null) {
-            p = component.getForeground();
+            if(component instanceof JComponent) {
+                p = ((JComponent)component).getForeground();
+            }
         }
         if(isSnapPaint()) {
             p = AbstractPathPainter.calculateSnappedPaint(p, width, height);
@@ -205,7 +207,7 @@ public class ShapePainter extends AbstractPathPainter {
         return p;
     }
     
-    private Paint calculateFillPaint(JComponent component, int width, int height) {
+    private Paint calculateFillPaint(T component, int width, int height) {
         //set the fillPaint
         Paint p = getFillPaint();
         if(isSnapPaint()) {
@@ -214,7 +216,9 @@ public class ShapePainter extends AbstractPathPainter {
             //u.p("not snapping");
         }
         if (p == null) {
-            p = component.getBackground();
+            if(component instanceof JComponent) {
+                p = ((JComponent)component).getBackground();
+            }
         }
         return p;
     }
