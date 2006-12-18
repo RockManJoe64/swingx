@@ -244,9 +244,10 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     
     private PainterUtil.PersistenceOwner resolver = null;
     public void setResolver(PainterUtil.PersistenceOwner resolver) {
-        p("resolver has been set: " + resolver);
+//        p("resolver has been set: " + resolver);
         this.resolver = resolver;
     }
+    
     public PainterUtil.PersistenceOwner getResolver() {
         return this.resolver;
     }
@@ -254,22 +255,15 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     private void loadImage() {
         try {
             String img = getImageString();
+            // use the resolver if it's there
             if(resolver != null) {
                 img = resolver.fromXMLURL(img);
             }
-            p("image string = " + img);
+//            p("image string = " + img);
             if(img != null) {
-                if(img.startsWith("http")) {
-                    URL url = new URL(img);
-                    setImage(ImageIO.read(url));
-                    return;
-                } else {
-                    p("base url = " + getBaseURL());
-                    p("image string = " + getImageString());
-                    URL url = new URL(getBaseURL()+getImageString());
-                    p("final url = " + url);
-                    setImage(ImageIO.read(url));
-                }
+                URL url = new URL(img);
+                setImage(ImageIO.read(url));
+                return;
             }
         } catch (IOException ex) {
             System.out.println("ex: " + ex.getMessage());
@@ -290,16 +284,16 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
         loadImage();
         firePropertyChange("imageString",old,imageString);
     }
-    
+    /*
     public String getBaseURL() {
         return baseURL;
     }
-    
+     
     private String baseURL;
-    
+     
     public void setBaseURL(String baseURL) {
         this.baseURL = baseURL;
-    }
+    }*/
     
     public boolean isHorizontalRepeat() {
         return horizontalRepeat;
@@ -332,7 +326,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
         return new Rectangle(0,0,0,0);
         
     }
-
+    
     private void p(String string) {
         System.out.println(string);
     }

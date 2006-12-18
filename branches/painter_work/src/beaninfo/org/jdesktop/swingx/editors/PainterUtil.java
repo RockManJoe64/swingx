@@ -62,6 +62,7 @@ import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.editors.PainterPropertyEditor.*;
 import org.jdesktop.swingx.painter.PositionedPainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
+import org.jdesktop.swingx.painter.URLPainter;
 
 /**
  *
@@ -70,40 +71,35 @@ import org.jdesktop.swingx.painter.RectanglePainter;
 public class PainterUtil {
     
     /** Creates a new instance of PainterUtil */
-    public PainterUtil() {
-    }
-    
-    public static Painter loadPainter(File file) throws FileNotFoundException, MalformedURLException {
-        //Reader in = new FileReader(file);
-        return loadPainter(file, file.toURL());
+    private PainterUtil() {
     }
     
     public static void main(String[] args) throws Exception {
         ImagePainter ip = new ImagePainter();
-        ip.setBaseURL("file:/Users/joshy/Pictures/");
-        ip.setImageString("cooltikis.jpg");
+        ip.setImageString("file:/Users/joshy/Pictures/cooltikis.jpg");
         File outfile = new File("/Users/joshy/Desktop/test.xml");
         outfile.createNewFile();
         p("outfile = " + outfile.getAbsolutePath());
         p("exists = " + outfile.exists());
         savePainterToFile(ip, outfile, outfile.getParentFile().toURL());
         p("---------");
-        ip = (ImagePainter)loadPainter(outfile,outfile.getParentFile().toURL());
-        p("final image painter = " + ip);
+        ip = (ImagePainter)loadPainter(outfile);
         p("image = " + ip.getImage());
-        //loadPainter(new File("test.xml"),new File(".").toURL());
+        ip = (ImagePainter)loadPainter(outfile.toURL());
+        p("image = " + ip.getImage());
+        p("==================");
+        
+        
     }
-    /*
-    public static Painter loadPainter(URL uRL) throws IOException {
-        return loadPainter(new InputStreamReader(uRL.openStream()),uRL);
-    }
-     */
     
-    private static Painter loadPainter(final File in, URL baseURL) throws FileNotFoundException {
-        //u.p("loadPainter: " + in.getAbsolutePath() + " " + baseURL.toString());
+    public static Painter loadPainter(File file) throws FileNotFoundException, MalformedURLException, IOException {
+        return loadPainter(file.toURL(), file.toURL());
+    }
+    
+    private static Painter loadPainter(final URL in, URL baseURL) throws FileNotFoundException, IOException {
         Thread.currentThread().setContextClassLoader(PainterUtil.class.getClassLoader());
-        //u.p("checking the class: " + MattePainter.class.getName());
-        XMLDecoder dec = new XMLDecoder(new FileInputStream(in));
+        XMLDecoder dec = new XMLDecoder(in.openStream());
+//        p("creating a persistence owner with the base url: " + baseURL);
         dec.setOwner(new PersistenceOwner(baseURL));
         dec.setExceptionListener(new ExceptionListener() {
             public void exceptionThrown(Exception ex) {
@@ -112,23 +108,11 @@ public class PainterUtil {
             }
         });
         Object obj = dec.readObject();
-        //setAAOn((Painter)obj);
-        //u.p("returning: " + obj);
         return (Painter)obj;
     }
     
     public static Painter loadPainter(URL url) throws IOException {
-        //        u.p("loading: " + url);
-        XMLDecoder dec = new XMLDecoder(url.openStream());
-        
-        dec.setExceptionListener(new ExceptionListener() {
-            public void exceptionThrown(Exception ex) {
-                System.out.println(ex.getMessage());
-                ex.printStackTrace();
-            }
-        });
-        Object obj = dec.readObject();
-        return (Painter)obj;
+        return loadPainter(url,url);
     }
     
     static public void savePainterToFile(Painter compoundPainter, File file) throws IOException {
@@ -252,7 +236,7 @@ public class PainterUtil {
     public static final class AbstractPainterDelegate extends DefaultPersistenceDelegate {
         protected void initialize(Class type, Object oldInstance,
                 Object newInstance, Encoder out) {
-            p("ap delegate called");
+//            p("ap delegate called");
             super.initialize(type, oldInstance,  newInstance, out);
         }
     }
@@ -260,23 +244,23 @@ public class PainterUtil {
     public static final class ImagePainterDelegate extends DefaultPersistenceDelegate {
         protected void initialize(Class type, Object oldInstance,
                 Object newInstance, Encoder out) {
-            p("image painter delegate called");
+//            p("image painter delegate called");
             super.initialize(type, oldInstance,  newInstance, out);
-            p("old instance = " + oldInstance);
-            p("owner = " + ((XMLEncoder)out).getOwner());
+            //p("old instance = " + oldInstance);
+            //p("owner = " + ((XMLEncoder)out).getOwner());
             PersistenceOwner owner = (PersistenceOwner)((XMLEncoder)out).getOwner();
             ImagePainter ip = (ImagePainter)oldInstance;
-            p("need to convert string: " + ip.getImageString());
+//            p("need to convert string: " + ip.getImageString());
             String s = owner.toXMLURL(ip.getImageString());
-            p("converted to: " + s);
-            s =  "cooltikis.jpg";
-            //out.writeExpression(new Expression(oldInstance,owner,"fromXMLURL",new Object[]{ip.getImageString()}));
-            //out.writeStatement(new Statement(owner,"fromXMLURL",new Object[]{ip.getImageString()}));
-            //out.writeStatement(new Statement(oldInstance,"setImageString",new Object[]{
-            //new Expression(oldInstance,owner,"fromXMLURL",new Object[]{ip.getImageString()})
-            //}));
+//            p("converted to: " + s);
+                //out.writeExpression(new Expression(oldInstance,owner,"fromXMLURL",new Object[]{ip.getImageString()}));
+                //out.writeStatement(new Statement(owner,"fromXMLURL",new Object[]{ip.getImageString()}));
+                //out.writeStatement(new Statement(oldInstance,"setImageString",new Object[]{
+                //new Expression(oldInstance,owner,"fromXMLURL",new Object[]{ip.getImageString()})
+                //}));
+                
             out.writeStatement(new Statement(oldInstance,"setResolver",new Object[]{owner}));
-            out.writeStatement(new Statement(oldInstance,"setImageString",new Object[]{ip.getImageString()}));
+            out.writeStatement(new Statement(oldInstance,"setImageString",new Object[]{s}));
         }
     }
     
@@ -348,14 +332,33 @@ public class PainterUtil {
             this.baseURL = baseURL;
         }
         
+        public URL getBaseURL() {
+            return baseURL;
+        }
         public String toXMLURL(String url) {
-            return "fdadsdf1";
+//            p("========");
+//            p("in toXMLURL()");
+//            p("base url = " + baseURL);
+//            p("url to convert = " + url);
+            //trim off the beginning if the url is relative to the base
+            if(url.startsWith(baseURL.toString())) {
+//                p("it's a valid substring!!!!!!!!!!!!");
+                url = url.substring(baseURL.toString().length());
+//                p("subsstring = " + url);
+            }
+//            p("final url = " + url);
+//            p("========");
+            return url;
         }
         
-        public String fromXMLURL(String url) {
-            p("from xml url called on: " + url);
-            String s = baseURL.toString() + url;
-            p("returning: " + s);
+        public String fromXMLURL(String url) throws MalformedURLException {
+            /*p("========");
+            p("in fromXMLURL()");
+            p("base url = " + baseURL);
+            p("url to convert: " + url);*/
+            String s = new URL(baseURL,url).toString();
+//            p("returning: " + s);
+//            p("========");
             return s;
         }
     }

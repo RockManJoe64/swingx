@@ -56,10 +56,10 @@ public class URLPainter extends CompoundPainter{
         url = baseClass.getResource(resource);
     }
     
-    public void setURL(URL file) {
+    public void setURL(URL url) {
         URL old = this.url;
-        this.url = file;
-        firePropertyChange("file",old,this.url);
+        this.url = url;
+        firePropertyChange("file", old, this.url);
     }
     
     public URL getURL() {
@@ -70,9 +70,8 @@ public class URLPainter extends CompoundPainter{
     
     private void load() {
         try {
-            Painter painter;
-            painter = PainterUtil.loadPainter(url);
-            this.setPainters(new Painter[] { painter } );
+            Painter painter = PainterUtil.loadPainter(url);
+            this.setPainters(new Painter[] { painter });
             loaded = true;
         } catch (Exception ex) {
             ex.printStackTrace();
