@@ -1202,7 +1202,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
             //$startcite
             //$name-image12-
             Painter ptr = PainterUtil.loadPainter(new File("/Users/joshy/Desktop/blah.xml"));
-            addDemo("image loaded from remote URL","image12",ptr);
+            addDemo("Painter set loaded from xml file with remote URL image","image12",ptr);
             //$endcite
         } catch (Exception ex) {
             ex.printStackTrace();
