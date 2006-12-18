@@ -197,26 +197,30 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
                 //image hasn't completed loading, do nothing
             } else {
                 Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
-                Shape clip = g.getClip();
-                Area area = new Area(clip);
                 if(verticalRepeat || horizontalRepeat) {
+                    Shape oldClip = g.getClip();
+                    Shape clip = g.getClip();
+                    if(clip == null) {
+                        clip = new Rectangle(0,0,width,height);
+                    }
+                    Area area = new Area(clip);
                     TexturePaint tp = new TexturePaint(img,rect);
                     if(verticalRepeat && horizontalRepeat) {
                         area.intersect(new Area(new Rectangle(0,0,width,height)));
                         g.setClip(area);
                     } else if (verticalRepeat) {
                         area.intersect(new Area(new Rectangle(rect.x,0,rect.width,height)));
-                        g.setClip(area);//clip.intersection(new Rectangle(rect.x,0,rect.width,height)));
+                        g.setClip(area);
                     } else {
                         area.intersect(new Area(new Rectangle(0,rect.y,width,rect.height)));
-                        g.setClip(area);//clip.intersection(new Rectangle(0,rect.y,width,rect.height)));
+                        g.setClip(area);
                     }
                     g.setPaint(tp);
                     g.fillRect(0,0,width,height);
+                    g.setClip(oldClip);
                 } else {
                     g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
                 }
-                g.setClip(clip);
             }
         }
         
@@ -244,7 +248,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     
     private PainterUtil.PersistenceOwner resolver = null;
     public void setResolver(PainterUtil.PersistenceOwner resolver) {
-//        p("resolver has been set: " + resolver);
+        //        p("resolver has been set: " + resolver);
         this.resolver = resolver;
     }
     
@@ -259,7 +263,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
             if(resolver != null) {
                 img = resolver.fromXMLURL(img);
             }
-//            p("image string = " + img);
+            //            p("image string = " + img);
             if(img != null) {
                 URL url = new URL(img);
                 setImage(ImageIO.read(url));
