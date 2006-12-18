@@ -9,8 +9,7 @@
 
 package org.jdesktop.swingx.editors;
 
-//import com.thoughtworks.xstream.converters.basic.AbstractBasicConverter;
-import java.awt.Color;
+
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -39,7 +38,6 @@ import java.beans.Statement;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,12 +55,10 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
-import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.editors.PainterPropertyEditor.*;
 import org.jdesktop.swingx.painter.PositionedPainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
-import org.jdesktop.swingx.painter.URLPainter;
 
 /**
  *
