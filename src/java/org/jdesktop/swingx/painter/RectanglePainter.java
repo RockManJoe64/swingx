@@ -15,6 +15,7 @@ import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
@@ -179,7 +180,10 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
         // background
         // border
         // leave the clip to support masking other painters
-        g.setClip(shape);
+        Area area = new Area(g.getClip());
+        area.intersect(new Area(shape));//new Rectangle(0,0,width,height)));
+        g.setClip(area);
+        //g.setClip(shape);
     }
     
     private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
