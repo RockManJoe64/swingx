@@ -30,8 +30,18 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  */
 public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
 
+    /**
+     * Different available fill styles. BOTH indicates that both the outline,
+     * and the fill should be painted. This is the default. FILLED indicates that
+     * the shape should be filled, but no outline painted. OUTLINE specifies that
+     * the shape should be outlined, but not filled
+     */
+    public enum Style {BOTH, FILLED, OUTLINE, NONE}
+    
     private boolean snapPaint;
     private PathEffect[] pathEffect;
+    
+    
     private Style style = Style.BOTH;
     /**
      * The stroke width to use when painting. If null, the default Stroke for

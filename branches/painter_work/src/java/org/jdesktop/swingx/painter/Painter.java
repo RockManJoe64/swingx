@@ -67,7 +67,7 @@ import javax.swing.JComponent;
  * 
  * @author rbair
  */
-public interface Painter<T extends Object> {
+public interface Painter<T> {
     /**
      * <p>Paints on the given Graphics2D object some effect which may or may not
      * be related to the given component. For example, BackgroundPainter will
@@ -82,10 +82,9 @@ public interface Painter<T extends Object> {
      * 
      * 
      * @param g The Graphics2D object in which to paint
-     * @param component The JComponent that the Painter is delegate for. This
-     *        must not be null.
-     * @param width
-     * @param height
+     * @param object The object that the Painter should paint. This may be null.
+     * @param width of the area to paint. Must be greater than zero.
+     * @param height of the area to paint. Must be greater than zero.
      */
     public void paint(Graphics2D g, T object, int width, int height);
 }
