@@ -39,9 +39,9 @@ public class WidgetClone extends javax.swing.JFrame {
         greyBorder.setStyle(RectanglePainter.Style.OUTLINE);
         ((JXPanel)panel19).setBackgroundPainter(greyBorder);
         
-        ((JXLabel)hours).setBackgroundPainter(greyBorder);
-        ((JXLabel)minutes).setBackgroundPainter(greyBorder);
-        ((JXLabel)seconds).setBackgroundPainter(greyBorder);
+        ((JXLabel)hours).setForegroundPainter(greyBorder);
+        ((JXLabel)minutes).setForegroundPainter(greyBorder);
+        ((JXLabel)seconds).setForegroundPainter(greyBorder);
         
     }
     

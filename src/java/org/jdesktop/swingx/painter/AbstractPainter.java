@@ -97,21 +97,6 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     private Color oldBackground;
     private Color oldColor;
     
-    
-    
-    /**
-     * Different available fill styles. BOTH indicates that both the outline,
-     * and the fill should be painted. This is the default. FILLED indicates that
-     * the shape should be filled, but no outline painted. OUTLINE specifies that
-     * the shape should be outlined, but not filled
-     */
-    public enum Style {BOTH, FILLED, OUTLINE, NONE}
-    
-    /* enum for dealing with all rendering hints */
-    //RenderingHints.VALUE_ANTIALIAS_ON;
-    //RenderingHints.KEY_ANTIALIASING;
-    //RenderingHints.V
-    
     //--------------------------------------------------- Instance Variables
     /**
      * A Shape that is used to clip the graphics area. Anything within this
@@ -144,8 +129,6 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      * Creates a new instance of AbstractPainter
      */
     public AbstractPainter() {
-        //renderingHints = new RenderingHints(null);
-        //renderingHints = new HashMap<RenderingHints.Key,Object>();
     }
     
     /**
@@ -159,6 +142,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      *
      * @param b whether or not to use the cache
      */
+    /*
     public void setUseCache(boolean b) {
         boolean old = isUseCache();
         useCache = b;
@@ -168,11 +152,12 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
             cachedImage = null;
         }
     }
+     */
     
     /**
      * @return whether or not the cache should be used
      */
-    public boolean isUseCache() {
+    protected boolean isUseCache() {
         return useCache;
     }
     
@@ -191,7 +176,6 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
             System.arraycopy(effects, 0, this.effects, 0, effects.length);
         }
         firePropertyChange("effects", old, getEffects());
-        //firePropertyChange("effects", old, getEffects());
     }
     
     /**
@@ -418,19 +402,6 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
         }
         
         antialiasing.configureGraphics(g);
-        /*
-        if(antialiasing.equals(Antialiasing.Default)) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-        }
-        if(antialiasing.equals(Antialiasing.Off)) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_OFF);
-        }
-        if(antialiasing.equals(Antialiasing.On)) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-        }*/
         if(interpolation.equals(Interpolation.Bicubic)) {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BICUBIC);

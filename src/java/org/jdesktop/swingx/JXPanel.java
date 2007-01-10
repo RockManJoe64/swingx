@@ -42,8 +42,6 @@ import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.JXComponent;
-import org.jdesktop.swingx.painter.PainterSupport;
 
 /**
  * A simple JPanel extension that adds translucency support.
@@ -53,10 +51,9 @@ import org.jdesktop.swingx.painter.PainterSupport;
  *
  * @author rbair
  */
-public class JXPanel extends JPanel implements Scrollable, JXComponent {
+public class JXPanel extends JPanel implements Scrollable {
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
-    protected PainterSupport painterSupport;
     
     /**
      * The alpha level for this component.
@@ -81,7 +78,6 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
      * backgroundPainter is specified
      */
     private Painter backgroundPainter;
-    private Painter foregroundPainter;
     /**
      * Keeps track of the old dimensions so that if the dimensions change, the
      * saved gradient image can be thrown out and re-rendered. This size is
@@ -123,13 +119,11 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     }
     
     private void initPainterSupport() {
-        painterSupport = new PainterSupport();
-        painterSupport.setPainter(JXComponent.COMPONENT_LAYER,
-                new AbstractPainter<JXPanel>() {
+        backgroundPainter = new AbstractPainter<JXPanel>() {
             protected void paintBackground(Graphics2D g, JXPanel component, int width, int height) {
                 JXPanel.super.paintComponent(g);
             }
-        });
+        };
     }
     
     /**
@@ -263,9 +257,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
      */
     public void setBackgroundPainter(Painter p) {
         Painter old = getBackgroundPainter();
-        
-        painterSupport.setBackgroundPainter(p);
-        
+        backgroundPainter = p;
         if (p != null) {
             setOpaque(false);
         }
@@ -275,32 +267,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
     }
     
     public Painter getBackgroundPainter() {
-        return painterSupport.getBackgroundPainter();
-    }
-    
-    /**
-     * Specifies a Painter to use to paint the background of this JXPanel.
-     * If <code>p</code> is not null, then setOpaque(false) will be called
-     * as a side effect. A component should not be opaque if painters are
-     * being used, because Painters may paint transparent pixels or not
-     * paint certain pixels, such as around the border insets.
-     */
-    public void setForegroundPainter(Painter p) {
-        Painter old = getForegroundPainter();
-        //this.foregroundPainter = p;
-        painterSupport.setForegroundPainter(p);
-        //painterSupport.setPainter(p, FOREGROUND_LAYER);
-        
-        if (p != null) {
-            setOpaque(false);
-        }
-        
-        firePropertyChange("foregroundPainter", old, getForegroundPainter());
-        repaint();
-    }
-    
-    public Painter getForegroundPainter() {
-        return painterSupport.getForegroundPainter();
+        return backgroundPainter;
     }
     
     /**
@@ -327,30 +294,18 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
      * extensive analysis.
      */
     protected void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D)g.create();
         //Insets ins = this.getInsets();
         //g2.translate(ins.left, ins.top);
         //painterSupport.paint(g2, this,
         //        this.getWidth()  - ins.left - ins.right,
         //        this.getHeight() - ins.top  - ins.bottom);
-        painterSupport.paint(g2, this, this.getWidth(), this.getHeight());
-        g2.dispose();
+        if(backgroundPainter != null) {
+            Graphics2D g2 = (Graphics2D)g.create();
+            backgroundPainter.paint(g2, this, this.getWidth(), this.getHeight());
+            g2.dispose();
+        } else {
+            super.paintComponent(g);
+        }
     }
-
-
-    public void setPainters(Map<Integer, List<Painter>> painters) {
-        painterSupport.setPainters(painters);
-    }
-
-    public Map<Integer, List<Painter>> getPainters() {
-        return painterSupport.getPainters();
-    }
-
-    public void setPainter(Integer layer, Painter painter) {
-        painterSupport.setPainter(layer,painter);
-    }
-
-    public Painter getPainter(Integer layer) {
-        return painterSupport.getPainter(layer);
-    }
+    
 }
