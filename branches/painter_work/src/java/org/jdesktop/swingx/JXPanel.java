@@ -56,7 +56,7 @@ import org.jdesktop.swingx.painter.PainterSupport;
 public class JXPanel extends JPanel implements Scrollable, JXComponent {
     private boolean scrollableTracksViewportHeight;
     private boolean scrollableTracksViewportWidth;
-    private PainterSupport painterSupport;
+    protected PainterSupport painterSupport;
     
     /**
      * The alpha level for this component.
@@ -314,6 +314,7 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
         g2d.setComposite(alphaComp);
         super.paint(g2d);
         g2d.setComposite(oldComp);
+        g2d.dispose();
     }
     
     /**
@@ -327,11 +328,12 @@ public class JXPanel extends JPanel implements Scrollable, JXComponent {
      */
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D)g.create();
-        Insets ins = this.getInsets();
-        g2.translate(ins.left, ins.top);
-        painterSupport.paint(g2, this,
-                this.getWidth()  - ins.left - ins.right,
-                this.getHeight() - ins.top  - ins.bottom);
+        //Insets ins = this.getInsets();
+        //g2.translate(ins.left, ins.top);
+        //painterSupport.paint(g2, this,
+        //        this.getWidth()  - ins.left - ins.right,
+        //        this.getHeight() - ins.top  - ins.bottom);
+        painterSupport.paint(g2, this, this.getWidth(), this.getHeight());
         g2.dispose();
     }
 
