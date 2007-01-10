@@ -215,18 +215,20 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      *        shape will be kept, everything else "clipped". May be null. If
      *        null, the clipping is not set on the graphics object
      */
+    /*
     public void setClip(Shape clip) {
         Shape old = getClip();
         this.clip = clip;
         firePropertyChange("clip", old, getClip());
-    }
+    }*/
     
     /**
      * @return the clipping shape
      */
+    /*
     public Shape getClip() {
         return clip;
-    }
+    }*/
     
     
     /**
@@ -393,10 +395,11 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
         if (getComposite() != null) {
             g.setComposite(getComposite());
         }
+        /*
         Shape clip = getClip();
         if (clip != null) {
             g.setClip(clip);
-        }
+        }*/
         if(c instanceof JComponent) {
             g.setFont(((JComponent)c).getFont());
         }

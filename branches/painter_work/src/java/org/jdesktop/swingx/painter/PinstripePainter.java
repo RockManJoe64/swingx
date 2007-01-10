@@ -192,11 +192,11 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
     public void paintBackground(Graphics2D g, T component, int width, int height) {
         //draws pinstripes at the angle specified in this class
         //and at the given distance apart
-        Shape clip = g.getClip();
-        Area area = new Area(clip);
+        Shape oldClip = g.getClip();
+        Area area = new Area(oldClip);
         area.intersect(new Area(new Rectangle(0,0,width,height)));
         g.setClip(area);
-        //g.setClip(clip.intersection(new Rectangle(0,0,width,height)));
+        //g.setClip(oldClip.intersection(new Rectangle(0,0,width,height)));
         Paint p = getPaint();
         if (p == null) {
             if(component instanceof JComponent) {
@@ -223,7 +223,7 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
             Line2D line = new Line2D.Double(x, -hypLength, x, hypLength);
             g.draw(line);
         }
-        g.setClip(clip);
+        g.setClip(oldClip);
     }
     
     public double getStripeWidth() {
