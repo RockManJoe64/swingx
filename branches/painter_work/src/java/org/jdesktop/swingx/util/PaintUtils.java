@@ -35,7 +35,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Transparency;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -225,4 +227,17 @@ public class PaintUtils {
         return compatibleImage;
     }
 
+    
+    /** Sets then clip on a graphics object by merging with the existing
+     * clip instead of replacing it. The new clip will be an intersection of
+     * the old clip and the passed in clip shape.   The old clip shape will
+     * be returned
+     */
+    public static Shape setMergedClip(Graphics2D g, Shape newClip) {
+        Shape oldClip = g.getClip();
+        Area area = new Area(oldClip);
+        area.intersect(new Area(newClip));//new Rectangle(0,0,width,height)));
+        g.setClip(area);
+        return oldClip;
+    }
 }

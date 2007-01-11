@@ -20,6 +20,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.util.PaintUtils;
 
 
 
@@ -180,9 +181,11 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
         // background
         // border
         // leave the clip to support masking other painters
+        PaintUtils.setMergedClip(g,shape);
+        /*
         Area area = new Area(g.getClip());
         area.intersect(new Area(shape));//new Rectangle(0,0,width,height)));
-        g.setClip(area);
+        g.setClip(area);*/
         //g.setClip(shape);
     }
     
