@@ -16,6 +16,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Shape;
@@ -111,6 +112,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         transformDemos();
         addGlossDemos();
         addPinstripeDemos();
+        addGradientDemos();
         addPainterSetAPIDemos();
         listDemos(gradient);
         tableDemos();
@@ -553,6 +555,33 @@ public class PainterDemoSet extends javax.swing.JFrame {
         rectneon.setStyle(RectanglePainter.Style.FILLED);
         rectneon.setPathEffects(new NeonBorderEffect(new Color(255,100,100), new Color(255,255,255), 30));
         addDemo("Rectangle w/ pink neon border", "rect17", new MattePainter(Color.BLACK), rectneon);
+        //$endcite
+        
+        
+        RectanglePainter rect = null;
+        //$startcite
+        //$name-rect18-
+        // red rectangle w/ 3px black border
+        rect = new RectanglePainter(5,5,5,5,10,10,true,Color.RED,3,Color.BLACK);
+        addDemo("Red Rectangle w/ 3px black border", "rect18", new MattePainter(Color.WHITE), rect);
+        //$endcite
+        //$startcite
+        //$name-rect19-
+        // red rectangle w/ 2px black border
+        rect = new RectanglePainter(5,5,5,5,10,10,true,Color.RED,2,Color.BLACK);
+        addDemo("Red Rectangle w/ 2px black border", "rect19", new MattePainter(Color.WHITE), rect);
+        //$endcite
+        //$startcite
+        //$name-rect20-
+        // red rectangle w/ 1px black border
+        rect = new RectanglePainter(5,5,5,5,10,10,true,Color.RED,1,Color.BLACK);
+        addDemo("Red Rectangle w/ 1px black border", "rect20", new MattePainter(Color.WHITE), rect);
+        //$endcite
+        //$startcite
+        //$name-rect21-
+        // red rectangle w/ 0px black border
+        rect = new RectanglePainter(5,5,5,5,10,10,true,Color.RED,0,Color.BLACK);
+        addDemo("Red Rectangle w/ 0px black border", "rect21", new MattePainter(Color.WHITE), rect);
         //$endcite
     }
     
@@ -1421,6 +1450,126 @@ public class PainterDemoSet extends javax.swing.JFrame {
             }
         });
         addDemo(panel,"Text with no effects","generics01");
+        //$endcite
+        
+    }
+
+    private void addGradientDemos() {
+        addDemo(new JPanel(), "---- Gradient Demos ----");
+        MattePainter matte = null;
+        Paint paint;
+        
+        
+        //$startcite
+        //$name-grad01- // show a normal gradient, horiz
+        paint = new GradientPaint(new Point(30,30),Color.RED,
+                new Point(80,30), Color.GREEN);
+        matte = new MattePainter(paint);
+        addDemo("single stop, horiz","grad01",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad02- // show a normal gradient snapped horiz
+        paint = new GradientPaint(new Point(30,30),Color.RED,
+                new Point(80,30), Color.GREEN);
+        matte = new MattePainter(paint);
+        matte.setSnapPaint(true);
+        addDemo("single stop, horiz snapped","grad02",matte);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-grad11- // show a normal gradient, vert
+        paint = new GradientPaint(new Point(30,30),Color.RED,
+                new Point(30,80), Color.GREEN);
+        matte = new MattePainter(paint);
+        addDemo("single stop, vert","grad11",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad12- // show a normal gradient snapped vert
+        paint = new GradientPaint(new Point(30,30),Color.RED,
+                new Point(30,80), Color.GREEN);
+        matte = new MattePainter(paint);
+        matte.setSnapPaint(true);
+        addDemo("single stop, vert, snapped","grad12",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad13- // show a normal gradient, diag
+        paint = new GradientPaint(new Point(30,30),Color.RED,
+                new Point(80,80), Color.GREEN);
+        matte = new MattePainter(paint);
+        addDemo("single stop, diag","grad13",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad14- // show a normal gradient snapped diag
+        paint = new GradientPaint(new Point(30,30),Color.RED,
+                new Point(80,80), Color.GREEN);
+        matte = new MattePainter(paint);
+        matte.setSnapPaint(true);
+        addDemo("single stop, diag, snapped","grad14",matte);
+        //$endcite
+        
+        
+        
+        //$startcite
+        //$name-grad07- // show a multi stop gradient, horiz
+        paint = new LinearGradientPaint(new Point(30,30), new Point(80,30), 
+                new float[] {0f, 0.5f, 1f},
+                new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
+        matte = new MattePainter(paint);
+        addDemo("multi stop horiz","grad07",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad08- // show a multi stop gradient, horiz snapped 
+        paint = new LinearGradientPaint(new Point(30,30), new Point(80,30), 
+                new float[] {0f, 0.5f, 1f},
+                new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
+        matte = new MattePainter(paint);
+        matte.setSnapPaint(true);
+        addDemo("multi stop horiz, snapped","grad08",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad09- // show a multi stop gradient, vert
+        paint = new LinearGradientPaint(new Point(30,30), new Point(30,80), 
+                new float[] {0f, 0.5f, 1f},
+                new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
+        matte = new MattePainter(paint);
+        addDemo("multi stop vert","grad09",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad10- // show a multi stop gradient, vert snapped 
+        paint = new LinearGradientPaint(new Point(30,30), new Point(30,80), 
+                new float[] {0f, 0.5f, 1f},
+                new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
+        matte = new MattePainter(paint);
+        matte.setSnapPaint(true);
+        addDemo("multi stop vert, snapped","grad10",matte);
+        //$endcite
+        
+        
+        //$startcite
+        //$name-grad05- // show a multi stop gradient, diag
+        paint = new LinearGradientPaint(new Point(30,30), new Point(80,80), 
+                new float[] {0f, 0.5f, 1f},
+                new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
+        matte = new MattePainter(paint);
+        addDemo("multi stop diag","grad05",matte);
+        //$endcite
+        
+        //$startcite
+        //$name-grad06- // show a multi stop gradient, snapped, diag
+        paint = new LinearGradientPaint(new Point(30,30), new Point(80,80), 
+                new float[] {0f, 0.5f, 1f},
+                new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
+        matte = new MattePainter(paint);
+        matte.setSnapPaint(true);
+        addDemo("multi stop diag, snapped","grad06",matte);
         //$endcite
         
     }

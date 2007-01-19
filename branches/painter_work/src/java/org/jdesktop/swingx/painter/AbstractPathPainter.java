@@ -11,6 +11,7 @@ package org.jdesktop.swingx.painter;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -29,7 +30,7 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  * @author joshy
  */
 public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
-
+    
     /**
      * Different available fill styles. BOTH indicates that both the outline,
      * and the fill should be painted. This is the default. FILLED indicates that
@@ -48,7 +49,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
      * the Graphics2D is used
      */
     private float borderWidth;
-
+    
     /**
      * The paint to use when filling the shape
      */
@@ -69,7 +70,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     public AbstractPathPainter(Paint paint) {
         this.fillPaint = paint;
     }
-
+    
     
     /**
      * @return Gets the Paint being used. May be null
@@ -77,7 +78,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     public Paint getFillPaint() {
         return fillPaint;
     }
-
+    
     /**
      * Sets the Paint to use. If null, nothing is painted
      *
@@ -88,11 +89,11 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
         this.fillPaint = p;
         firePropertyChange("paint", old, getFillPaint());
     }
- 
+    
     public boolean isSnapPaint() {
         return snapPaint;
     }
-
+    
     public void setSnapPaint(boolean snapPaint) {
         boolean old = this.isSnapPaint();
         this.snapPaint = snapPaint;
@@ -118,7 +119,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     public Paint getBorderPaint() {
         return borderPaint;
     }
-
+    
     /**
      * The shape can be filled or simply stroked (outlined), or both. By default,
      * the shape is both filled and stroked. This property specifies the strategy to
@@ -138,7 +139,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     public Style getStyle() {
         return style;
     }
-
+    
     /**
      * Sets the stroke to use for painting. If null, then the default Graphics2D
      * stroke use used
@@ -165,26 +166,45 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
         if(p instanceof Color) {
             return p;
         }
+        if(p instanceof GradientPaint) {
+            GradientPaint gp = (GradientPaint)p;
+            Point2D start = gp.getPoint1();
+            Point2D end = gp.getPoint2();
+            
+            Point2D[] pts = new Point2D[2];
+            pts[0] = gp.getPoint1();
+            pts[1] = gp.getPoint2();
+            pts = adjustPoints(pts, width, height);
+            
+            return new GradientPaint(pts[0], gp.getColor1(), pts[1], gp.getColor2());
+            
+        }
         
         if(p instanceof LinearGradientPaint) {
             LinearGradientPaint mgp = (LinearGradientPaint)p;
             Point2D start = mgp.getStartPoint();
             Point2D end = mgp.getEndPoint();
+            
+            Point2D[] pts = new Point2D[2];
+            pts[0] = mgp.getStartPoint();
+            pts[1] = mgp.getEndPoint();
+            pts = adjustPoints(pts, width, height);
+            /*
             double angle = calcAngle(start,end);
             double a2 = Math.toDegrees(angle);
             double e = 10;
             
             // if it is near 0 degrees
             if(Math.abs(angle) < Math.toRadians(e) ||
-               Math.abs(angle) > Math.toRadians(360-e)) {
+                    Math.abs(angle) > Math.toRadians(360-e)) {
                 start = new Point2D.Float(0,0);
                 end = new Point2D.Float(width,0);
             }
             
-            // near 45 
+            // near 45
             if(isNear(a2, 45, e)) {
                 start = new Point2D.Float(0,0);
-                end = new Point2D.Float(width,height);                
+                end = new Point2D.Float(width,height);
             }
             
             // near 90
@@ -196,7 +216,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
             // near 135
             if(isNear(a2, 135, e)) {
                 start = new Point2D.Float(width,0);
-                end = new Point2D.Float(0,height);                
+                end = new Point2D.Float(0,height);
             }
             
             // near 180
@@ -222,9 +242,14 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
                 start = new Point2D.Float(0,height);
                 end = new Point2D.Float(width,0);
             }
-            
             LinearGradientPaint mgp2 = new LinearGradientPaint(
                     start, end,
+                    mgp.getFractions(),
+                    mgp.getColors());
+             */
+            
+            LinearGradientPaint mgp2 = new LinearGradientPaint(
+                    pts[0], pts[1],
                     mgp.getFractions(),
                     mgp.getColors());
             
@@ -247,12 +272,12 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
         if (x_off < 0) {
             angle = angle + Math.PI;
         }
-
+        
         if(angle < 0) { angle+= 2*Math.PI; }
         if(angle > 2*Math.PI) { angle -= 2*Math.PI; }
         return angle;
     }
-
+    
     // shape effect stuff
     public abstract Shape provideShape(T comp, int width, int height);
     
@@ -263,5 +288,65 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     public PathEffect[] getPathEffects() {
         return this.pathEffect;
     }
-
+    
+    private static Point2D[] adjustPoints(Point2D[] pts, int width, int height) {
+        Point2D start = pts[0];
+        Point2D end = pts[1];
+        
+        double angle = calcAngle(start,end);
+        double a2 = Math.toDegrees(angle);
+        double e = 10;
+        
+        // if it is near 0 degrees
+        if(Math.abs(angle) < Math.toRadians(e) ||
+                Math.abs(angle) > Math.toRadians(360-e)) {
+            start = new Point2D.Float(0,0);
+            end = new Point2D.Float(width,0);
+        }
+        
+        // near 45
+        if(isNear(a2, 45, e)) {
+            start = new Point2D.Float(0,0);
+            end = new Point2D.Float(width,height);
+        }
+        
+        // near 90
+        if(isNear(a2,  90, e)) {
+            start = new Point2D.Float(0,0);
+            end = new Point2D.Float(0,height);
+        }
+        
+        // near 135
+        if(isNear(a2, 135, e)) {
+            start = new Point2D.Float(width,0);
+            end = new Point2D.Float(0,height);
+        }
+        
+        // near 180
+        if(isNear(a2, 180, e)) {
+            start = new Point2D.Float(width,0);
+            end = new Point2D.Float(0,0);
+        }
+        
+        // near 225
+        if(isNear(a2, 225, e)) {
+            start = new Point2D.Float(width,height);
+            end = new Point2D.Float(0,0);
+        }
+        
+        // near 270
+        if(isNear(a2, 270, e)) {
+            start = new Point2D.Float(0,height);
+            end = new Point2D.Float(0,0);
+        }
+        
+        // near 315
+        if(isNear(a2, 315, e)) {
+            start = new Point2D.Float(0,height);
+            end = new Point2D.Float(width,0);
+        }
+        
+        return new Point2D[] { start, end };
+    }
+    
 }
