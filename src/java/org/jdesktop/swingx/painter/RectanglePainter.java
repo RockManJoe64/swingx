@@ -41,6 +41,7 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
     
     /** Creates a new instance of RectanglePainter */
     public RectanglePainter() {
+        this(0,0,0,0, 0,0, false, Color.RED, 1f, Color.BLACK);
     }
     
     public RectanglePainter(Color fillPaint, Color borderPaint) {
@@ -64,7 +65,6 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
             int width, int height,
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
             float strokeWidth, Paint borderPaint) {
-        this();
         this.width = width;
         this.height = height;
         setHorizontalStretch(false);
@@ -81,7 +81,6 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
     public RectanglePainter(int top, int left, int bottom, int right,
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
             float strokeWidth, Paint borderPaint) {
-        this();
         this.setInsets(new Insets(top,left,bottom,right));
         setVerticalStretch(true);
         setHorizontalStretch(true);
