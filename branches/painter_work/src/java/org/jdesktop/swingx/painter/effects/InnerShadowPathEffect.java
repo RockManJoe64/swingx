@@ -13,7 +13,7 @@ import java.awt.Color;
 import java.awt.Point;
 
 /**
- *
+ * An effect which draws a shadow inside the path painter.
  * @author joshy
  */
 public class InnerShadowPathEffect extends AbstractPathEffect {

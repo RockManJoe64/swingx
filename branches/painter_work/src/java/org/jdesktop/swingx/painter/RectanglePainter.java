@@ -25,9 +25,8 @@ import org.jdesktop.swingx.util.PaintUtils;
 
 
 /**
- *
+ * A painter which paints square and rounded rectangles
  * @author joshua.marinacci@sun.com
- *
  */
 
 public class RectanglePainter<T> extends AbstractPathPainter<T> {
@@ -95,30 +94,54 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
     
     
     
+    /**
+     * Indicates if the rectangle is rounded
+     * @return if the rectangle is rounded
+     */
     public boolean isRounded() {
         return rounded;
     }
     
+    /**
+     * sets if the rectangle should be rounded
+     * @param rounded if the rectangle should be rounded
+     */
     public void setRounded(boolean rounded) {
         boolean oldRounded = isRounded();
         this.rounded = rounded;
         firePropertyChange("rounded",oldRounded,rounded);
     }
     
+    /**
+     * gets the round width of the rectangle
+     * @return the current round width
+     */
     public int getRoundWidth() {
         return roundWidth;
     }
     
+    /**
+     * sets the round width of the rectangle
+     * @param roundWidth a new round width
+     */
     public void setRoundWidth(int roundWidth) {
         int oldRoundWidth = getRoundWidth();
         this.roundWidth = roundWidth;
         firePropertyChange("roundWidth",oldRoundWidth,roundWidth);
     }
     
+    /**
+     * gets the round height of the rectangle
+     * @return the current round height
+     */
     public int getRoundHeight() {
         return roundHeight;
     }
     
+    /**
+     * sets the round height of the rectangle
+     * @param roundHeight a new round height
+     */
     public void setRoundHeight(int roundHeight) {
         int oldRoundHeight = getRoundHeight();
         this.roundHeight = roundHeight;
@@ -127,7 +150,7 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
     
     
     /* ======== drawing code ============ */
-    protected Shape calculateShape(T component, int width, int height) {
+    private Shape calculateShape(T component, int width, int height) {
         Insets insets = getInsets();
         int x = insets.left;
         int y = insets.top;

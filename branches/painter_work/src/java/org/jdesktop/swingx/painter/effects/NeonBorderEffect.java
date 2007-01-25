@@ -19,7 +19,8 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 
 /**
- *
+ * An effect which draws a multicolored border around a painter's shape.
+ * It will interpolate between two specified colors, creating a neon like effect.
  * @author joshy
  */
 public class NeonBorderEffect extends AbstractPathEffect {
@@ -28,9 +29,15 @@ public class NeonBorderEffect extends AbstractPathEffect {
     private Color centerColor;
     private BorderPosition borderPosition = BorderPosition.Outside;
     
+    /**
+     * An enum representing the position of the border: inside, outside, or centered on the border.
+     */
     public enum BorderPosition { Inside, Centered, Outside };
     
     
+    /**
+     * Create a new NeonBorderEffect
+     */
     public NeonBorderEffect() {
         this(Color.GREEN, Color.WHITE, 10);
     }
@@ -101,7 +108,7 @@ public class NeonBorderEffect extends AbstractPathEffect {
         
     }
     
-    public static void p(String str) {
+    private static void p(String str) {
         System.out.println(str);
     }
     
@@ -116,26 +123,50 @@ public class NeonBorderEffect extends AbstractPathEffect {
         return c;
     }
     
+    /**
+     * Gets the current edge color.
+     * @return current edge color
+     */
     public Color getEdgeColor() {
         return edgeColor;
     }
     
+    /**
+     * Set the edge color
+     * @param edgeColor 
+     */
     public void setEdgeColor(Color edgeColor) {
         this.edgeColor = edgeColor;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public Color getCenterColor() {
         return centerColor;
     }
     
+    /**
+     * 
+     * @param centerColor 
+     */
     public void setCenterColor(Color centerColor) {
         this.centerColor = centerColor;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public BorderPosition getBorderPosition() {
         return borderPosition;
     }
     
+    /**
+     * 
+     * @param borderPosition 
+     */
     public void setBorderPosition(BorderPosition borderPosition) {
         this.borderPosition = borderPosition;
         switch(borderPosition) {

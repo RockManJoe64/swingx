@@ -116,6 +116,7 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * Gets the current square length.
      * @return the squareLength. Will be > 0
      */
     public int getSquareLength() {
@@ -137,6 +138,8 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * 
+     * Gets the current dark paint.
      * @return the Paint used for painting the "dark" tiles. May be null
      */
     public Paint getDarkPaint() {
@@ -158,6 +161,8 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * 
+     * gets the current light paint
      * @return the Paint used for painting the "light" tiles. May be null
      */
     public Paint getLightPaint() {

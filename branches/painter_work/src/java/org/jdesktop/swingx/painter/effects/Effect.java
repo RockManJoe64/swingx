@@ -24,10 +24,15 @@ package org.jdesktop.swingx.painter.effects;
 import java.awt.image.BufferedImage;
 
 /**
- *
+ * An effect which can be applied to a painter. This is any effect which works on raster data.
  * @author rbair
  * @author gfx
  */
 public interface Effect {
+    /**
+     * apply this effect to the buffered image
+     * @param image the image to apply the effect to
+     * @return the final image with the effect applied
+     */
     public BufferedImage apply(BufferedImage image);
 }

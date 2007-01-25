@@ -106,10 +106,10 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     }
     
     /**
-     * Create a new ImagePainter with the specified image and style.
-     *
+     * Create a new ImagePainter with the specified image and alignment.
+     * @param horizontal the horizontal alignment
+     * @param vertical the vertical alignment
      * @param image the image to be painted
-     * @param style the style of the image
      */
     public ImagePainter(BufferedImage image, HorizontalAlignment horizontal, VerticalAlignment vertical) {
         super();
@@ -121,12 +121,9 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     }
     
     /**
-     * Sets the image to use for the background of this panel. This image is
-     * painted whether the panel is opaque or translucent.
-     *
+     * Sets the image to paint with.
      * @param image if null, clears the image. Otherwise, this will set the
-     * image to be painted. If the preferred size has not been explicitly set,
-     * then the image dimensions will alter the preferred size of the panel.
+     * image to be painted.
      */
     public void setImage(BufferedImage image) {
         if (image != img) {
@@ -137,7 +134,8 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     }
     
     /**
-     * @return the image used for painting the background of this panel
+     * Gets the current image used for painting.
+     * @return the image used for painting
      */
     public BufferedImage getImage() {
         p("image url = " + getImageString());
@@ -237,21 +235,36 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     
     private double imageScale = 1.0;
     
+    /**
+     * Sets the scaling factor used when drawing the image
+     * @param imageScale the new image scaling factor
+     */
     public void setImageScale(double imageScale) {
         double old = getImageScale();
         this.imageScale = imageScale;
         firePropertyChange("imageScale",old,this.imageScale);
     }
+    /**
+     * Gets the current scaling factor used when drawing an image.
+     * @return the current scaling factor
+     */
     public double getImageScale() {
         return imageScale;
     }
     
     private PainterUtil.PersistenceOwner resolver = null;
+    /**
+     * Used by the persistence mechanism.
+     * @param resolver 
+     */
     public void setResolver(PainterUtil.PersistenceOwner resolver) {
         //        p("resolver has been set: " + resolver);
         this.resolver = resolver;
     }
     
+    /**
+     * Used by the persistence mechanism.
+     */
     public PainterUtil.PersistenceOwner getResolver() {
         return this.resolver;
     }
@@ -277,10 +290,16 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     
     private String imageString;
     
+    /**
+     * Used by the persistence mechanism.
+     */
     public String getImageString() {
         return imageString;
     }
     
+    /**
+     * Used by the persistence mechanism.
+     */
     public void setImageString(String imageString) {
         System.out.println("setting image string to: " + imageString);
         String old = this.getImageString();
@@ -299,26 +318,45 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
         this.baseURL = baseURL;
     }*/
     
+    /**
+     * Indicates if the image will be repeated horizontally.
+     * @return if the image will be repeated horizontally
+     */
     public boolean isHorizontalRepeat() {
         return horizontalRepeat;
     }
     
+    /**
+     * Sets if the image should be repeated horizontally.
+     * @param horizontalRepeat the new horizontal repeat value
+     */
     public void setHorizontalRepeat(boolean horizontalRepeat) {
         boolean old = this.isHorizontalRepeat();
         this.horizontalRepeat = horizontalRepeat;
         firePropertyChange("horizontalRepeat",old,this.horizontalRepeat);
     }
     
+    /**
+     * Indicates if the image will be repeated vertically.
+     * @return if the image will be repeated vertically
+     */
     public boolean isVerticalRepeat() {
         return verticalRepeat;
     }
     
+    /**
+     * Sets if the image should be repeated vertically.
+     * @param verticalRepeat new value for the vertical repeat
+     */
     public void setVerticalRepeat(boolean verticalRepeat) {
         boolean old = this.isVerticalRepeat();
         this.verticalRepeat = verticalRepeat;
         firePropertyChange("verticalRepeat",old,this.verticalRepeat);
     }
     
+    /**
+     * 
+     */
     public Shape provideShape(T comp, int width, int height) {
         if(getImage() != null) {
             BufferedImage img = getImage();

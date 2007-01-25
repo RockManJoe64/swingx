@@ -14,7 +14,7 @@ import java.awt.image.BufferedImageOp;
 import org.jdesktop.swingx.JavaBean;
 
 /**
- *
+ * An effect which uses BufferedImageOps
  * @author Richard
  */
 public class ImageEffect extends JavaBean implements Effect {
