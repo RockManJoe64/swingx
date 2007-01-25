@@ -113,6 +113,13 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
         this.angle = angle;
     }
     
+    /**
+     * Create a new PinstripePainter with the specified paint, angle, stripe width, and stripe spacing.
+     * @param paint 
+     * @param angle 
+     * @param stripeWidth 
+     * @param spacing 
+     */
     public PinstripePainter(Paint paint, double angle, double stripeWidth, double spacing) {
         this.paint = paint;
         this.angle = angle;
@@ -132,6 +139,7 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * Get the current paint used for drawing the pinstripes
      * @return the Paint to use to draw the pinstripes
      */
     public Paint getPaint() {
@@ -162,6 +170,7 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * Gets the current angle of the pinstripes
      * @return the angle, in degrees, at which the pinstripes are painted
      */
     public double getAngle() {
@@ -180,6 +189,7 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * Get the current spacing between the stripes
      * @return the spacing between pinstripes
      */
     public double getSpacing() {
@@ -226,10 +236,18 @@ public class PinstripePainter<T> extends AbstractPainter<T> {
         g.setClip(oldClip);
     }
     
+    /**
+     * Gets the current width of the pinstripes
+     * @return the current pinstripe width
+     */
     public double getStripeWidth() {
         return stripeWidth;
     }
     
+    /**
+     * Set the width of the pinstripes
+     * @param stripeWidth a new width for the pinstripes
+     */
     public void setStripeWidth(double stripeWidth) {
         double oldSripeWidth = getStripeWidth();
         this.stripeWidth = stripeWidth;

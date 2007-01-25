@@ -79,7 +79,7 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
             System.arraycopy(painters, 0, this.painters, 0, painters.length);
         }
     }
-    
+    /* joshy: not used since we got rid of layers.
     public CompoundPainter(Map<Integer,List<Painter>> painterSet) {
         // create a flat list of painters
         List<Painter> painterList = new ArrayList<Painter>();
@@ -97,7 +97,8 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
         
         this.painters = painterList.toArray(new Painter[0]);
         
-    }
+    }*/
+    
     
     /**
      * Sets the array of Painters to use. These painters will be executed in
@@ -115,6 +116,7 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
     }
     
     /**
+     * Gets the array of painters used by this CompoundPainter
      * @return a defensive copy of the painters used by this CompoundPainter.
      *         This will never be null.
      */
@@ -138,10 +140,18 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
         g2.dispose();
     }
     
+    /**
+     * Gets the current transform applied to all painters in this CompoundPainter. May be null.
+     * @return the current AffineTransform
+     */
     public AffineTransform getTransform() {
         return transform;
     }
     
+    /**
+     * Set a transform to be applied to all painters contained in this GradientPainter
+     * @param transform a new AffineTransform
+     */
     public void setTransform(AffineTransform transform) {
         AffineTransform old = getTransform();
         this.transform = transform;

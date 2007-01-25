@@ -33,13 +33,12 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
 
 /**
  * A Painter implementation that uses a Paint to fill the entire background
- * area using that Paint. For example, if I wanted to paint the entire background
- * in Color.GREEN, I would:
+ * area. For example, if I wanted to paint the entire background of a panel green, I would:
  * <pre><code>
  *  MattePainter p = new MattePainter(Color.GREEN);
  *  panel.setBackgroundPainter(p);
  * </code></pre></p>
- *
+ * 
  * <p>Since it accepts a Paint, it is also possible to paint a texture or use other
  * more exotic Paint implementations. To paint a BufferedImage texture as the
  * background:
@@ -49,9 +48,8 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
  *  MattePainter p = new MattePainter(paint);
  *  panel.setBackgroundPainter(p);
  * </code></pre></p>
- *
+ * 
  * <p>If no paint is specified, then nothing is painted</p>
- *
  * @author rbair
  */
 public class MattePainter<T> extends AbstractPathPainter<T> {
@@ -85,7 +83,8 @@ public class MattePainter<T> extends AbstractPathPainter<T> {
     }
     
     /**
-     * @inheritDoc
+     * 
+     * @inheritDoc 
      */
     public void paintBackground(Graphics2D g, T component, int width, int height) {
         Paint p = getFillPaint();

@@ -39,15 +39,8 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
 import org.jdesktop.swingx.util.Resize;
 
 /**
- * "Paints" text at the given location. The location should be a point where
- * the x and y values are in the range of 0 to 1. Similar to the CSS background
- * positioning algorithm, each value will be scaled along each axis of the component
- * this TextPainter is painting, and then used to position the text. A value of
- * 0,0 would put the text in the upper lefthand corner. 0.5,0.5 would position the
- * text in the center and 1.0,1.0 would be at the lower righthand corner. For a more
- * complete defintion of the positioning algorithm see the
- * <a href="http://www.w3.org/TR/CSS21/colors.html#propdef-background-position">CSS 2.1 spec</a>.
- *
+ * A painter which draws text. If the font or text are not provided they will be
+ * obtained from the object being painted if it is a Swing text component.
  * @author rbair
  */
 public class TextPainter<T> extends AbstractPathPainter<T> {
@@ -77,22 +70,38 @@ public class TextPainter<T> extends AbstractPathPainter<T> {
         setFillPaint(paint);
     }
     
+    /**
+     * Set the font (and font size and style) to be used when drawing the text
+     * @param f the new font
+     */
     public void setFont(Font f) {
         Font old = getFont();
         this.font = f;
         firePropertyChange("font", old, getFont());
     }
     
+    /**
+     * gets the font (and font size and style) to be used when drawing the text
+     * @return the current font
+     */
     public Font getFont() {
         return font;
     }
     
+    /**
+     * Sets the text to draw
+     * @param text the text to draw
+     */
     public void setText(String text) {
         String old = getText();
         this.text = text == null ? "" : text;
         firePropertyChange("text", old, getText());
     }
     
+    /**
+     * gets the text currently used to draw
+     * @return the text to be drawn
+     */
     public String getText() {
         return text;
     }

@@ -29,7 +29,10 @@ import java.awt.image.BufferedImage;
 import org.jdesktop.swingx.color.ColorUtil;
 
 /**
- *
+ * The abstract base class for path effects. It takes care
+ * of soft clipping and interpolating brush sizes and colors. Subclasses
+ *  can change these values to provide prefab effect behavior, like
+ * dropshadows and glows.
  * @author joshy
  */
 public class AbstractPathEffect implements PathEffect {
@@ -47,9 +50,6 @@ public class AbstractPathEffect implements PathEffect {
         setShapeMasked(true);
     }
     
-    /*
-     * Applies the shape effect. This effect will be drawn on top of the graphics context.
-     */
     public void apply(Graphics2D g, Shape clipShape, int width, int height) {
         // create a rect to hold the bounds
         width = (int)(clipShape.getBounds2D().getWidth() + clipShape.getBounds2D().getX());
@@ -137,6 +137,13 @@ public class AbstractPathEffect implements PathEffect {
     
     
     /* draws the actual shaded border to the specified graphics
+     */
+    /**
+     * Paints the border glow
+     * @param g2 
+     * @param clipShape 
+     * @param width 
+     * @param height 
      */
     protected void paintBorderGlow(Graphics2D g2,
             Shape clipShape, int width, int height) {

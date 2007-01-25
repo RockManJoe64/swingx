@@ -64,7 +64,6 @@ import org.jdesktop.swingx.util.PaintUtils;
  * <ol>
  *  <li>Saves off the old state</li>
  *  <li>Sets any specified rendering hints</li>
- *  <li>Sets the Clip if there is one</li>
  *  <li>Sets the Composite if there is one</li>
  *  <li>Delegates to paintBackground</li>
  *  <li>Restores the original Graphics2D state</li>
@@ -77,7 +76,7 @@ import org.jdesktop.swingx.util.PaintUtils;
  * might do it like this:
  * <pre><code>
  *   PinstripePainter p = new PinstripePainter();
- *   p.setAntialiasing(RenderingHints.VALUE_ANTIALIAS_ON);
+ *   p.setAntialiasing(Antialiasing.ON);
  * </code></pre></p>
  *
  * <p>You can read more about antialiasing and other rendering hints in the
@@ -155,6 +154,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      */
     
     /**
+     * Returns true whether or not the painter is using caching.
      * @return whether or not the cache should be used
      */
     protected boolean isUseCache() {
@@ -198,8 +198,10 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     }
     
     /**
-     * @return effects a defensive copy of the Effects to apply to the results
-     *          of the AbstractPainter's painting operation. Will never null
+     * A defensive copy of the Effects to apply to the results
+     *  of the AbstractPainter's painting operation. The array may
+     *  be empty but it Will never be null.
+     * @return the array of effects applied to this painter
      */
     public Effect[] getEffects() {
         Effect[] results = new Effect[effects.length];
@@ -246,33 +248,58 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     }
     
     /**
-     * @return the composite
+     * Gets the current value of the composite property
+     * @return current value of the composite property
      */
     public Composite getComposite() {
         return composite;
     }
     
     
+    /**
+     * An enum representing the possible Antialiasing values of on, off, and default. These map
+     * to the underlying RenderingHints, but are easier to use and serialization safe.
+     */
     public enum Antialiasing {
         // define the constants we wrap
+        /**
+         * Use antialiasing
+         */
         On(RenderingHints.VALUE_ANTIALIAS_ON),
+        /**
+         * Do not use antialiasing.
+         */
         Off(RenderingHints.VALUE_ANTIALIAS_OFF),
+        /**
+         * Use the current platform's default value.
+         */
         Default(RenderingHints.VALUE_ANTIALIAS_DEFAULT);
         
         private Object value;
         Antialiasing(Object value) {
             this.value = value;
         }
-        public void configureGraphics(Graphics2D g) {
+        /**
+         * implementation detail.
+         */
+        private void configureGraphics(Graphics2D g) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, value);
         }
     }
     
     
     private Antialiasing antialiasing = Antialiasing.On;
+    /**
+     * Returns the current Antialiasing setting. This is a bound property.
+     * @return the current antialiasing setting
+     */
     public Antialiasing getAntialiasing() {
         return antialiasing;
     }
+    /**
+     * Sets the antialiasing setting.  This is a bound property.
+     * @param value the new antialiasing setting
+     */
     public void setAntialiasing(Antialiasing value) {
         Object old = getAntialiasing();
         antialiasing = value;
@@ -280,23 +307,46 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     }
     
     
+    /**
+     * An enum representing the possible fractional metrics values of on, off, and default. These map
+     * to the underlying RenderingHints, but are easier to use and serialization safe.
+     */
     public enum FractionalMetrics {
+        /**
+         * use fractional metrics
+         */
         On(RenderingHints.VALUE_FRACTIONALMETRICS_ON),
+        /**
+         * don't use fractional metrics
+         */
         Off(RenderingHints.VALUE_FRACTIONALMETRICS_OFF),
+        /**
+         * Use the current platform's default value.
+         */
         Default(RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
         
         private Object value;
         FractionalMetrics(Object value) {
             this.value = value;
         }
-        public void configureGraphics(Graphics2D g) {
+        private void configureGraphics(Graphics2D g) {
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, value);
         }
     }
     private FractionalMetrics fractionalMetrics = FractionalMetrics.Default;
+    /**
+     * Gets the current fractional metrics setting. This property determines if Fractional Metrics will
+     * be used when drawing text. @see java.awt.RenderingHints.KEY_FRACTIONALMETRICS.
+     * @return the current fractional metrics setting
+     */
     public FractionalMetrics getFractionalMetrics() {
         return fractionalMetrics;
     }
+    /**
+     * Sets a new value for the fractional metrics setting. This setting determines if fractional
+     * metrics should be used when drawing text. @see java.awt.RenderingHints.KEY_FRACTIONALMETRICS.
+     * @param fractionalMetrics the new fractional metrics setting
+     */
     public void setFractionalMetrics(FractionalMetrics fractionalMetrics) {
         Object old = getFractionalMetrics();
         this.fractionalMetrics = fractionalMetrics;
@@ -305,23 +355,46 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     
     
     
+    /**
+     * An enum representing the possible interpolation values of on, off, and default. These map
+     * to the underlying RenderingHints, but are easier to use and serialization safe.
+     */
     public enum Interpolation { 
+        /**
+         * use bicubic interpolation
+         */
         Bicubic(RenderingHints.VALUE_INTERPOLATION_BICUBIC), 
+        /**
+         * use bilinear interpolation
+         */
         Bilinear(RenderingHints.VALUE_INTERPOLATION_BILINEAR), 
+        /**
+         * use nearest neighbor interpolation
+         */
         NearestNeighbor(RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         
         private Object value;
         Interpolation(Object value) {
             this.value = value;
         }
-        public void configureGraphics(Graphics2D g) {
+        private void configureGraphics(Graphics2D g) {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, value);
         }
     }
     private Interpolation interpolation = Interpolation.NearestNeighbor;
+    /**
+     * Gets the current interpolation setting. This property determines if interpolation will
+     * be used when drawing scaled images. @see java.awt.RenderingHints.KEY_INTERPOLATION.
+     * @return the current interpolation setting
+     */
     public Interpolation getInterpolation() {
         return interpolation;
     }
+    /**
+     * Sets a new value for the interpolation setting. This setting determines if interpolation
+     * should be used when drawing scaled images. @see java.awt.RenderingHints.KEY_INTERPOLATION.
+     * @param value the new interpolation setting
+     */
     public void setInterpolation(Interpolation value) {
         Object old = getInterpolation();
         this.interpolation = value;
@@ -333,7 +406,13 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     private boolean clipPreserved = false;
     
     /**
-     * @inheritDoc
+     * 
+     * 
+     * @inheritDoc 
+     * @param g 
+     * @param component 
+     * @param width 
+     * @param height 
      */
     public void paint(Graphics2D g, T component, int width, int height) {
         if(!isEnabled()) {
@@ -421,19 +500,29 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     
     
     /**
-     * Subclasses should implement this method and perform custom painting operations
+     * Subclasses must implement this method and perform custom painting operations
      * here. Common behavior, such as setting the clip and composite, saving and restoring
      * state, is performed in the "paint" method automatically, and then delegated here.
-     *
+     * @param width 
+     * @param height 
      * @param g The Graphics2D object in which to paint
      * @param component The JComponent that the Painter is delegate for.
      */
     protected abstract void paintBackground(Graphics2D g, T component, int width, int height);
     
+    /**
+     * Indicates if the clip produced by this painter will be left set once it finishes painting. This can
+     * be used to let one painter mask other painters that come after it.
+     * @return if the clip should be preserved
+     */
     public boolean isClipPreserved() {
         return clipPreserved;
     }
     
+    /**
+     * Sets if the clip should be preserved. @see #isClipPreserved()
+     * @param shouldRestoreState new value of the clipPreserved property
+     */
     public void setClipPreserved(boolean shouldRestoreState) {
         boolean oldShouldRestoreState = isClipPreserved();
         this.clipPreserved = shouldRestoreState;

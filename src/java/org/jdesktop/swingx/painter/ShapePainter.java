@@ -39,25 +39,23 @@ import org.jdesktop.swingx.util.Resize;
 
 
 /**
- * <p>A Painter that paints Shapes. It uses a stroke and a fillPaint to do so. The
+ * <p>A Painter that paints java.awt.Shapes. It uses a stroke and a fillPaint to do so. The
  * shape is painted as is, at a specific location. If no Shape is specified, nothing
  * will be painted. If no stroke is specified, the default for the Graphics2D
  * will be used. If no fillPaint is specified, the component background color
- * will be used. And if no location is specified, then the shape will be draw
- * at the origin (0,0)</p>
- *
- * <p>Here is an example that draws a lowly rectangle:
+ * will be used. The shape can be positioned using the insets, horizontal, and
+ * vertical properties.</p>
+ * 
+ * <p>Here is an example that draws a rectangle aligned on the center right:
  * <pre><code>
  *  Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, 50, 50);
  *  ShapePainter p = new ShapePainter(rect);
- *  p.setLocation(new Point2D.Double(20, 10));
+ * p.setHorizontal(HorizontalAlignment.RIGHT);
+ * p.setVertical(VerticalAlignment.CENTER);
  * </code></pre>
- *
- *
  * @author rbair
  */
 public class ShapePainter<T> extends AbstractPathPainter<T> {
-    
     /**
      * The Shape to fillPaint. If null, nothing is painted.
      */
@@ -130,8 +128,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
     }
     
     /**
-     *
-     *
+     * Gets the current shape
      * @return the Shape to fillPaint. May be null
      */
     public Shape getShape() {

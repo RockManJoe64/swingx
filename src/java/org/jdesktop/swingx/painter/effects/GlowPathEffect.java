@@ -13,7 +13,7 @@ import java.awt.Color;
 import java.awt.Point;
 
 /**
- *
+ * An effect which draws a glow around the painter
  * @author joshy
  */
 public class GlowPathEffect extends AbstractPathEffect {
