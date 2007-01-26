@@ -605,7 +605,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         // text AA on
         MattePainter gray = new MattePainter(Color.GRAY);
         TextPainter text = new TextPainter("Neon",font,Color.BLACK);
-        text.setAntialiasing(TextPainter.Antialiasing.On);
+        text.setAntialiasing(true);//TextPainter.Antialiasing.On);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text AA on","text02");
         //$endcite
         
@@ -615,7 +615,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text03-
         // text AA off
         text = new TextPainter("Neon",font,Color.BLACK);
-        text.setAntialiasing(TextPainter.Antialiasing.Off);
+        text.setAntialiasing(false);//TextPainter.Antialiasing.Off);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text AA off","text03");
         //$endcite
         
@@ -847,16 +847,16 @@ public class PainterDemoSet extends javax.swing.JFrame {
         rect.setBorderPaint(Color.RED.darker());
         rect.setStyle(RectanglePainter.Style.BOTH);
         rect.setBorderWidth(5);
-        rect.setAntialiasing(RectanglePainter.Antialiasing.On);
+        rect.setAntialiasing(true);//RectanglePainter.Antialiasing.On);
         addDemo("Gloss on rectangle","gloss01",new MattePainter(Color.BLACK), rect,new GlossPainter());
         //$endcite
         
         //$startcite
         //$name-gloss02-
         rect = new RectanglePainter(20,20,20,20, 20,20, true, Color.RED, 5f, Color.RED.darker());
-        rect.setClipPreserved(true);
-        rect.setAntialiasing(RectanglePainter.Antialiasing.On);
-        addDemo("Gloss clipped on rectangle","gloss02",new MattePainter(Color.BLACK), rect,new GlossPainter());
+        //rect.setClipPreserved(true);
+        rect.setAntialiasing(true);//RectanglePainter.Antialiasing.On);
+        addDemo("broken: Gloss clipped on rectangle","gloss02",new MattePainter(Color.BLACK), rect,new GlossPainter());
         //$endcite
         
     }
@@ -868,9 +868,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-pinstripe1-
         MattePainter black = new MattePainter(Color.BLACK);
         RectanglePainter rect = new RectanglePainter(20,20,20,20, 20,20, true, Color.RED, 5f, Color.RED.darker());
-        rect.setAntialiasing(RectanglePainter.Antialiasing.On);
+        rect.setAntialiasing(true);//RectanglePainter.Antialiasing.On);
         PinstripePainter pin = new PinstripePainter(Color.WHITE, 45, 1, 10);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         addDemo("45deg white pinstripe on black", "pinstripe1", black, pin);
         //$endcite
         
@@ -878,7 +878,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$startcite
         //$name-pinstripe2-
         pin = new PinstripePainter(Color.WHITE, 0, 1, 10);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         addDemo("vertical white pinstripe on black", "pinstripe2", black, pin);
         //$endcite
         
@@ -886,7 +886,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$startcite
         //$name-pinstripe3-
         pin = new PinstripePainter(Color.WHITE, 90, 1, 10);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         addDemo("horizontal white pinstripe on black", "pinstripe3",  black, pin);
         //$endcite
         
@@ -894,7 +894,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$startcite
         //$name-pinstripe4-
         pin = new PinstripePainter(Color.WHITE, 45, 3, 10);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         addDemo("3px wide white pinstripe on black","pinstripe4", black, pin);
         //$endcite
         
@@ -904,7 +904,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$startcite
         //$name-pinstripe5-
         pin = new PinstripePainter(Color.WHITE, 45, 10, 2);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         addDemo("10px wide pinstripe w/ 2px spacing on black",  "pinstripe5", black, pin);
         //$endcite
         
@@ -912,7 +912,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$startcite
         //$name-pinstripe6-
         pin = new PinstripePainter(Color.WHITE, 45, 3, 15);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         pin.setPaint(new GradientPaint(new Point(0,0), Color.WHITE, new Point(10,10), Color.BLACK));
         addDemo("pinstripe w/ 10px gradient ",  "pinstripe6", black, pin);
         //$endcite
@@ -920,7 +920,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$startcite
         //$name-pinstripe7-
         pin = new PinstripePainter(Color.WHITE, 45, 3, 15);
-        pin.setAntialiasing(AbstractPainter.Antialiasing.On);
+        pin.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         pin.setPaint(new GradientPaint(new Point(0,0), Color.WHITE, new Point(200,200), Color.BLACK));
         
         addDemo("pinstripe w/ 200px gradient ",  "pinstripe7", black, pin);
@@ -1241,7 +1241,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         // rectangle positioning
         // rect 50x50 default aligned (center)
         rectnorm = new RectanglePainter(50, 50, 30, Color.GREEN);
-        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        rectnorm.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         rectnorm.setBorderPaint(Color.GREEN.darker());
         //rectnorm.setStyle(AbstractPainter.Style.FILLED);
         rectnorm.setBorderWidth(3);
@@ -1253,7 +1253,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         // rect w/ 20px top insets
         rectnorm = new RectanglePainter(20,20,20,20, 30,30, true,
                 Color.GREEN, 3, Color.GREEN.darker());
-        rectnorm.setAntialiasing(AbstractPainter.Antialiasing.On);
+        rectnorm.setAntialiasing(true);//AbstractPainter.Antialiasing.On);
         return rectnorm;
     }
     

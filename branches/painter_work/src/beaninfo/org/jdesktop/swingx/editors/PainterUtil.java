@@ -131,9 +131,9 @@ public class PainterUtil {
         //e.setOwner(compoundPainter);
         
         // serialize the enums
-        e.setPersistenceDelegate(AbstractPainter.Antialiasing.class, new TypeSafeEnumPersistenceDelegate());
+        //e.setPersistenceDelegate(AbstractPainter.Antialiasing.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(AbstractPainter.Interpolation.class, new TypeSafeEnumPersistenceDelegate());
-        e.setPersistenceDelegate(AbstractPainter.FractionalMetrics.class, new TypeSafeEnumPersistenceDelegate());
+       // e.setPersistenceDelegate(AbstractPainter.FractionalMetrics.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(RectanglePainter.Style.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(PositionedPainter.HorizontalAlignment.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(PositionedPainter.VerticalAlignment.class, new TypeSafeEnumPersistenceDelegate());

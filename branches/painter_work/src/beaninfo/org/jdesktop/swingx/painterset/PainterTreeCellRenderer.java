@@ -5,7 +5,7 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.effects.Effect;
+import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painterset.dndtree.DnDTree;
 import org.jdesktop.swingx.painterset.dndtree.DnDTreeCellRenderer;
 
@@ -22,7 +22,7 @@ class PainterTreeCellRenderer extends DnDTreeCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
         label.setText(value.getClass().getSimpleName());
-        if (value instanceof Effect) {
+        if (value instanceof ImageEffect) {
             label.setIcon(this.painterEditorPanel.effectsIcon);
         }
         if (value instanceof AbstractPainter && !(value instanceof CompoundPainter)) {

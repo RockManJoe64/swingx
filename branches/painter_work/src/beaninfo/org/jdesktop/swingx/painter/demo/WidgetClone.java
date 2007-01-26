@@ -26,7 +26,7 @@ public class WidgetClone extends javax.swing.JFrame {
         RectanglePainter mainRect = new RectanglePainter(0,0,0,0,
                 10,10,true,Color.BLACK,0,Color.BLACK);
         mainRect.setStyle(RectanglePainter.Style.FILLED);
-        mainRect.setAntialiasing(RectanglePainter.Antialiasing.On);
+        mainRect.setAntialiasing(true);//RectanglePainter.Antialiasing.On);
         GlossPainter gloss = new GlossPainter();
         gloss.setPosition(GlossPainter.GlossPosition.TOP);
         mainPanel.setBackgroundPainter(
@@ -35,7 +35,7 @@ public class WidgetClone extends javax.swing.JFrame {
         RectanglePainter greyBorder = new RectanglePainter(0,0,1,1,5,5);
         greyBorder.setBorderPaint(Color.DARK_GRAY);
         greyBorder.setBorderWidth(1.5f);
-        greyBorder.setAntialiasing(RectanglePainter.Antialiasing.On);
+        greyBorder.setAntialiasing(true);//RectanglePainter.Antialiasing.On);
         greyBorder.setStyle(RectanglePainter.Style.OUTLINE);
         ((JXPanel)panel19).setBackgroundPainter(greyBorder);
         

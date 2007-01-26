@@ -17,7 +17,7 @@ import org.jdesktop.swingx.JavaBean;
  * An effect which uses BufferedImageOps
  * @author Richard
  */
-public class ImageEffect extends JavaBean implements Effect {
+public class ImageEffect extends JavaBean {
     private BufferedImageOp op;
     
     /**

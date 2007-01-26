@@ -42,7 +42,7 @@ public class ComponentBackgroundPainter extends AbstractPainter<JComponent> {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+    public void doPaint(Graphics2D g, JComponent component, int width, int height) {
         g.setColor(component.getBackground());
         g.fillRect(0, 0, component.getWidth(), component.getHeight());
     }

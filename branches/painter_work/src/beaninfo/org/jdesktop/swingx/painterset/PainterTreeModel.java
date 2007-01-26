@@ -20,7 +20,7 @@ import javax.swing.tree.TreePath;
 import org.jdesktop.swingx.editors.ImageEditor;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.effects.Effect;
+import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
@@ -188,12 +188,12 @@ public class PainterTreeModel implements TreeModel {
         fireStructureChanged();
     }
     
-    public void addEffect(AbstractPainter painter, Effect effect) {
-        Effect[] effects = painter.getEffects();
-        List<Effect> pts = Arrays.asList(effects);
-        pts = new ArrayList<Effect>(pts);
+    public void addEffect(AbstractPainter painter, ImageEffect effect) {
+        ImageEffect[] effects = painter.getEffects();
+        List<ImageEffect> pts = Arrays.asList(effects);
+        pts = new ArrayList<ImageEffect>(pts);
         pts.add(effect);
-        painter.setEffects(pts.toArray(new Effect[0]));
+        painter.setEffects(pts.toArray(new ImageEffect[0]));
         fireStructureChanged();
     }
     
@@ -214,12 +214,12 @@ public class PainterTreeModel implements TreeModel {
         //fireStructureChanged();
     }
     
-    public void removeEffect(AbstractPainter painter, Effect effect) {
-        Effect[] effects = painter.getEffects();
-        List<Effect> pts = Arrays.asList(effects);
-        pts = new ArrayList<Effect>(pts);
+    public void removeEffect(AbstractPainter painter, ImageEffect effect) {
+        ImageEffect[] effects = painter.getEffects();
+        List<ImageEffect> pts = Arrays.asList(effects);
+        pts = new ArrayList<ImageEffect>(pts);
         pts.remove(effect);
-        painter.setEffects(pts.toArray(new Effect[0]));
+        painter.setEffects(pts.toArray(new ImageEffect[0]));
         fireStructureChanged();
     }
     

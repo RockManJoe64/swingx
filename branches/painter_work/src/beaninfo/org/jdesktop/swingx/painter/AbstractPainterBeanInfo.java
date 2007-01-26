@@ -42,8 +42,8 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
         //set editor for composite (incl. Alpha composites by default)
         setPropertyEditor(CompositePropertyEditor.class, "composite");
         //set editors for the various rendering hints
-        setPropertyEditor(AntialiasingPropertyEditor.class, "antialiasing");
-        setPropertyEditor(FractionalMetricsPropertyEditor.class, "fractionalMetrics");
+        //setPropertyEditor(AntialiasingPropertyEditor.class, "antialiasing");
+        //setPropertyEditor(FractionalMetricsPropertyEditor.class, "fractionalMetrics");
         setPropertyEditor(InterpolationPropertyEditor.class, "interpolation");
         //move some items into "Appearance" and some into "Behavior"
         //setCategory("Rendering Hints", "antialiasing", "fractionalMetrics", "interpolation");
@@ -70,6 +70,7 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
             });
         }
     }
+    /*
     public static final class AntialiasingPropertyEditor extends EnumPropertyEditor {
         public AntialiasingPropertyEditor() {
             super(AbstractPainter.Antialiasing.class);
@@ -79,7 +80,7 @@ public class AbstractPainterBeanInfo extends BeanInfoSupport {
         public FractionalMetricsPropertyEditor() {
             super(AbstractPainter.FractionalMetrics.class);
         }
-    }
+    }*/
     public static final class InterpolationPropertyEditor extends EnumPropertyEditor {
         public InterpolationPropertyEditor() {
             super(AbstractPainter.Interpolation.class);

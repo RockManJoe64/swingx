@@ -57,7 +57,7 @@ public class JXLabel extends JLabel {
     }
     private void initPainterSupport() {
         foregroundPainter = new AbstractPainter<JXLabel>() {
-            protected void paintBackground(Graphics2D g, JXLabel component, int width, int height) {
+            protected void doPaint(Graphics2D g, JXLabel component, int width, int height) {
                 JXLabel.super.paintComponent(g);
             }
         };
