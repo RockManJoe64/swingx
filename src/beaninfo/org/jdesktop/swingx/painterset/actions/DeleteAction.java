@@ -5,7 +5,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JTree;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.effects.ImageEffect;
+import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterTreeModel;
@@ -27,8 +27,8 @@ public class DeleteAction extends AbstractAction {
         if (node instanceof Painter) {
             painterTreeModel.removePainter((CompoundPainter) parent, (Painter) node);
         }
-        if (node instanceof ImageEffect) {
-            painterTreeModel.removeEffect((AbstractPainter) parent, (ImageEffect) node);
+        if (node instanceof ImageFilter) {
+            painterTreeModel.removeEffect((AbstractPainter) parent, (ImageFilter) node);
         }
     }
 }
