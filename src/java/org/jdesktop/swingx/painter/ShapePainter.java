@@ -138,7 +138,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, T component, int w, int h) {
+    public void doPaint(Graphics2D g, T component, int w, int h) {
         //set the stroke if it is not null
         Stroke s = new BasicStroke(this.getBorderWidth());
         g.setStroke(s);

@@ -82,7 +82,7 @@ public class URLPainter extends CompoundPainter{
         if(!loaded) {
             load();
         }
-        super.paintBackground(g, component, width, height);
+        super.doPaint(g, component, width, height);
     }
     
     

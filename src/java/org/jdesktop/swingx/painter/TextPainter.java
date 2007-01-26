@@ -106,7 +106,7 @@ public class TextPainter<T> extends AbstractPathPainter<T> {
         return text;
     }
     
-    protected void paintBackground(Graphics2D g, T component, int width, int height) {
+    protected void doPaint(Graphics2D g, T component, int width, int height) {
         Font font = calculateFont(component);
         if (font != null) {
             g.setFont(font);

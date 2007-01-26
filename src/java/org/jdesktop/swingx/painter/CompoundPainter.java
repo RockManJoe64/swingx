@@ -61,6 +61,7 @@ import org.jdesktop.swingx.JavaBean;
 public class CompoundPainter<T> extends AbstractPainter<T> {
     private Painter[] painters = new Painter[0];
     private AffineTransform transform;
+    private boolean clipPreserved = false;
     
     /** Creates a new instance of CompoundPainter */
     public CompoundPainter() {
@@ -126,16 +127,50 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
         return results;
     }
     
+    
+    /**
+     * Indicates if the clip produced by any painter is left set once it finishes painting. 
+     * Normally the clip will be reset between each painter. Setting clipPreserved to
+     * true can be used to let one painter mask other painters that come after it.
+     * @return if the clip should be preserved
+     * @see setClipPreserved(boolean)
+     */
+    public boolean isClipPreserved() {
+        return clipPreserved;
+    }
+    
+    /**
+     * Sets if the clip should be preserved.
+     * Normally the clip will be reset between each painter. Setting clipPreserved to
+     * true can be used to let one painter mask other painters that come after it.
+     * 
+     * @param shouldRestoreState new value of the clipPreserved property
+     * @see isClipPreserved()
+     */
+    public void setClipPreserved(boolean shouldRestoreState) {
+        boolean oldShouldRestoreState = isClipPreserved();
+        this.clipPreserved = shouldRestoreState;
+        firePropertyChange("shouldRestoreState",oldShouldRestoreState,shouldRestoreState);
+    }
+    
+
+    
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, T component, int width, int height) {
+    public void doPaint(Graphics2D g, T component, int width, int height) {
         Graphics2D g2 = (Graphics2D) g.create();
         if(getTransform() != null) {
             g2.setTransform(getTransform());
         }
         for (Painter p : getPainters()) {
-            p.paint(g2, component, width, height);
+            Graphics2D oldGraphics = g2;
+            Graphics2D g3 = (Graphics2D) g2.create();
+            p.paint(g3, component, width, height);
+            if(isClipPreserved()) {
+                oldGraphics.setClip(g3.getClip());
+            }
+            g3.dispose();
         }
         g2.dispose();
     }

@@ -49,26 +49,26 @@ import org.jdesktop.swingx.util.PaintUtils;
  * (which is crucial for the Painter implementations to be available in a
  * GUI builder). It also saves off the Graphics2D state in its "saveState" method,
  * and restores that state in the "restoreState" method. Sublasses simply need
- * to extend AbstractPainter and implement the paintBackground method.
- *
- * <p>For example, here is the paintBackground method of BackgroundPainter:
+ * to extend AbstractPainter and implement the doPaint method.
+ * 
+ * <p>For example, here is the doPaint method of BackgroundPainter:
  * <pre><code>
- *  public void paintBackground(Graphics2D g, JComponent component) {
+ *  public void doPaint(Graphics2D g, JComponent component) {
  *      g.setColor(component.getBackground());
  *      g.fillRect(0, 0, component.getWidth(), component.getHeight());
  *  }
  * </code></pre>
- *
+ * 
  * <p>AbstractPainter provides a very useful default implementation of
  * the paint method. It:
  * <ol>
  *  <li>Saves off the old state</li>
  *  <li>Sets any specified rendering hints</li>
  *  <li>Sets the Composite if there is one</li>
- *  <li>Delegates to paintBackground</li>
+ *  <li>Delegates to doPaint</li>
  *  <li>Restores the original Graphics2D state</li>
  * <ol></p>
- *
+ * 
  * <p>Specifying rendering hints can greatly improve the visual impact of your
  * applications. For example, by default Swing doesn't do much in the way of
  * antialiasing (except for Fonts, but that's another story). Pinstripes don't
@@ -78,12 +78,12 @@ import org.jdesktop.swingx.util.PaintUtils;
  *   PinstripePainter p = new PinstripePainter();
  *   p.setAntialiasing(Antialiasing.ON);
  * </code></pre></p>
- *
+ * 
  * <p>You can read more about antialiasing and other rendering hints in the
  * java.awt.RenderingHints documentation. <strong>By nature, changing the rendering
  * hints may have an impact on performance. Certain hints require more
  * computation, others require less</strong></p>
- *
+ * 
  * @author rbair
  */
 public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> {
@@ -91,7 +91,6 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     private boolean stateSaved = false;
     private Stroke oldStroke;
     private AffineTransform oldTransform;
-    private Composite oldComposite;
     private Shape oldClip;
     private Color oldBackground;
     private Color oldColor;
@@ -101,12 +100,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      * A Shape that is used to clip the graphics area. Anything within this
      * clip shape is included in the final output.
      */
-    private Shape clip;
-    /**
-     * The composite to use. By default this is a reasonable AlphaComposite,
-     * but you may want to specify a different composite
-     */
-    private Composite composite;
+    //private Shape clip;
     /**
      * RenderingHints to apply when painting
      */
@@ -240,124 +234,70 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      *
      * @param c The composite to use. If null, then no composite will be
      *        specified on the graphics object
-     */
+     *//*
     public void setComposite(Composite c) {
         Composite old = getComposite();
         this.composite = c;
         firePropertyChange("composite", old, getComposite());
-    }
+    }*/
     
     /**
      * Gets the current value of the composite property
      * @return current value of the composite property
-     */
+     *//*
     public Composite getComposite() {
         return composite;
-    }
+    }*/
     
     
+    private boolean antialiasing = true;
     /**
-     * An enum representing the possible Antialiasing values of on, off, and default. These map
-     * to the underlying RenderingHints, but are easier to use and serialization safe.
-     */
-    public enum Antialiasing {
-        // define the constants we wrap
-        /**
-         * Use antialiasing
-         */
-        On(RenderingHints.VALUE_ANTIALIAS_ON),
-        /**
-         * Do not use antialiasing.
-         */
-        Off(RenderingHints.VALUE_ANTIALIAS_OFF),
-        /**
-         * Use the current platform's default value.
-         */
-        Default(RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-        
-        private Object value;
-        Antialiasing(Object value) {
-            this.value = value;
-        }
-        /**
-         * implementation detail.
-         */
-        private void configureGraphics(Graphics2D g) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, value);
-        }
-    }
-    
-    
-    private Antialiasing antialiasing = Antialiasing.On;
-    /**
-     * Returns the current Antialiasing setting. This is a bound property.
+     * Returns if antialiasing is turned on or not. The default value is true. 
+     *  This is a bound property.
      * @return the current antialiasing setting
      */
-    public Antialiasing getAntialiasing() {
+    public boolean isAntialiasing() {
         return antialiasing;
     }
     /**
      * Sets the antialiasing setting.  This is a bound property.
      * @param value the new antialiasing setting
      */
-    public void setAntialiasing(Antialiasing value) {
-        Object old = getAntialiasing();
+    public void setAntialiasing(boolean value) {
+        boolean old = isAntialiasing();
         antialiasing = value;
-        firePropertyChange("antialiasing", old, getAntialiasing());
+        firePropertyChange("antialiasing", old, isAntialiasing());
     }
     
     
-    /**
-     * An enum representing the possible fractional metrics values of on, off, and default. These map
-     * to the underlying RenderingHints, but are easier to use and serialization safe.
-     */
-    public enum FractionalMetrics {
-        /**
-         * use fractional metrics
-         */
-        On(RenderingHints.VALUE_FRACTIONALMETRICS_ON),
-        /**
-         * don't use fractional metrics
-         */
-        Off(RenderingHints.VALUE_FRACTIONALMETRICS_OFF),
-        /**
-         * Use the current platform's default value.
-         */
-        Default(RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
-        
-        private Object value;
-        FractionalMetrics(Object value) {
-            this.value = value;
-        }
-        private void configureGraphics(Graphics2D g) {
-            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, value);
-        }
-    }
-    private FractionalMetrics fractionalMetrics = FractionalMetrics.Default;
+    private boolean fractionalMetrics = true;
+    
     /**
      * Gets the current fractional metrics setting. This property determines if Fractional Metrics will
      * be used when drawing text. @see java.awt.RenderingHints.KEY_FRACTIONALMETRICS.
      * @return the current fractional metrics setting
      */
-    public FractionalMetrics getFractionalMetrics() {
+    public boolean isFractionalMetricsOn() {
         return fractionalMetrics;
     }
+    
     /**
      * Sets a new value for the fractional metrics setting. This setting determines if fractional
      * metrics should be used when drawing text. @see java.awt.RenderingHints.KEY_FRACTIONALMETRICS.
      * @param fractionalMetrics the new fractional metrics setting
      */
-    public void setFractionalMetrics(FractionalMetrics fractionalMetrics) {
-        Object old = getFractionalMetrics();
+    public void setFractionalMetricsOn(boolean frationalMetrics) {
+        boolean old = isFractionalMetricsOn();
         this.fractionalMetrics = fractionalMetrics;
-        firePropertyChange("fractionalMetrics", old, getFractionalMetrics());
+        firePropertyChange("fractionalMetricsOn", old, isFractionalMetricsOn());
     }
     
     
     
     /**
-     * An enum representing the possible interpolation values of on, off, and default. These map
-     * to the underlying RenderingHints, but are easier to use and serialization safe.
+     * An enum representing the possible interpolation values of Bicubic, Bilinear, and
+     * Nearest Neighbor. These map to the underlying RenderingHints, 
+     * but are easier to use and serialization safe.
      */
     public enum Interpolation { 
         /**
@@ -381,7 +321,9 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, value);
         }
     }
+    
     private Interpolation interpolation = Interpolation.NearestNeighbor;
+    
     /**
      * Gets the current interpolation setting. This property determines if interpolation will
      * be used when drawing scaled images. @see java.awt.RenderingHints.KEY_INTERPOLATION.
@@ -390,6 +332,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     public Interpolation getInterpolation() {
         return interpolation;
     }
+    
     /**
      * Sets a new value for the interpolation setting. This setting determines if interpolation
      * should be used when drawing scaled images. @see java.awt.RenderingHints.KEY_INTERPOLATION.
@@ -402,9 +345,6 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     }
     
     
-    
-    private boolean clipPreserved = false;
-    
     /**
      * 
      * 
@@ -415,13 +355,13 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      * @param height 
      */
     public void paint(Graphics2D g, T component, int width, int height) {
-        if(!isEnabled()) {
+        if(!isVisible()) {
             return;
         }
         //saveState(g);
         
-        Graphics2D oldGraphics = g;
-        g = (Graphics2D)g.create();
+        //Graphics2D oldGraphics = g;
+        //g = (Graphics2D)g.create();
         
         configureGraphics(g, component);
         
@@ -442,7 +382,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
                 
                 Graphics2D gfx = image.createGraphics();
                 configureGraphics(gfx, component);
-                paintBackground(gfx, component, width, height);
+                doPaint(gfx, component, width, height);
                 gfx.dispose();
                 
                 for (Effect effect : effects) {
@@ -455,14 +395,11 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
                     cachedImage = new SoftReference<BufferedImage>(image);
                 }
             } else {
-                paintBackground(g, component, width, height);
+                doPaint(g, component, width, height);
             }
         }
         
         //restoreState(g);
-        if(isClipPreserved()) {
-            oldGraphics.setClip(g.getClip());
-        }
         g.dispose();
     }
     
@@ -471,9 +408,9 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      * composite, and clip
      */
     private void configureGraphics(Graphics2D g, T c) {
-        if (getComposite() != null) {
-            g.setComposite(getComposite());
-        }
+        //if (getComposite() != null) {
+            //g.setComposite(getComposite());
+        //}
         /*
         Shape clip = getClip();
         if (clip != null) {
@@ -483,7 +420,16 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
             g.setFont(((JComponent)c).getFont());
         }
         
-        antialiasing.configureGraphics(g);
+        if(isAntialiasing()) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+        } else {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_OFF);
+        }
+        
+        getInterpolation().configureGraphics(g);
+        /*
         if(interpolation.equals(Interpolation.Bicubic)) {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -495,60 +441,43 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
         if(interpolation.equals(Interpolation.NearestNeighbor)) {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        }
+        }*/
     }
     
     
     /**
      * Subclasses must implement this method and perform custom painting operations
-     * here. Common behavior, such as setting the clip and composite, saving and restoring
-     * state, is performed in the "paint" method automatically, and then delegated here.
+     * here.
      * @param width 
      * @param height 
      * @param g The Graphics2D object in which to paint
      * @param component The JComponent that the Painter is delegate for.
      */
-    protected abstract void paintBackground(Graphics2D g, T component, int width, int height);
+    protected abstract void doPaint(Graphics2D g, T component, int width, int height);
+    
     
     /**
-     * Indicates if the clip produced by this painter will be left set once it finishes painting. This can
-     * be used to let one painter mask other painters that come after it.
-     * @return if the clip should be preserved
+     * Holds value of property visible.
      */
-    public boolean isClipPreserved() {
-        return clipPreserved;
+    private boolean visible = true;
+    
+    /**
+     * Getter for property visible.
+     * 
+     * @return Value of property visible.
+     */
+    public boolean isVisible() {
+        return this.visible;
     }
     
     /**
-     * Sets if the clip should be preserved. @see #isClipPreserved()
-     * @param shouldRestoreState new value of the clipPreserved property
+     * Setter for property visible.
+     * 
+     * @param visible New value of property visible.
      */
-    public void setClipPreserved(boolean shouldRestoreState) {
-        boolean oldShouldRestoreState = isClipPreserved();
-        this.clipPreserved = shouldRestoreState;
-        firePropertyChange("shouldRestoreState",oldShouldRestoreState,shouldRestoreState);
-    }
-    
-    /**
-     * Holds value of property enabled.
-     */
-    private boolean enabled = true;
-    
-    /**
-     * Getter for property enabled.
-     * @return Value of property enabled.
-     */
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-    
-    /**
-     * Setter for property enabled.
-     * @param enabled New value of property enabled.
-     */
-    public void setEnabled(boolean enabled) {
-        boolean oldEnabled = this.isEnabled();
-        this.enabled = enabled;
-        firePropertyChange("enabled", new Boolean(oldEnabled), new Boolean(enabled));
+    public void setVisible(boolean enabled) {
+        boolean oldEnabled = this.isVisible();
+        this.visible = enabled;
+        firePropertyChange("visible", oldEnabled, enabled);
     }
 }

@@ -183,7 +183,7 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
     
     
     
-    public void paintBackground(Graphics2D g, T component, int width, int height) {
+    public void doPaint(Graphics2D g, T component, int width, int height) {
         Shape shape = calculateShape(component, width, height);
         switch (getStyle()) {
             case BOTH:

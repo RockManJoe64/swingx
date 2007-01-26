@@ -86,7 +86,7 @@ public class MattePainter<T> extends AbstractPathPainter<T> {
      * 
      * @inheritDoc 
      */
-    public void paintBackground(Graphics2D g, T component, int width, int height) {
+    public void doPaint(Graphics2D g, T component, int width, int height) {
         Paint p = getFillPaint();
         if (p != null) {
             if(isSnapPaint()) {

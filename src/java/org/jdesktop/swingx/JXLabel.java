@@ -21,7 +21,8 @@ import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.Painter;
 /**
  * 
- * A JLabel subclass which supports Painters with the foregroundPainter property. By default the
+ * A JLabel subclass which supports Painters with the foregroundPainter and backgroundpainter
+ * properties. By default the
  * foregroundPainter is set to a special painter which will draw the label normally, as specified
  * by the current look and feel. Setting a new foregroundPainter will replace the existing one.
  * To modify the standard drawing behavior developers may wrap the standard painter with a
@@ -38,6 +39,7 @@ import org.jdesktop.swingx.painter.Painter;
  */
 public class JXLabel extends JLabel {
     private Painter foregroundPainter;
+    private Painter backgroundPainter;
     /**
      * 
      */
@@ -85,9 +87,39 @@ public class JXLabel extends JLabel {
         repaint();
     }
     
+    
+    
     /**
+     * Sets a Painter to use to paint the background of this component
+     * By default there is already a single painter installed which draws the normal background for 
+     * this component according to the current Look and Feel. Calling
+     * <CODE>setBackgroundPainter</CODE> will replace that existing painter.
+     * @param p the new painter
+     * @see getBackgroundPainter()
+     */
+    public void setBackgroundPainter(Painter p) {
+        Painter old = getBackgroundPainter();
+        backgroundPainter = p;
+        firePropertyChange("backgroundPainter", old, getBackgroundPainter());
+        repaint();
+    }
+    
+    /**
+     * Returns the current background painter. The default value of this property 
+     * is a painter which draws the normal JPanel background according to the current look and feel.
+     * @return the current painter
+     * @see setBackgroundPainter(Painter)
+     */
+    public Painter getBackgroundPainter() {
+        return backgroundPainter;
+    }
+    
+    /**
+     * Overridden to provide Painter support. It will call backgroundPainter.paint()
+     * then foregroundPainter.paint() if they are not null. If both are null
+     * then it will call super.paintComponent().
      * 
-     * @param g 
+     * @param g graphics to paint on
      */
     protected void paintComponent(Graphics g) {
         if(foregroundPainter != null) {
