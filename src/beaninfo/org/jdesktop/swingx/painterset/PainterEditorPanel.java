@@ -48,7 +48,7 @@ import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.ComponentBackgroundPainter;
 import org.jdesktop.swingx.painter.CheckerboardPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.effects.Effect;
+import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.GlossPainter;
 import org.jdesktop.swingx.painter.IconPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
@@ -690,7 +690,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
                 setSelectedPainter(comp);
                 if(comp != getSelectedTree().getModel().getRoot() &&
                         (comp instanceof Painter ||
-                        comp instanceof Effect)) {
+                        comp instanceof ImageEffect)) {
                     deleteButton.setEnabled(true);
                 } else {
                     deleteButton.setEnabled(false);

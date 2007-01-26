@@ -98,8 +98,6 @@ public class GlossPainter<T> extends AbstractPainter<T> {
     public GlossPainter(Paint paint, GlossPosition position) {
         this.setPaint(paint);
         this.setPosition(position);
-        
-        setAntialiasing(Antialiasing.On);
     }
 
     /**

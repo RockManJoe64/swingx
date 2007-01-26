@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImageOp;
 import javax.swing.AbstractAction;
 import org.jdesktop.swingx.painter.AbstractPainter;
-import org.jdesktop.swingx.painter.effects.Effect;
 import org.jdesktop.swingx.painter.effects.ImageEffect;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
@@ -27,13 +26,13 @@ public class AddEffectAction extends AbstractAction {
                 
                 Class clazz = (Class) painterEditorPanel.newEffectCombo.getSelectedItem();
                 Object obj = clazz.newInstance();
-                if (obj instanceof Effect) {
-                    Effect eff = null;
-                    eff = (Effect) obj;
+                if (obj instanceof ImageEffect) {
+                    ImageEffect eff = null;
+                    eff = (ImageEffect) obj;
                     painterTreeModel.addEffect((AbstractPainter) painterEditorPanel.getSelectedPainter(), eff);
                 }
                 if (obj instanceof BufferedImageOp) {
-                    Effect eff = null;
+                    ImageEffect eff = null;
                     eff = new ImageEffect((BufferedImageOp) obj);
                     painterTreeModel.addEffect((AbstractPainter) painterEditorPanel.getSelectedPainter(), eff);
                 }
