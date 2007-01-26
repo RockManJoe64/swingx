@@ -235,6 +235,10 @@ public class PaintUtils {
      */
     public static Shape setMergedClip(Graphics2D g, Shape newClip) {
         Shape oldClip = g.getClip();
+        if(oldClip == null) {
+            g.setClip(newClip);
+            return null;
+        }
         Area area = new Area(oldClip);
         area.intersect(new Area(newClip));//new Rectangle(0,0,width,height)));
         g.setClip(area);
