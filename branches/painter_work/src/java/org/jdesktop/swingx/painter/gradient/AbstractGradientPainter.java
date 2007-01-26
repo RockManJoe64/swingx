@@ -80,7 +80,7 @@ public abstract class AbstractGradientPainter<T> extends AbstractPainter<T> {
     /**
      * @inheritDoc
      */
-    public void paintBackground(Graphics2D g, T component, int width, int height) {
+    public void doPaint(Graphics2D g, T component, int width, int height) {
         Paint p = calculateSizedPaint(width, height);
         if (p != null) {
             g.setPaint(p);

@@ -105,7 +105,7 @@ public class GlossPainter<T> extends AbstractPainter<T> {
     /**
      * {@inheritDoc}
      */
-    protected void paintBackground(Graphics2D g, T component, int width, int height) {
+    protected void doPaint(Graphics2D g, T component, int width, int height) {
         if (getPaint() != null) {
             Ellipse2D ellipse = new Ellipse2D.Double(-width / 2.0,
                 height / 2.7, width * 2.0,
