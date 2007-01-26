@@ -61,7 +61,7 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.*;
 import org.jdesktop.swingx.painter.effects.GlowPathEffect;
-import org.jdesktop.swingx.painter.effects.ImageEffect;
+import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.painter.effects.InnerGlowPathEffect;
 import org.jdesktop.swingx.painter.effects.InnerShadowPathEffect;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
@@ -1056,7 +1056,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         label.setFont(label.getFont().deriveFont(36f));
         Painter ptr = label.getForegroundPainter();
         if(ptr instanceof AbstractPainter) {
-            ((AbstractPainter)ptr).setEffects(new ImageEffect(new ShadowFilter()));
+            ((AbstractPainter)ptr).setEffects(new ImageFilter(new ShadowFilter()));
         }
         addDemo(label, "label w/ image effect","painterset13");
         //$endcite

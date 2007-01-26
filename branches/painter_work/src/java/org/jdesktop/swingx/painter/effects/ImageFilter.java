@@ -1,5 +1,5 @@
 /*
- * ImageEffect.java
+ * ImageFilter.java
  *
  * Created on March 23, 2006, 4:12 PM
  *
@@ -17,16 +17,16 @@ import org.jdesktop.swingx.JavaBean;
  * An effect which uses BufferedImageOps
  * @author Richard
  */
-public class ImageEffect extends JavaBean {
+public class ImageFilter extends JavaBean {
     private BufferedImageOp op;
     
     /**
-     * Creates a new instance of ImageEffect
+     * Creates a new instance of ImageFilter
      */
-    public ImageEffect() {
+    public ImageFilter() {
     }
 
-    public ImageEffect(BufferedImageOp op) {
+    public ImageFilter(BufferedImageOp op) {
         this.op = op;
     }
     

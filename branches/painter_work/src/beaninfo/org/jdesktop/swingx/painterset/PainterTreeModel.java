@@ -20,8 +20,8 @@ import javax.swing.tree.TreePath;
 import org.jdesktop.swingx.editors.ImageEditor;
 import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.effects.ImageEffect;
-import org.jdesktop.swingx.painter.effects.ImageEffect;
+import org.jdesktop.swingx.painter.effects.ImageFilter;
+import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
@@ -80,8 +80,8 @@ public class PainterTreeModel implements TreeModel {
             return ((AbstractPainter)parent).getEffects()[index];
         }
         
-        if (parent instanceof ImageEffect) {
-            return ((ImageEffect)parent).getOperation();
+        if (parent instanceof ImageFilter) {
+            return ((ImageFilter)parent).getOperation();
         }
         
         return null;
@@ -107,7 +107,7 @@ public class PainterTreeModel implements TreeModel {
             return ((AbstractPainter)parent).getEffects().length;
         }
         
-        if (parent instanceof ImageEffect) {
+        if (parent instanceof ImageFilter) {
             return 1;
         }
         
@@ -124,7 +124,7 @@ public class PainterTreeModel implements TreeModel {
             return Arrays.asList(ap.getEffects()).indexOf(child);
         }
         
-        if (parent instanceof ImageEffect) {
+        if (parent instanceof ImageFilter) {
             return 0;
         }
         return -1;
@@ -151,8 +151,8 @@ public class PainterTreeModel implements TreeModel {
             }
         }
         
-        if(node instanceof ImageEffect) {
-            if(((ImageEffect)node).getOperation() != null) {
+        if(node instanceof ImageFilter) {
+            if(((ImageFilter)node).getOperation() != null) {
                 return false;
             }
         }
@@ -188,12 +188,12 @@ public class PainterTreeModel implements TreeModel {
         fireStructureChanged();
     }
     
-    public void addEffect(AbstractPainter painter, ImageEffect effect) {
-        ImageEffect[] effects = painter.getEffects();
-        List<ImageEffect> pts = Arrays.asList(effects);
-        pts = new ArrayList<ImageEffect>(pts);
+    public void addEffect(AbstractPainter painter, ImageFilter effect) {
+        ImageFilter[] effects = painter.getEffects();
+        List<ImageFilter> pts = Arrays.asList(effects);
+        pts = new ArrayList<ImageFilter>(pts);
         pts.add(effect);
-        painter.setEffects(pts.toArray(new ImageEffect[0]));
+        painter.setEffects(pts.toArray(new ImageFilter[0]));
         fireStructureChanged();
     }
     
@@ -214,12 +214,12 @@ public class PainterTreeModel implements TreeModel {
         //fireStructureChanged();
     }
     
-    public void removeEffect(AbstractPainter painter, ImageEffect effect) {
-        ImageEffect[] effects = painter.getEffects();
-        List<ImageEffect> pts = Arrays.asList(effects);
-        pts = new ArrayList<ImageEffect>(pts);
+    public void removeEffect(AbstractPainter painter, ImageFilter effect) {
+        ImageFilter[] effects = painter.getEffects();
+        List<ImageFilter> pts = Arrays.asList(effects);
+        pts = new ArrayList<ImageFilter>(pts);
         pts.remove(effect);
-        painter.setEffects(pts.toArray(new ImageEffect[0]));
+        painter.setEffects(pts.toArray(new ImageFilter[0]));
         fireStructureChanged();
     }
     
