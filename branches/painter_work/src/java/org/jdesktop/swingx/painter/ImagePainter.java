@@ -138,7 +138,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
      * @return the image used for painting
      */
     public BufferedImage getImage() {
-        p("image url = " + getImageString());
+        //p("image url = " + getImageString());
         if(img == null && imageURL != null) {
             loadImage();
         }
@@ -153,7 +153,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
             loadImage();
         }
         
-        Shape shape = provideShape(component,width,height);
+        Shape shape = provideShape(g, component,width,height);
         switch (getStyle()) {
             case BOTH:
                 drawBackground(g,shape,width,height);
@@ -357,7 +357,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     /**
      * 
      */
-    public Shape provideShape(T comp, int width, int height) {
+    public Shape provideShape(Graphics2D g, T comp, int width, int height) {
         if(getImage() != null) {
             BufferedImage img = getImage();
             int imgWidth = img.getWidth();

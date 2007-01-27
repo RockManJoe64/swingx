@@ -233,8 +233,9 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
         }
     }
     
-    public Shape provideShape(T comp, int width, int height) {
+    public Shape provideShape(Graphics2D g, T comp, int width, int height) {
         return calculateShape(comp,width,height);
     }
+
 }
 

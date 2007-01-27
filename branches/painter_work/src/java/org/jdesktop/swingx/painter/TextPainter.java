@@ -141,7 +141,7 @@ public class TextPainter<T> extends AbstractPathPainter<T> {
         
         g.drawString(text, 0, 0 + metrics.getAscent());
         if(getPathEffects() != null) {
-            Shape shape = provideShape(component, width, height);
+            Shape shape = provideShape(g, component, width, height);
             for(PathEffect ef : getPathEffects()) {
                 ef.apply(g, shape, width, height);
             }
@@ -182,12 +182,12 @@ public class TextPainter<T> extends AbstractPathPainter<T> {
         return font;
     }
     
-    public Shape provideShape(T comp, int width, int height) {
+    public Shape provideShape(Graphics2D g2, T comp, int width, int height) {
         Font font = calculateFont(comp);
         String text = calculateText(comp);
         // this is a hack. it will break if you use a TextPainter on something
         // other than a JComponent
-        Graphics2D g2 = (Graphics2D)((JComponent)comp).getGraphics();
+        //Graphics2D g2 = (Graphics2D)((JComponent)comp).getGraphics();
         FontMetrics metrics = g2.getFontMetrics(font);
         GlyphVector vect = font.createGlyphVector(g2.getFontRenderContext(),text);
         Shape shape = vect.getOutline(0f,0f+ metrics.getAscent());//(float)-vect.getVisualBounds().getY()

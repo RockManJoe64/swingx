@@ -97,7 +97,7 @@ public class MattePainter<T> extends AbstractPathPainter<T> {
         }
     }
 
-    public Shape provideShape(T comp, int width, int height) {
+    public Shape provideShape(Graphics2D g, T comp, int width, int height) {
         return new Rectangle(0,0,width,height);
     }
     
