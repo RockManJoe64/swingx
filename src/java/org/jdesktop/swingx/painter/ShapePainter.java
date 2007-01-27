@@ -144,7 +144,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
         g.setStroke(s);
         
         if(getShape() != null) {
-            Shape shape = provideShape(component, w, h);
+            Shape shape = provideShape(g,component, w, h);
             Rectangle bounds = shape.getBounds();
             Rectangle rect = calculatePosition(bounds.width, bounds.height, w, h);
             //u.p("rect = " + rect);
@@ -187,7 +187,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
     }
     
     // shape effect stuff
-    public Shape provideShape(T comp, int width, int height) {
+    public Shape provideShape(Graphics2D g, T comp, int width, int height) {
         return getShape();
     }
     

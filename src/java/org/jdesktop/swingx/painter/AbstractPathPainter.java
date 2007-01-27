@@ -336,7 +336,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
      * @param height the height to paint
      * @return the outline shape of this painter
      */
-    public abstract Shape provideShape(T comp, int width, int height);
+    public abstract Shape provideShape(Graphics2D g, T comp, int width, int height);
     
     /**
      * Sets the path effects to be drawn on this painter.
