@@ -19,7 +19,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AreaEffect;
 import org.jdesktop.swingx.util.PaintUtils;
 
 
@@ -29,7 +29,7 @@ import org.jdesktop.swingx.util.PaintUtils;
  * @author joshua.marinacci@sun.com
  */
 
-public class RectanglePainter<T> extends AbstractPathPainter<T> {
+public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     private boolean rounded = false;
     //private Insets insets = new Insets(0,0,0,0);
     private int roundWidth = 20;
@@ -66,8 +66,8 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
             float strokeWidth, Paint borderPaint) {
         this.width = width;
         this.height = height;
-        setHorizontalStretch(false);
-        setVerticalStretch(false);
+        setFillHorizontal(false);
+        setFillVertical(false);
         setInsets(insets);
         this.roundWidth = roundWidth;
         this.roundHeight = roundHeight;
@@ -81,8 +81,8 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
             int roundWidth, int roundHeight, boolean rounded, Paint fillPaint,
             float strokeWidth, Paint borderPaint) {
         this.setInsets(new Insets(top,left,bottom,right));
-        setVerticalStretch(true);
-        setHorizontalStretch(true);
+        setFillVertical(true);
+        setFillHorizontal(true);
         this.roundWidth = roundWidth;
         this.roundHeight = roundHeight;
         this.rounded = rounded;
@@ -156,20 +156,20 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
         int y = insets.top;
         
         // use the position calcs from the super class
-        Rectangle bounds = calculatePosition(this.width, this.height, width, height);
-        if(this.width != -1 && !isHorizontalStretch()) {
+        Rectangle bounds = calculateLayout(this.width, this.height, width, height);
+        if(this.width != -1 && !isFillHorizontal()) {
             width = this.width;
             x = bounds.x;
         } 
-        if(this.height != -1 && !isVerticalStretch()) {
+        if(this.height != -1 && !isFillVertical()) {
             height = this.height;
             y = bounds.y;
         }
         
-        if(isHorizontalStretch()) {
+        if(isFillHorizontal()) {
             width = width - insets.left - insets.right;
         }
-        if(isVerticalStretch()) {
+        if(isFillVertical()) {
             height = height - insets.top - insets.bottom;
         }
         
@@ -227,7 +227,7 @@ public class RectanglePainter<T> extends AbstractPathPainter<T> {
         
         g.fill(shape);
         if(getPathEffects() != null) {
-            for(PathEffect ef : getPathEffects()) {
+            for(AreaEffect ef : getPathEffects()) {
                 ef.apply(g, shape, width, height);
             }
         }

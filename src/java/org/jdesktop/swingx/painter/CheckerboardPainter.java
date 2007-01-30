@@ -32,8 +32,8 @@ import javax.swing.JComponent;
 /**
  * <p>A Painter implementation that paints a checkerboard pattern. The light
  * and dark colors (Paint instances) are configurable, as are the size of the
- * squares (squareLength).</p>
- *
+ * squares (squareSize).</p>
+ * 
  * <p>To configure a checkerboard pattern that used a gradient for the dark
  * tiles and Color.WHITE for the light tiles, you could:
  * <pre><code>
@@ -45,17 +45,15 @@ import javax.swing.JComponent;
  *  CheckerboardPainter p = new CheckerboardPainter();
  *  p.setDarkPaint(gp);
  *  p.setLightPaint(Color.WHITE);
- *  p.setSquareLength(32);
+ *  p.setSquareSize(32);
  *  panel.seBackgroundPainter(p);
  * </code></pre></p>
- *
+ * 
  * <p>Note that in this example, the "32" in the GradientPaint matches the "32"
- * set for the squareLength. This is necessary because GradientPaints don't
+ * set for the squareSize. This is necessary because GradientPaints don't
  * readjust themselves for the size of the square. They are fixed and immutable
  * at the time of creation.</p>
- *
- *
- *
+ * 
  * @author rbair
  */
 public class CheckerboardPainter<T> extends AbstractPainter<T> {
@@ -63,7 +61,7 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
     
     private Paint darkPaint = new Color(204, 204, 204);
     private Paint lightPaint = Color.WHITE;
-    private int squareLength = 8;
+    private double squareSize = 8;
     
     /**
      * Create a new CheckerboardPainter. By default the light color is Color.WHITE,
@@ -86,41 +84,42 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
     /**
      * Create a new CheckerboardPainter with the specified light and dark paints
      * and the specified square size.
-     *
+     * 
      * @param darkPaint the paint used to draw the dark squares
      * @param lightPaint the paint used to draw the light squares
-     * @param length the length of the checker board squares
+     * @param squareSize the squareSize of the checker board squares
      */
-    public CheckerboardPainter(Paint darkPaint, Paint lightPaint, int length) {
+    public CheckerboardPainter(Paint darkPaint, Paint lightPaint, double squareSize) {
         this.darkPaint = darkPaint;
         this.lightPaint = lightPaint;
-        this.squareLength = length;
+        this.squareSize = squareSize;
     }
     
     
     /**
-     * Specifies the length of the squares. By default, it is 8. A length of <=
+     * Specifies the squareSize of the squares. By default, it is 8. A squareSize of <=
      * 0 will cause an IllegalArgumentException to be thrown.
-     *
-     * @param length the length of one side of a square tile. Must be > 0.
+     * 
+     * @param squareSize the squareSize of one side of a square tile. Must be > 0.
      */
-    public void setSquareLength(int length) {
-        if (length <= 0) {
+    public void setSquareSize(double squareSize) {
+        if (squareSize <= 0) {
             throw new IllegalArgumentException("Length must be > 0");
         }
         
-        int old = getSquareLength();
-        this.squareLength = length;
+        double old = getSquareSize();
+        this.squareSize = squareSize;
         checkerPaint = null;
-        firePropertyChange("squareLength", old, getSquareLength());
+        firePropertyChange("squareSize", old, getSquareSize());
     }
     
     /**
      * Gets the current square length.
-     * @return the squareLength. Will be > 0
+     * 
+     * @return the squareSize. Will be > 0
      */
-    public int getSquareLength() {
-        return squareLength;
+    public double getSquareSize() {
+        return squareSize;
     }
     
     /**
@@ -176,8 +175,8 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
      */
     private Paint getCheckerPaint(T c) {
         if (checkerPaint == null) {
-            int sqlength = getSquareLength();
-            int length = sqlength * 2;
+            double sqlength = getSquareSize();
+            int length = (int)(sqlength * 2);
             BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_INT_ARGB);
             Graphics2D gfx = image.createGraphics();
             Paint p = getLightPaint();
@@ -195,8 +194,8 @@ public class CheckerboardPainter<T> extends AbstractPainter<T> {
                 }
             }
             gfx.setPaint(p);
-            gfx.fillRect(0, 0, sqlength - 1, sqlength - 1);
-            gfx.fillRect(sqlength, sqlength, sqlength - 1, sqlength - 1);
+            gfx.fillRect(0, 0, (int)(sqlength - 1), (int)(sqlength - 1));
+            gfx.fillRect((int)sqlength, (int)sqlength, (int)sqlength - 1, (int)sqlength - 1);
             gfx.dispose();
             
             checkerPaint = new TexturePaint(image, new Rectangle(0, 0, image.getWidth(), image.getHeight()));

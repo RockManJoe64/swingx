@@ -35,7 +35,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.text.JTextComponent;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AreaEffect;
 import org.jdesktop.swingx.util.Resize;
 
 /**
@@ -43,7 +43,7 @@ import org.jdesktop.swingx.util.Resize;
  * obtained from the object being painted if it is a Swing text component.
  * @author rbair
  */
-public class TextPainter<T> extends AbstractPathPainter<T> {
+public class TextPainter<T> extends AbstractAreaPainter<T> {
     private String text = "";
     private Font font = null;
     
@@ -127,7 +127,7 @@ public class TextPainter<T> extends AbstractPathPainter<T> {
         
         int tw = metrics.stringWidth(text);
         int th = metrics.getHeight();
-        Rectangle res = calculatePosition(tw, th, width, height);
+        Rectangle res = calculateLayout(tw, th, width, height);
         
         g.translate(res.x, res.y);
         
@@ -142,7 +142,7 @@ public class TextPainter<T> extends AbstractPathPainter<T> {
         g.drawString(text, 0, 0 + metrics.getAscent());
         if(getPathEffects() != null) {
             Shape shape = provideShape(g, component, width, height);
-            for(PathEffect ef : getPathEffects()) {
+            for(AreaEffect ef : getPathEffects()) {
                 ef.apply(g, shape, width, height);
             }
         }

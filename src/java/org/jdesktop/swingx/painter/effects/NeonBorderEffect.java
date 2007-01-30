@@ -23,7 +23,7 @@ import java.awt.geom.Point2D;
  * It will interpolate between two specified colors, creating a neon like effect.
  * @author joshy
  */
-public class NeonBorderEffect extends AbstractPathEffect {
+public class NeonBorderEffect extends AbstractAreaEffect {
     
     private Color edgeColor;
     private Color centerColor;

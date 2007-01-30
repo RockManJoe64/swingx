@@ -30,7 +30,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.editors.PainterUtil;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AreaEffect;
 
 /**
  *
@@ -53,7 +53,7 @@ public class ImagePainterTest extends TestCase {
         
         BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
         ImagePainter painter = new ImagePainter(image);
-        painter.setEffects(new BlurFilter());
+        painter.setFilters(new BlurFilter());
 
         BufferedImage canvas = new BufferedImage(100,100, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = canvas.createGraphics();
@@ -62,11 +62,11 @@ public class ImagePainterTest extends TestCase {
         int height = 100;
         
         //paint normally
-        painter.paintBackground(g, component, width, height);
+        painter.doPaint(g, component, width, height);
         
         //painte with horizontal repeat
         painter.setHorizontalRepeat(true);
-        painter.paintBackground(g, component, width, height);
+        painter.doPaint(g, component, width, height);
     }
 
 }

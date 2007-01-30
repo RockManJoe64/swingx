@@ -61,11 +61,10 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.*;
 import org.jdesktop.swingx.painter.effects.GlowPathEffect;
-import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.painter.effects.InnerGlowPathEffect;
 import org.jdesktop.swingx.painter.effects.InnerShadowPathEffect;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
-import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractAreaEffect;
 import org.jdesktop.swingx.painter.effects.ShadowPathEffect;
 import org.jdesktop.swingx.util.PaintUtils;
 import org.jdesktop.swingx.util.ShapeUtils;
@@ -240,7 +239,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         
         TextPainter selectionText = new TextPainter();
         selectionText.setFillPaint(Color.BLACK);
-        selectionText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        selectionText.setHorizontalAlignment(TextPainter.HorizontalAlignment.LEFT);
         tableRenderer.setSelectionBackgroundPainter(new MattePainter(shading));
         
         musicTable.setDefaultRenderer(Object.class, tableRenderer);
@@ -337,7 +336,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         // the list foreground
         TextPainter listText = new TextPainter();
         listText.setFillPaint(Color.WHITE);
-        listText.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        listText.setHorizontalAlignment(TextPainter.HorizontalAlignment.LEFT);
         listText.setInsets(new Insets(0,8,0,0));
         
         renderer.setForegroundPainter(listText);
@@ -424,7 +423,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect05-
         // rect 50x50 left aligned
         rectnorm = create50pxRectPainter();
-        rectnorm.setHorizontal(RectanglePainter.HorizontalAlignment.LEFT);
+        rectnorm.setHorizontalAlignment(RectanglePainter.HorizontalAlignment.LEFT);
         addDemo("Rectangle, 50x50, left aligned", "rect05", gray, rectnorm);
         //$endcite
         
@@ -433,7 +432,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect06-
         // rect 50x50 top aligned
         rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setVerticalAlignment(RectanglePainter.VerticalAlignment.TOP);
         addDemo("Rectangle, 50x50, top aligned", "rect06", gray, rectnorm);
         //$endcite
         
@@ -442,8 +441,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect07-
         // rect 50x50 top aligned w/ horiz stretch
         rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        rectnorm.setHorizontalStretch(true);
+        rectnorm.setVerticalAlignment(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setFillHorizontal(true);
         addDemo("Rectangle, 50x50, top aligned w/ horiz stretch", "rect07", gray, rectnorm);
         //$endcite
         
@@ -452,8 +451,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect08-
         // rect 50x50 top aligned w/ vert stretch
         rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        rectnorm.setVerticalStretch(true);
+        rectnorm.setVerticalAlignment(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setFillVertical(true);
         addDemo("Rectangle, 50x50, top aligned w/ vert stretch", "rect08", gray, rectnorm);
         //$endcite
         
@@ -462,9 +461,9 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect09-
         // rect 50x50 top aligned w/ vert & horiz stretch
         rectnorm = create50pxRectPainter();
-        rectnorm.setVertical(RectanglePainter.VerticalAlignment.TOP);
-        rectnorm.setHorizontalStretch(true);
-        rectnorm.setVerticalStretch(true);
+        rectnorm.setVerticalAlignment(RectanglePainter.VerticalAlignment.TOP);
+        rectnorm.setFillHorizontal(true);
+        rectnorm.setFillVertical(true);
         addDemo("Rectangle, 50x50, top aligned w/ horiz & vert stretch", "rect09", gray, rectnorm);
         //$endcite
         
@@ -473,8 +472,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect10-
         // rect 50x50 center aligned w/ vert & horiz stretch
         rectnorm = create50pxRectPainter();
-        rectnorm.setVerticalStretch(true);
-        rectnorm.setHorizontalStretch(true);
+        rectnorm.setFillVertical(true);
+        rectnorm.setFillHorizontal(true);
         addDemo("Rectangle, 50x50, center aligned w/ horiz & vert stretch", "rect10", gray, rectnorm);
         //$endcite
         
@@ -483,8 +482,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-rect11-
         // rect 50x50 center aligned w/ vert & horiz stretch & 20px insets
         rectnorm = create50pxRectPainter();
-        rectnorm.setVerticalStretch(true);
-        rectnorm.setHorizontalStretch(true);
+        rectnorm.setFillVertical(true);
+        rectnorm.setFillHorizontal(true);
         rectnorm.setInsets(new Insets(20,20,20,20));
         addDemo("Rectangle, 50x50, w/ horiz & vert stretch & 20px insets", "rect11", gray, rectnorm);
         //$endcite
@@ -625,7 +624,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text04-
         // text left aligned
         text = new TextPainter("Neon",font,Color.BLACK);
-        text.setHorizontal(TextPainter.HorizontalAlignment.LEFT);
+        text.setHorizontalAlignment(TextPainter.HorizontalAlignment.LEFT);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Left aligned","text04");
         //$endcite
         
@@ -634,7 +633,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text05-
         // text right aligned
         text = new TextPainter("Neon",font,Color.BLACK);
-        text.setHorizontal(TextPainter.HorizontalAlignment.RIGHT);
+        text.setHorizontalAlignment(TextPainter.HorizontalAlignment.RIGHT);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Right aligned","text05");
         //$endcite
         
@@ -644,7 +643,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text06-
         // text top aligned
         text = new TextPainter("Neon",font,Color.BLACK);
-        text.setVertical(TextPainter.VerticalAlignment.TOP);
+        text.setVerticalAlignment(TextPainter.VerticalAlignment.TOP);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Top aligned","text06");
         //$endcite
         
@@ -654,7 +653,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text07-
         // text bottom aligned
         text = new TextPainter("Neon",font,Color.BLACK);
-        text.setVertical(TextPainter.VerticalAlignment.BOTTOM);
+        text.setVerticalAlignment(TextPainter.VerticalAlignment.BOTTOM);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Bottom aligned","text07");
         //$endcite
         
@@ -663,7 +662,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-text08-
         // text bottom aligned with insets
         text = new TextPainter("Neon",font,Color.BLACK);
-        text.setVertical(TextPainter.VerticalAlignment.BOTTOM);
+        text.setVerticalAlignment(TextPainter.VerticalAlignment.BOTTOM);
         text.setInsets(new Insets(0,0,20,0));
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text Bottom aligned with 20px inset","text08");
         //$endcite
@@ -779,8 +778,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-star05-
         // left/top aligned star
         star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setVertical(ShapePainter.VerticalAlignment.TOP);
+        star.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVerticalAlignment(ShapePainter.VerticalAlignment.TOP);
         addDemo(new JXPanel(),star,"Star, left & top aligned","star05");
         //$endcite
         
@@ -788,8 +787,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-star06-
         // left/bottom aligned star
         star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setVertical(ShapePainter.VerticalAlignment.BOTTOM);
+        star.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVerticalAlignment(ShapePainter.VerticalAlignment.BOTTOM);
         addDemo(new JXPanel(),star,"Star, left & bottom aligned","star06");
         //$endcite
         
@@ -798,8 +797,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-star07-
         // left/top aligned with insets
         star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        star.setVertical(ShapePainter.VerticalAlignment.TOP);
+        star.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        star.setVerticalAlignment(ShapePainter.VerticalAlignment.TOP);
         star.setInsets(new Insets(50,50,50,50));
         addDemo(new JXPanel(),star,"Star, left & top aligned, 50px insets","star07");
         //$endcite
@@ -810,7 +809,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-star08-
         // left aligned only with left insets
         star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
         star.setInsets(new Insets(0,50,0,0));
         addDemo(new JXPanel(),star,"Star, left aligned, 50px left insets","star08");
         //$endcite
@@ -821,7 +820,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         //$name-star09-
         // left aligned only with left top insets
         star = new ShapePainter(starShape, Color.RED);
-        star.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
+        star.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
         star.setInsets(new Insets(50,50,0,0));
         addDemo(new JXPanel(),star,"Star, left aligned, 50px left & top insets","star09");
         //$endcite
@@ -1005,8 +1004,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         label = new JXLabel("An invalid JLabel");
         Shape star = ShapeUtils.generatePolygon(20, 30,25,true);
         ShapePainter shapePainter = new ShapePainter(star,new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        shapePainter.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVerticalAlignment(ShapePainter.VerticalAlignment.CENTER);
         label.setForegroundPainter(shapePainter);
         addDemo(label,"label + shape painter in bg layer","painterset9");
         //$endcite
@@ -1016,8 +1015,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         label = new JXLabel("An invalid JLabel");
         star = ShapeUtils.generatePolygon(20, 30,25,true);
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        shapePainter.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVerticalAlignment(ShapePainter.VerticalAlignment.CENTER);
         label.setForegroundPainter(shapePainter);
         addDemo(label,"BROKEN! label + shape painter in validation layer","painterset10");
         //$endcite
@@ -1027,8 +1026,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         label = new JXLabel("An invalid JLabel");
         star = ShapeUtils.generatePolygon(20, 30,25,true);
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        shapePainter.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVerticalAlignment(ShapePainter.VerticalAlignment.CENTER);
         //label.setPainter(JXComponent.VALIDATION_LAYER, shapePainter);
         TextPainter tp = new TextPainter("!!!",Color.GREEN);
         //label.getPainters().get(JXComponent.VALIDATION_LAYER).add(tp);
@@ -1041,8 +1040,8 @@ public class PainterDemoSet extends javax.swing.JFrame {
         label = new JXLabel("An invalid JLabel");
         star = ShapeUtils.generatePolygon(20, 30,25,true);
         shapePainter = new ShapePainter(star, new Color(255,0,0,200));
-        shapePainter.setHorizontal(ShapePainter.HorizontalAlignment.LEFT);
-        shapePainter.setVertical(ShapePainter.VerticalAlignment.CENTER);
+        shapePainter.setHorizontalAlignment(ShapePainter.HorizontalAlignment.LEFT);
+        shapePainter.setVerticalAlignment(ShapePainter.VerticalAlignment.CENTER);
         //label.setPainter(JXComponent.VALIDATION_LAYER,shapePainter);
         tp = new TextPainter("!!!",Color.GREEN);
         //label.setPainter(JXComponent.VALIDATION_LAYER, tp);
@@ -1056,7 +1055,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         label.setFont(label.getFont().deriveFont(36f));
         Painter ptr = label.getForegroundPainter();
         if(ptr instanceof AbstractPainter) {
-            ((AbstractPainter)ptr).setEffects(new ImageFilter(new ShadowFilter()));
+            ((AbstractPainter)ptr).setFilters(new ShadowFilter());
         }
         addDemo(label, "label w/ image effect","painterset13");
         //$endcite
@@ -1097,7 +1096,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         try {
             BufferedImage img = ImageIO.read(getClass().getResourceAsStream("moon.jpg"));
             ImagePainter ip = new ImagePainter(img);
-            ip.setVertical(ImagePainter.VerticalAlignment.BOTTOM);
+            ip.setVerticalAlignment(ImagePainter.VerticalAlignment.BOTTOM);
             addDemo("bottom aligned","image03",ip);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1111,7 +1110,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         try {
             BufferedImage img = ImageIO.read(getClass().getResourceAsStream("moon.jpg"));
             ImagePainter ip = new ImagePainter(img);
-            ip.setHorizontal(ImagePainter.HorizontalAlignment.RIGHT);
+            ip.setHorizontalAlignment(ImagePainter.HorizontalAlignment.RIGHT);
             addDemo("right aligned","image04",ip);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1125,7 +1124,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         try {
             BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
             ImagePainter ip = new ImagePainter(img);
-            ip.setVertical(ImagePainter.VerticalAlignment.TOP);
+            ip.setVerticalAlignment(ImagePainter.VerticalAlignment.TOP);
             ip.setHorizontalRepeat(true);
             addDemo("top aligned, horizontal repeat","image05",ip);
         } catch (Exception ex) {
@@ -1142,7 +1141,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
             //$name-image06-
             BufferedImage img = ImageIO.read(getClass().getResourceAsStream("border.gif"));
             ImagePainter ip = new ImagePainter(img);
-            ip.setVertical(ImagePainter.VerticalAlignment.TOP);
+            ip.setVerticalAlignment(ImagePainter.VerticalAlignment.TOP);
             ip.setHorizontalRepeat(true);
             ip.setInsets(new Insets(20,0,0,0));
             addDemo("top aligned, horizontal repeat, top = 20px","image06",ip);

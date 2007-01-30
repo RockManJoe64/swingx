@@ -1,5 +1,5 @@
 /*
- * PathEffect.java
+ * AreaEffect.java
  *
  * Created on August 20, 2006, 7:01 PM
  *
@@ -12,8 +12,6 @@ package org.jdesktop.swingx.painter.effects;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
@@ -22,11 +20,8 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Transparency;
 import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import org.jdesktop.swingx.color.ColorUtil;
 
 /**
  * The abstract base class for path effects. It takes care
@@ -35,12 +30,12 @@ import org.jdesktop.swingx.color.ColorUtil;
  * dropshadows and glows.
  * @author joshy
  */
-public class AbstractPathEffect implements PathEffect {
+public class AbstractAreaEffect implements AreaEffect {
     private static final boolean debug = false;
     /**
-     * Creates a new instance of PathEffect
+     * Creates a new instance of AreaEffect
      */
-    public AbstractPathEffect() {
+    public AbstractAreaEffect() {
         setBrushColor(Color.BLACK);
         setBrushSteps(10);
         setEffectWidth(8);
@@ -60,17 +55,14 @@ public class AbstractPathEffect implements PathEffect {
         
         // Apply the border glow effect
         if (isShapeMasked()) {
-            // set up a temp buffer
-            BufferedImage clipImage = new BufferedImage(
-                    effectBounds.width,
-                    effectBounds.height, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage clipImage = getClipImage(effectBounds);
             Graphics2D g2 = clipImage.createGraphics();
             
             // clear the buffer
             g2.setPaint(Color.BLACK);
             g2.setComposite(AlphaComposite.Clear);
             g2.fillRect(0, 0, effectBounds.width, effectBounds.height);
-
+            
             if (debug) {
                 g2.setPaint(Color.WHITE);
                 g2.setComposite(AlphaComposite.SrcOver);
@@ -109,19 +101,35 @@ public class AbstractPathEffect implements PathEffect {
         
     }
     
+    BufferedImage _clipImage = null;
+    private BufferedImage getClipImage(final Rectangle effectBounds) {
+        // set up a temp buffer
+        if(_clipImage == null ||
+                _clipImage.getWidth() != effectBounds.width ||
+                _clipImage.getHeight() != effectBounds.height) {
+            BufferedImage clipImage = new BufferedImage(
+                    effectBounds.width,
+                    effectBounds.height, BufferedImage.TYPE_INT_ARGB);
+            _clipImage = clipImage;
+        }
+        _clipImage.getGraphics().clearRect(0,0,_clipImage.getWidth(), _clipImage.getHeight());
+        return _clipImage;
+    }
     
+    
+    /*
     private BufferedImage createClipImage(Shape s, Graphics2D g, int width, int height) {
         // Create a translucent intermediate image in which we can perform
         // the soft clipping
-        
+     
         GraphicsConfiguration gc = g.getDeviceConfiguration();
         BufferedImage img = gc.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
         Graphics2D g2 = img.createGraphics();
-        
+     
         // Clear the image so all pixels have zero alpha
         g2.setComposite(AlphaComposite.Clear);
         g2.fillRect(0, 0, width, height);
-        
+     
         // Render our clip shape into the image.  Note that we enable
         // antialiasing to achieve the soft clipping effect.  Try
         // commenting out the line that enables antialiasing, and
@@ -131,19 +139,19 @@ public class AbstractPathEffect implements PathEffect {
         g2.setColor(Color.WHITE);
         g2.fill(s);
         g2.dispose();
-        
+     
         return img;
-    }
+    }*/
     
     
     /* draws the actual shaded border to the specified graphics
      */
     /**
      * Paints the border glow
-     * @param g2 
-     * @param clipShape 
-     * @param width 
-     * @param height 
+     * @param g2
+     * @param clipShape
+     * @param width
+     * @param height
      */
     protected void paintBorderGlow(Graphics2D g2,
             Shape clipShape, int width, int height) {

@@ -4,9 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImageOp;
 import javax.swing.AbstractAction;
 import org.jdesktop.swingx.painter.AbstractPainter;
-import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.painter.Painter;
-import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractAreaEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painterset.PainterEditorPanel;
 import org.jdesktop.swingx.painterset.PainterTreeModel;
@@ -26,18 +25,13 @@ public class AddEffectAction extends AbstractAction {
                 
                 Class clazz = (Class) painterEditorPanel.newEffectCombo.getSelectedItem();
                 Object obj = clazz.newInstance();
-                if (obj instanceof ImageFilter) {
-                    ImageFilter eff = null;
-                    eff = (ImageFilter) obj;
-                    painterTreeModel.addEffect((AbstractPainter) painterEditorPanel.getSelectedPainter(), eff);
-                }
                 if (obj instanceof BufferedImageOp) {
-                    ImageFilter eff = null;
-                    eff = new ImageFilter((BufferedImageOp) obj);
+                    BufferedImageOp eff = null;
+                    eff = (BufferedImageOp) obj;
                     painterTreeModel.addEffect((AbstractPainter) painterEditorPanel.getSelectedPainter(), eff);
                 }
-                if (obj instanceof AbstractPathEffect) {
-                    AbstractPathEffect eff = (AbstractPathEffect) obj;
+                if (obj instanceof AbstractAreaEffect) {
+                    AbstractAreaEffect eff = (AbstractAreaEffect) obj;
                     Painter ptr = (Painter) painterEditorPanel.getSelectedPainter();
                     if(ptr instanceof ShapePainter) {
                         painterTreeModel.addShapeEffect((ShapePainter)ptr,eff);

@@ -31,15 +31,17 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.Transparency;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.awt.image.ColorModel;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.jdesktop.swingx.JavaBean;
-import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.util.PaintUtils;
 
 /**
@@ -115,7 +117,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
     /**
      * The Effects to apply to the results of the paint() operation
      */
-    private ImageFilter[] effects = new ImageFilter[0];
+    private BufferedImageOp[] effects = new BufferedImageOp[0];
     
     /**
      * Creates a new instance of AbstractPainter
@@ -154,7 +156,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
         return useCache;
     }
     
-    /**
+    /*
      * <p>Sets the effects to apply to the results of the AbstractPainter's
      * painting operation. Some common effects include blurs, shadows, embossing,
      * and so forth. If the given effects is a null array, no effects will be used</p>
@@ -162,32 +164,33 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      * @param effects the Effects to apply to the results of the AbstractPainter's
      *                painting operation
      */
-    public void setEffects(ImageFilter... effects) {
-        ImageFilter[] old = getEffects();
+    /*
+    public void setFilters(ImageFilter... effects) {
+        ImageFilter[] old = getFilters();
         this.effects = new ImageFilter[effects == null ? 0 : effects.length];
         if (effects != null) {
             System.arraycopy(effects, 0, this.effects, 0, effects.length);
         }
-        firePropertyChange("effects", old, getEffects());
-    }
+        firePropertyChange("effects", old, getFilters());
+    }*/
+    
     
     /**
      * <p>A convenience method for specifying the effects to use based on
      * BufferedImageOps. These will each be individually wrapped by an ImageFilter
-     * and then setEffects(Effect... effects) will be called with the resulting
+     * and then setFilters(Effect... effects) will be called with the resulting
      * array</p>
+     * 
      * 
      * @param filters the BufferedImageOps to wrap as effects
      */
-    public void setEffects(BufferedImageOp... filters) {
-        ImageFilter[] effects = new ImageFilter[filters == null ? 0 : filters.length];
-        if (filters != null) {
-            int index = 0;
-            for (BufferedImageOp op : filters) {
-                effects[index++] = new ImageFilter(op);
-            }
+    public void setFilters(BufferedImageOp ... effects) {
+        BufferedImageOp[] old = getFilters();
+        this.effects = new BufferedImageOp[effects == null ? 0 : effects.length];
+        if (effects != null) {
+            System.arraycopy(effects, 0, this.effects, 0, effects.length);
         }
-        setEffects(effects);
+        firePropertyChange("effects", old, getFilters());
     }
     
     /**
@@ -196,8 +199,8 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
      *  be empty but it Will never be null.
      * @return the array of effects applied to this painter
      */
-    public ImageFilter[] getEffects() {
-        ImageFilter[] results = new ImageFilter[effects.length];
+    public BufferedImageOp[] getFilters() {
+        BufferedImageOp[] results = new BufferedImageOp[effects.length];
         System.arraycopy(effects, 0, results, 0, results.length);
         return results;
     }
@@ -372,7 +375,7 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
                 && image.getHeight() == height) {
             g.drawImage(image, 0, 0, null);
         } else {
-            ImageFilter[] effects = getEffects();
+            BufferedImageOp[] effects = getFilters();
             if (effects.length > 0 || isUseCache()) {
                 image = PaintUtils.createCompatibleImage(
                         width,
@@ -384,8 +387,8 @@ public abstract class AbstractPainter<T> extends JavaBean implements Painter<T> 
                 doPaint(gfx, component, width, height);
                 gfx.dispose();
                 
-                for (ImageFilter effect : effects) {
-                    image = effect.apply(image);
+                for (BufferedImageOp effect : effects) {
+                    image = effect.filter(image,null);
                 }
                 
                 g.drawImage(image, 0, 0, null);

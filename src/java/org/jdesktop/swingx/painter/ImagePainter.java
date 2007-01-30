@@ -41,7 +41,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.editors.PainterUtil;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AreaEffect;
 
 /**
  * <p>A Painter instance that paints an image. Any Image is acceptable. This
@@ -70,7 +70,7 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  *
  * @author Richard
  */
-public class ImagePainter<T> extends AbstractPathPainter<T> {
+public class ImagePainter<T> extends AbstractAreaPainter<T> {
     /**
      * Logger to use
      */
@@ -114,8 +114,8 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
     public ImagePainter(BufferedImage image, HorizontalAlignment horizontal, VerticalAlignment vertical) {
         super();
         this.img = image;
-        this.setVertical(vertical);
-        this.setHorizontal(horizontal);
+        this.setVerticalAlignment(vertical);
+        this.setHorizontalAlignment(horizontal);
         this.setFillPaint(null);
         this.setBorderPaint(null);
     }
@@ -182,7 +182,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
         }
         
         if(getPathEffects() != null) {
-            for(PathEffect ef : getPathEffects()) {
+            for(AreaEffect ef : getPathEffects()) {
                 ef.apply(g, shape, width, height);
             }
         }
@@ -194,7 +194,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
             if (imgWidth == -1 || imgHeight == -1) {
                 //image hasn't completed loading, do nothing
             } else {
-                Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
+                Rectangle rect = calculateLayout(imgWidth, imgHeight, width, height);
                 if(verticalRepeat || horizontalRepeat) {
                     Shape oldClip = g.getClip();
                     Shape clip = g.getClip();
@@ -362,7 +362,7 @@ public class ImagePainter<T> extends AbstractPathPainter<T> {
             BufferedImage img = getImage();
             int imgWidth = img.getWidth();
             int imgHeight = img.getHeight();
-            Rectangle rect = calculatePosition(imgWidth, imgHeight, width, height);
+            Rectangle rect = calculateLayout(imgWidth, imgHeight, width, height);
             return rect;
         }
         return new Rectangle(0,0,0,0);
