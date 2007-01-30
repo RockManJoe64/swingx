@@ -1,5 +1,5 @@
 /*
- * AbstractPathPainter.java
+ * AbstractAreaPainter.java
  *
  * Created on August 12, 2006, 8:12 PM
  *
@@ -21,17 +21,17 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
-import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractAreaEffect;
+import org.jdesktop.swingx.painter.effects.AreaEffect;
 
 
 /**
  * The abstract base class for all painters that fill a vector path area.  This includes Shapes, Rectangles, Text, and the MattePainter 
- * which fills in the entire background of a component.  The defining feature of AbstractPathPainter subclasses
+ * which fills in the entire background of a component.  The defining feature of AbstractAreaPainter subclasses
  * is that they implement the provideShape() method which returns the outline shape of the area that this
  * painter will fill.   Subclasses must implement the provideShape() method.
  * 
- * The AbstractPathPainter provides support for the following common painting properties
+ * The AbstractAreaPainter provides support for the following common painting properties
  * 
  * <ul>
  * <li>fillPaint</li>
@@ -41,10 +41,11 @@ import org.jdesktop.swingx.painter.effects.PathEffect;
  * <li>style</li>
  * </ul>
  * 
- * The AbstractPathPainter also provides support for path effects like dropshadows and glows.
+ * The AbstractAreaPainter also provides support for path effects like dropshadows and glows.
+ * 
  * @author joshy
  */
-public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
+public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
     
     /**
      * Different available fill styles. BOTH indicates that both the outline,
@@ -56,7 +57,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     public enum Style {BOTH, FILLED, OUTLINE, NONE}
     
     private boolean snapPaint;
-    private PathEffect[] pathEffect;
+    private AreaEffect[] pathEffect;
     
     
     private Style style = Style.BOTH;
@@ -78,16 +79,16 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     private Paint borderPaint;
     
     /**
-     * Creates a new instance of AbstractPathPainter
+     * Creates a new instance of AbstractAreaPainter
      */
-    public AbstractPathPainter() {
+    public AbstractAreaPainter() {
         fillPaint = Color.RED;
     }
     /**
      * 
      * @param paint 
      */
-    public AbstractPathPainter(Paint paint) {
+    public AbstractAreaPainter(Paint paint) {
         this.fillPaint = paint;
     }
     
@@ -200,12 +201,13 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
     
     /**
      * 
-     * A utility method for snapping paints. Mainly for use by AbstractPathPainter subclasses. It will
+     * A utility method for snapping paints. Mainly for use by AbstractAreaPainter subclasses. It will
      * produce a new paint which is the stretched and aligned version of the original paint. It
      * will align the paint along the four axis (horizontal, vertical, and both diagonals) depending
      * on which one is nearer. It will also stretch the paint across the area to be painted. This is
      * mainly used to create paints which will cover a component when it is resized.  At this time only
      * gradients can be snapped. Texture and Color paints will be returned unmodified.
+     * 
      * @param p the paint to be snapped
      * @param width the width of the area to snap over
      * @param height the width of the area to snap over
@@ -336,13 +338,13 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
      * @param height the height to paint
      * @return the outline shape of this painter
      */
-    public abstract Shape provideShape(Graphics2D g, T comp, int width, int height);
+    protected abstract Shape provideShape(Graphics2D g, T comp, int width, int height);
     
     /**
      * Sets the path effects to be drawn on this painter.
      * @param pathEffect The path effects to apply to this path painter
      */
-    public void setPathEffects(PathEffect... pathEffect) {
+    public void setPathEffects(AreaEffect... pathEffect) {
         this.pathEffect = pathEffect;
     }
     
@@ -350,7 +352,7 @@ public abstract class AbstractPathPainter<T> extends PositionedPainter<T> {
      * Gets the current set of path effects applied to this painter
      * @return the effects applied to this path painter
      */
-    public PathEffect[] getPathEffects() {
+    public AreaEffect[] getPathEffects() {
         return this.pathEffect;
     }
     

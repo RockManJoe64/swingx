@@ -16,7 +16,7 @@ import java.awt.Point;
  * An effect which draws a glow around the painter
  * @author joshy
  */
-public class GlowPathEffect extends AbstractPathEffect {
+public class GlowPathEffect extends AbstractAreaEffect {
     
     /**
      * Creates a new instance of GlowPathEffect

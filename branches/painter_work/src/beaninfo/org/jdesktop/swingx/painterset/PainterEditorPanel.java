@@ -10,6 +10,7 @@ import com.jhlabs.image.GaussianFilter;
 import java.awt.Shape;
 import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -45,18 +46,15 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.color.ColorUtil;
 import org.jdesktop.swingx.editors.PainterUtil;
 import org.jdesktop.swingx.painter.AbstractPainter;
-import org.jdesktop.swingx.painter.ComponentBackgroundPainter;
 import org.jdesktop.swingx.painter.CheckerboardPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
-import org.jdesktop.swingx.painter.effects.ImageFilter;
 import org.jdesktop.swingx.painter.GlossPainter;
-import org.jdesktop.swingx.painter.IconPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.painter.PinstripePainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
-import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractAreaEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painter.TextPainter;
 import org.jdesktop.swingx.painterset.actions.AddEffectAction;
@@ -95,9 +93,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         painterClasses = new BeanArrayList<Class<? extends Painter>>();
         painterClasses.add(PinstripePainter.class);
         painterClasses.add(GlossPainter.class);
-        painterClasses.add(ComponentBackgroundPainter.class);
         painterClasses.add(CheckerboardPainter.class);
-        painterClasses.add(IconPainter.class);
         painterClasses.add(ImagePainter.class);
         painterClasses.add(MattePainter.class);
         painterClasses.add(RectanglePainter.class);
@@ -107,7 +103,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
         painterClasses.add(CompoundPainter.class);
         
         effectClasses = new BeanArrayList<Class>();
-        effectClasses.add(AbstractPathEffect.class);
+        effectClasses.add(AbstractAreaEffect.class);
         effectClasses.add(ShadowFilter.class);
         effectClasses.add(GaussianFilter.class);
         
@@ -690,7 +686,7 @@ public class PainterEditorPanel extends javax.swing.JPanel implements PropertyCh
                 setSelectedPainter(comp);
                 if(comp != getSelectedTree().getModel().getRoot() &&
                         (comp instanceof Painter ||
-                        comp instanceof ImageFilter)) {
+                        comp instanceof BufferedImageOp)) {
                     deleteButton.setEnabled(true);
                 } else {
                     deleteButton.setEnabled(false);

@@ -36,7 +36,7 @@ import org.jdesktop.swingx.painter.AbstractPainter;
 import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.MattePainter;
 import org.jdesktop.swingx.painter.effects.NeonBorderEffect;
-import org.jdesktop.swingx.painter.effects.AbstractPathEffect;
+import org.jdesktop.swingx.painter.effects.AbstractAreaEffect;
 import org.jdesktop.swingx.painter.ShapePainter;
 import org.jdesktop.swingx.painterset.*;
 
@@ -46,7 +46,7 @@ import org.jdesktop.swingx.painterset.*;
  */
 public class ShapeTest extends JXPanel {
     public ShapePainter sp;
-    public AbstractPathEffect effect;
+    public AbstractAreaEffect effect;
     /** Creates a new instance of ShapeTest */
     public ShapeTest() {
         

@@ -1,5 +1,5 @@
 /*
- * PathEffect.java
+ * AreaEffect.java
  *
  * Created on November 1, 2006, 10:10 AM
  *
@@ -22,7 +22,7 @@ import java.awt.image.BufferedImage;
  * An effect which works on AbstractPathPainters or any thing else which can provide a shape to be drawn.
  * @author joshy
  */
-public interface PathEffect {
+public interface AreaEffect {
     /*
      * Applies the shape effect. This effect will be drawn on top of the graphics context.
      */

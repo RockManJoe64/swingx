@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
-import org.jdesktop.swingx.painter.effects.PathEffect;
+import org.jdesktop.swingx.painter.effects.AreaEffect;
 import org.jdesktop.swingx.util.Resize;
 
 
@@ -55,7 +55,7 @@ import org.jdesktop.swingx.util.Resize;
  * </code></pre>
  * @author rbair
  */
-public class ShapePainter<T> extends AbstractPathPainter<T> {
+public class ShapePainter<T> extends AbstractAreaPainter<T> {
     /**
      * The Shape to fillPaint. If null, nothing is painted.
      */
@@ -146,7 +146,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
         if(getShape() != null) {
             Shape shape = provideShape(g,component, w, h);
             Rectangle bounds = shape.getBounds();
-            Rectangle rect = calculatePosition(bounds.width, bounds.height, w, h);
+            Rectangle rect = calculateLayout(bounds.width, bounds.height, w, h);
             //u.p("rect = " + rect);
             g = (Graphics2D)g.create();
             g.translate(rect.x, rect.y);
@@ -180,7 +180,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
         g.fill(shape);
         if(getPathEffects() != null) {
             //Paint pt = calculateFillPaint(component, w, h);
-            for(PathEffect ef : getPathEffects()) {
+            for(AreaEffect ef : getPathEffects()) {
                 ef.apply(g, shape, w, h);
             }
         }
@@ -199,7 +199,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
             }
         }
         if(isSnapPaint()) {
-            p = AbstractPathPainter.calculateSnappedPaint(p, width, height);
+            p = AbstractAreaPainter.calculateSnappedPaint(p, width, height);
         }
         return p;
     }
@@ -208,7 +208,7 @@ public class ShapePainter<T> extends AbstractPathPainter<T> {
         //set the fillPaint
         Paint p = getFillPaint();
         if(isSnapPaint()) {
-            p = AbstractPathPainter.calculateSnappedPaint(p, width, height);
+            p = AbstractAreaPainter.calculateSnappedPaint(p, width, height);
         } else {
             //u.p("not snapping");
         }

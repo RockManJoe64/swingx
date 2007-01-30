@@ -52,23 +52,12 @@ import org.apache.batik.ext.awt.MultipleGradientPaint;
  * <p>If no paint is specified, then nothing is painted</p>
  * @author rbair
  */
-public class MattePainter<T> extends AbstractPathPainter<T> {
+public class MattePainter<T> extends AbstractAreaPainter<T> {
     
     /**
      * Creates a new MattePainter with "null" as the paint used
      */
     public MattePainter() {
-    }
-    
-    /**
-     * Create a new MattePainter that uses the given color. This is only
-     * a convenience constructor since Color is a Paint, and thus the
-     * other constructor is perfectly suited for specify a color as well
-     *
-     * @param color Color to fill with
-     */
-    public MattePainter(Color color) {
-        this((Paint)color);
     }
     
     /**

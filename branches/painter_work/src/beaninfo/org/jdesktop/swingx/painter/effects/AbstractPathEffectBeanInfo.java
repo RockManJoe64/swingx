@@ -21,7 +21,7 @@ public class AbstractPathEffectBeanInfo extends BeanInfoSupport {
     
     /** Creates a new instance of ShapeEffectBeanInfo */
     public AbstractPathEffectBeanInfo() {
-        super(AbstractPathEffect.class);
+        super(AbstractAreaEffect.class);
     }
     
     protected void initialize() {

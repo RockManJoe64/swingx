@@ -57,7 +57,7 @@ import org.jdesktop.swingx.painter.CompoundPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
 import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.editors.PainterPropertyEditor.*;
-import org.jdesktop.swingx.painter.PositionedPainter;
+import org.jdesktop.swingx.painter.AbstractLayoutPainter;
 import org.jdesktop.swingx.painter.RectanglePainter;
 
 /**
@@ -135,8 +135,8 @@ public class PainterUtil {
         e.setPersistenceDelegate(AbstractPainter.Interpolation.class, new TypeSafeEnumPersistenceDelegate());
        // e.setPersistenceDelegate(AbstractPainter.FractionalMetrics.class, new TypeSafeEnumPersistenceDelegate());
         e.setPersistenceDelegate(RectanglePainter.Style.class, new TypeSafeEnumPersistenceDelegate());
-        e.setPersistenceDelegate(PositionedPainter.HorizontalAlignment.class, new TypeSafeEnumPersistenceDelegate());
-        e.setPersistenceDelegate(PositionedPainter.VerticalAlignment.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(AbstractLayoutPainter.HorizontalAlignment.class, new TypeSafeEnumPersistenceDelegate());
+        e.setPersistenceDelegate(AbstractLayoutPainter.VerticalAlignment.class, new TypeSafeEnumPersistenceDelegate());
         
         
         e.setPersistenceDelegate(AbstractPainter.class, new AbstractPainterDelegate());
