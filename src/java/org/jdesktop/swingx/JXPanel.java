@@ -47,8 +47,12 @@ import org.jdesktop.swingx.painter.Painter;
  * A simple JPanel extension that adds translucency support.
  * This component and all of its content will be displayed with the specified
  * &quot;alpha&quot; transluscency property value. It also supports the
- * Painter API.
- *
+ * Painters using the backgroundPainter property.  For example, to change the background of the
+ * panel to a checkeboard do something like this:
+ * 
+ * 
+ * <PRE> <CODE>JXPanel panel = new JXPanel();
+ * panel.setBackgroundPainter(new CheckerboardPainter());</CODE></PRE>
  * @author rbair
  */
 public class JXPanel extends JPanel implements Scrollable {
@@ -120,7 +124,7 @@ public class JXPanel extends JPanel implements Scrollable {
     
     private void initPainterSupport() {
         backgroundPainter = new AbstractPainter<JXPanel>() {
-            protected void paintBackground(Graphics2D g, JXPanel component, int width, int height) {
+            protected void doPaint(Graphics2D g, JXPanel component, int width, int height) {
                 JXPanel.super.paintComponent(g);
             }
         };
@@ -249,29 +253,34 @@ public class JXPanel extends JPanel implements Scrollable {
     
     
     /**
-     * Specifies a Painter to use to paint the background of this JXPanel.
-     * If <code>p</code> is not null, then setOpaque(false) will be called
-     * as a side effect. A component should not be opaque if painters are
-     * being used, because Painters may paint transparent pixels or not
-     * paint certain pixels, such as around the border insets.
+     * Sets a Painter to use to paint the background of this JXPanel.
+     * By default a JXPanel
+     * already has a single painter installed which draws the normal background for a panel
+     * according to the current Look and Feel. Calling
+     * <CODE>setBackgroundPainter</CODE> will replace that existing painter.
+     * @param p the new painter
+     * @see getBackgroundPainter()
      */
     public void setBackgroundPainter(Painter p) {
         Painter old = getBackgroundPainter();
         backgroundPainter = p;
-        if (p != null) {
-            setOpaque(false);
-        }
-        
         firePropertyChange("backgroundPainter", old, getBackgroundPainter());
         repaint();
     }
     
+    /**
+     * Returns the current background painter. The default value of this property 
+     * is a painter which draws the normal JPanel background according to the current look and feel.
+     * @return the current painter
+     * @see setBackgroundPainter(Painter)
+     */
     public Painter getBackgroundPainter() {
         return backgroundPainter;
     }
     
     /**
      * Overriden paint method to take into account the alpha setting
+     * @param g 
      */
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D)g;
@@ -285,23 +294,21 @@ public class JXPanel extends JPanel implements Scrollable {
     }
     
     /**
-     * overridden to provide gradient painting
-     *
-     * TODO: Chris says that in OGL we actually suffer here by caching the
-     * gradient paint since the OGL pipeline will render gradients on
-     * hardware for us. The decision to use cacheing is based on my experience
-     * with gradient title borders slowing down repaints -- this could use more
-     * extensive analysis.
+     * Overridden to provide Painter support. It will call backgroundPainter.paint()
+     * if it is not null, else it will call super.paintComponent().
      */
     protected void paintComponent(Graphics g) {
-        //Insets ins = this.getInsets();
-        //g2.translate(ins.left, ins.top);
-        //painterSupport.paint(g2, this,
-        //        this.getWidth()  - ins.left - ins.right,
-        //        this.getHeight() - ins.top  - ins.bottom);
         if(backgroundPainter != null) {
             Graphics2D g2 = (Graphics2D)g.create();
-            backgroundPainter.paint(g2, this, this.getWidth(), this.getHeight());
+            // account for the insets
+            Insets ins = this.getInsets();
+            g2.translate(ins.left, ins.top);
+            //painterSupport.paint(g2, this,
+            //        this.getWidth()  - ins.left - ins.right,
+            //        this.getHeight() - ins.top  - ins.bottom);
+            //backgroundPainter.paint(g2, this, this.getWidth(), this.getHeight());
+            backgroundPainter.paint(g2, this, this.getWidth() - ins.left - ins.right,
+                    this.getHeight() - ins.top - ins.bottom);
             g2.dispose();
         } else {
             super.paintComponent(g);

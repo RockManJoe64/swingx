@@ -46,6 +46,14 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     public RectanglePainter(Color fillPaint, Color borderPaint) {
         this(0,0,0,0,0,0,false,fillPaint,1f,borderPaint);
     }
+    
+    public RectanglePainter(Paint fillPaint, Paint borderPaint, float borderWidth, RectanglePainter.Style style) {
+        this();
+        setFillPaint(fillPaint);
+        setBorderPaint(borderPaint);
+        setBorderWidth(borderWidth);
+        setStyle(style);
+    }
     public RectanglePainter(int top, int left, int bottom, int right) {
         this(top, left, bottom, right, 0, 0, false, Color.RED, 1f, Color.BLACK);
     }
