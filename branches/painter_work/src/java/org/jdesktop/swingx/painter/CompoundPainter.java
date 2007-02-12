@@ -80,6 +80,14 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
             System.arraycopy(painters, 0, this.painters, 0, painters.length);
         }
     }
+    
+    private boolean useCaching;
+    public CompoundPainter(boolean useCaching, Painter ... painters) {
+        this(painters);
+        this.useCaching = useCaching;
+    }
+    
+
     /* joshy: not used since we got rid of layers.
     public CompoundPainter(Map<Integer,List<Painter>> painterSet) {
         // create a flat list of painters
@@ -191,5 +199,9 @@ public class CompoundPainter<T> extends AbstractPainter<T> {
         AffineTransform old = getTransform();
         this.transform = transform;
         firePropertyChange("transform",old,transform);
+    }
+
+    protected boolean isUseCache() {
+        return useCaching;
     }
 }
