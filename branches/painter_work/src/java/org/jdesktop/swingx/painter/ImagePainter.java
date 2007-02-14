@@ -223,7 +223,6 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
                     if(scaleToFit) {
                         int sw = imgWidth;
                         int sh = imgHeight;
-                        p("sw before = " + sw+ " height = " + height + " rect height = " + rect.height);
                         if(sw > width) {
                             float scale = (float)width/(float)sw;
                             sw = (int)(sw * scale);
@@ -234,8 +233,6 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
                             sw = (int)(sw * scale);
                             sh = (int)(sh * scale);
                         }
-                        p("sw after = " + sw);
-                        p("doing scale to fit");
                         g.drawImage(img, 0, 0, sw, sh, null);
                     } else {
                         g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
