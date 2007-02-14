@@ -86,6 +86,8 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
     private boolean horizontalRepeat;
     private boolean verticalRepeat;
     
+    private boolean scaleToFit = false;
+    
     
     /**
      * Create a new ImagePainter. By default there is no image, and the alignment
@@ -217,7 +219,27 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
                     g.fillRect(0,0,width,height);
                     g.setClip(oldClip);
                 } else {
-                    g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
+                    
+                    if(scaleToFit) {
+                        int sw = imgWidth;
+                        int sh = imgHeight;
+                        p("sw before = " + sw+ " height = " + height + " rect height = " + rect.height);
+                        if(sw > width) {
+                            float scale = (float)width/(float)sw;
+                            sw = (int)(sw * scale);
+                            sh = (int)(sh * scale);
+                        }
+                        if(sh > height) {
+                            float scale = (float)height/(float)sh;
+                            sw = (int)(sw * scale);
+                            sh = (int)(sh * scale);
+                        }
+                        p("sw after = " + sw);
+                        p("doing scale to fit");
+                        g.drawImage(img, 0, 0, sw, sh, null);
+                    } else {
+                        g.drawImage(img, rect.x, rect.y, rect.width, rect.height, null);
+                    }
                 }
             }
         }
@@ -230,6 +252,10 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
             g.setStroke(new BasicStroke(getBorderWidth()));
             g.draw(shape);
         }
+    }
+    
+    public void setScaleToFit(boolean scaleToFit) {
+        this.scaleToFit = scaleToFit;
     }
     
     
@@ -255,7 +281,7 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
     private PainterUtil.PersistenceOwner resolver = null;
     /**
      * Used by the persistence mechanism.
-     * @param resolver 
+     * @param resolver
      */
     public void setResolver(PainterUtil.PersistenceOwner resolver) {
         //        p("resolver has been set: " + resolver);
@@ -355,14 +381,16 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
     }
     
     /**
-     * 
+     *
      */
     public Shape provideShape(Graphics2D g, T comp, int width, int height) {
         if(getImage() != null) {
             BufferedImage img = getImage();
             int imgWidth = img.getWidth();
             int imgHeight = img.getHeight();
+            
             Rectangle rect = calculateLayout(imgWidth, imgHeight, width, height);
+            
             return rect;
         }
         return new Rectangle(0,0,0,0);
