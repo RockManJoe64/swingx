@@ -87,7 +87,9 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
     private boolean verticalRepeat;
     
     private boolean scaleToFit = false;
+    private ScaleType scaleType = ScaleType.InsideFit;
     
+    public enum ScaleType { InsideFit, OutsideFit, Distort };
     
     /**
      * Create a new ImagePainter. By default there is no image, and the alignment
@@ -219,19 +221,32 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
                     g.fillRect(0,0,width,height);
                     g.setClip(oldClip);
                 } else {
-                    
                     if(scaleToFit) {
                         int sw = imgWidth;
                         int sh = imgHeight;
-                        if(sw > width) {
-                            float scale = (float)width/(float)sw;
-                            sw = (int)(sw * scale);
-                            sh = (int)(sh * scale);
+                        if(scaleType == scaleType.InsideFit) {
+                            if(sw > width) {
+                                float scale = (float)width/(float)sw;
+                                sw = (int)(sw * scale);
+                                sh = (int)(sh * scale);
+                            }
+                            if(sh > height) {
+                                float scale = (float)height/(float)sh;
+                                sw = (int)(sw * scale);
+                                sh = (int)(sh * scale);
+                            }
                         }
-                        if(sh > height) {
-                            float scale = (float)height/(float)sh;
-                            sw = (int)(sw * scale);
-                            sh = (int)(sh * scale);
+                        if(scaleType == ScaleType.OutsideFit) {
+                            if(sw > width) {
+                                float scale = (float)width/(float)sw;
+                                sw = (int)(sw * scale);
+                                sh = (int)(sh * scale);
+                            }
+                            if(sh < height) {
+                                float scale = (float)height/(float)sh;
+                                sw = (int)(sw * scale);
+                                sh = (int)(sh * scale);
+                            }
                         }
                         g.drawImage(img, 0, 0, sw, sh, null);
                     } else {
@@ -396,6 +411,14 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
     
     private void p(String string) {
         System.out.println(string);
+    }
+    
+    public ScaleType getScaleType() {
+        return scaleType;
+    }
+    
+    public void setScaleType(ScaleType scaleType) {
+        this.scaleType = scaleType;
     }
     
 }
