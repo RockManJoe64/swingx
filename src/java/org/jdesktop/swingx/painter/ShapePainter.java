@@ -151,6 +151,7 @@ public class ShapePainter<T> extends AbstractAreaPainter<T> {
             g = (Graphics2D)g.create();
             g.translate(rect.x, rect.y);
             //draw/fill the shape
+            drawPathEffects(g, shape, rect.width, rect.height);
             switch (getStyle()) {
                 case BOTH:
                     drawShape(g, shape, component, rect.width, rect.height);
@@ -178,12 +179,6 @@ public class ShapePainter<T> extends AbstractAreaPainter<T> {
     private void fillShape(Graphics2D g, Shape shape, T component, int w, int h) {
         g.setPaint(calculateFillPaint(component, w, h));
         g.fill(shape);
-        if(getPathEffects() != null) {
-            //Paint pt = calculateFillPaint(component, w, h);
-            for(AreaEffect ef : getPathEffects()) {
-                ef.apply(g, shape, w, h);
-            }
-        }
     }
     
     // shape effect stuff
@@ -218,5 +213,14 @@ public class ShapePainter<T> extends AbstractAreaPainter<T> {
             }
         }
         return p;
+    }
+
+    private void drawPathEffects(Graphics2D g, Shape shape, int w, int h) {
+        if(getPathEffects() != null) {
+            //Paint pt = calculateFillPaint(component, w, h);
+            for(AreaEffect ef : getPathEffects()) {
+                ef.apply(g, shape, w, h);
+            }
+        }
     }
 }
