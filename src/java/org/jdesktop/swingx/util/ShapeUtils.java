@@ -9,13 +9,17 @@
 
 package org.jdesktop.swingx.util;
 
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 /**
  *
@@ -62,5 +66,18 @@ public final class ShapeUtils {
         }
         
         return poly;
+    }
+
+    public static Shape generateShapeFromText(Font font, char ch) {
+        return generateShapeFromText(font, new String(new char[] {ch}));
+    }
+    
+    public static Shape generateShapeFromText(Font font, String string) {
+        BufferedImage img = new BufferedImage(100,100,BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        GlyphVector vect = font.createGlyphVector(g2.getFontRenderContext(), string);
+        Shape shape = vect.getOutline(0f,(float)-vect.getVisualBounds().getY());
+        g2.dispose();
+        return shape;
     }
 }
