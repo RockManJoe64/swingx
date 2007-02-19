@@ -549,11 +549,19 @@ public class JXErrorDialog extends JDialog {
                     html.append("    " + incidentInfo.getErrorLevel());
                     html.append("</pre>");
                     html.append("<b>Stack Trace:</b>");
-                    html.append("<pre>");
-                    for (StackTraceElement el : incidentInfo.getErrorException().getStackTrace()) {
-                        html.append("    " + el.toString() + "\n");
+                    Throwable thr = incidentInfo.getErrorException();
+                    while(thr != null) {
+                        html.append("<pre>");
+                        html.append("    " + thr.toString());
+                        html.append("</pre>");
+                        html.append("<pre>");
+                        for (StackTraceElement el : thr.getStackTrace()) {
+                            html.append("    " + el.toString() + "\n");
+                        }
+                        html.append("</pre>");
+                        thr = thr.getCause();
                     }
-                    html.append("</pre></html>");
+                    html.append("</html>");
                     details = html.toString();
                 } else {
                     details = "";
