@@ -52,6 +52,7 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
                 JColorChooser chooser = new JColorChooser();
                 chooser.addChooserPanel(new EyeDropperColorChooserPanel());
                 JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.add(chooser);
                 frame.pack();
                 frame.setVisible(true);
@@ -84,7 +85,7 @@ public class EyeDropperColorChooserPanel extends AbstractColorChooserPanel {
             eyeDropper.setIcon(new ImageIcon(getClass().getResource("mag.png")));
             eyeDropper.setText("");
         } catch (Exception ex) {
-            
+            ex.printStackTrace();
         }
         
         magPanel.addPropertyChangeListener(new PropertyChangeListener() {
