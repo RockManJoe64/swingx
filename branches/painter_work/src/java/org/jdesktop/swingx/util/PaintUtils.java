@@ -41,6 +41,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -214,6 +215,12 @@ public class PaintUtils {
      */
     public static BufferedImage loadCompatibleImage(URL resource) throws IOException {
         BufferedImage image = ImageIO.read(resource);
+        if(image == null) return null;
+        return toCompatibleImage(image);
+    }
+    
+    public static BufferedImage loadCompatibleImage(InputStream in) throws IOException {
+        BufferedImage image = ImageIO.read(in);
         if(image == null) return null;
         return toCompatibleImage(image);
     }

@@ -63,8 +63,13 @@ public class PropertyValuePanel extends JPanel {
                 Paint p = ColorUtil.getCheckerPaint(Color.GRAY, Color.WHITE, 6);
                 ((Graphics2D)g).setPaint(p);
                 g.fillRect(0,0,getWidth(), getHeight());
-                if(getPropertyEditor().isPaintable()) {
-                    getPropertyEditor().paintValue(g, new Rectangle(0, 0, getWidth(), getHeight()));
+                if(getPropertyEditor() != null) {
+                    if(getPropertyEditor().isPaintable()) {
+                        getPropertyEditor().paintValue(g, new Rectangle(0, 0, getWidth(), getHeight()));
+                    }
+                } else {
+                    g.drawLine(0,0,getWidth(),getHeight());
+                    g.drawLine(0,0,getWidth(),getHeight());
                 }
                 super.paintComponent(g);
             }
