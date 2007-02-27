@@ -19,6 +19,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
+import org.apache.batik.ext.awt.LinearGradientPaint;
+import org.jdesktop.swingx.JXGradientChooser;
 import org.jdesktop.swingx.painter.effects.AreaEffect;
 import org.jdesktop.swingx.util.PaintUtils;
 
@@ -220,9 +222,18 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     }
     
     private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
-        g.setPaint(getBorderPaint());
+        Paint p = getBorderPaint();
+        if(isSnapPaint()) {
+            p = calculateSnappedPaint(p, width, height);
+            System.out.println("snapped paint = " + JXGradientChooser.toString((LinearGradientPaint)p));
+            
+        }
+        
+        g.setPaint(p);
+        
         g.setStroke(new BasicStroke(getBorderWidth()));
         g.draw(shape);
+        
     }
     
     private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
