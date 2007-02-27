@@ -21,7 +21,7 @@ import org.jdesktop.swingx.editors.PainterUtil;
  *
  * @author joshy
  */
-public class URLPainter extends CompoundPainter{
+public class URLPainter extends CompoundPainter {
     URL url;
     /**
      * Creates a new instance of URLPainter
@@ -70,6 +70,7 @@ public class URLPainter extends CompoundPainter{
     
     private void load() {
         try {
+            System.out.println("loading");
             Painter painter = PainterUtil.loadPainter(url);
             this.setPainters(new Painter[] { painter });
             loaded = true;
@@ -77,8 +78,9 @@ public class URLPainter extends CompoundPainter{
             ex.printStackTrace();
         }
     }
-    
-    public void paintBackground(Graphics2D g, JComponent component, int width, int height) {
+
+    public void doPaint(Graphics2D g, Object component, int width, int height) {
+        System.out.println("creating new url painter");
         if(!loaded) {
             load();
         }

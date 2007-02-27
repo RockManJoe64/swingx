@@ -28,6 +28,7 @@ public class PositionedPainterBeanInfo extends AbstractPainterBeanInfo {
         setPropertyEditor(InsetsPropertyEditor.class,"insets");
         setPropertyEditor(VerticalPropertyEditor.class,"vertical");
         setPropertyEditor(HorizontalPropertyEditor.class,"horizontal");
+        setHidden(true,"pathEffects");
     }
 
     public static final class HorizontalPropertyEditor extends EnumerationValuePropertyEditor {
