@@ -582,6 +582,21 @@ public class PainterDemoSet extends javax.swing.JFrame {
         rect = new RectanglePainter(5,5,5,5,10,10,true,Color.RED,0,Color.BLACK);
         addDemo("Red Rectangle w/ 0px black border", "rect21", new MattePainter(Color.WHITE), rect);
         //$endcite
+        
+        rect = new RectanglePainter(Color.BLACK,Color.RED);
+        rect.setInsets(new Insets(0,0,0,0));
+        rect.setStyle(RectanglePainter.Style.BOTH);
+        rect.setBorderWidth(1f);
+        addDemo("Plain rect for sizing bugs","rect22",new MattePainter(Color.GREEN),rect);
+        
+        rect = new RectanglePainter(Color.BLACK,Color.RED);
+        rect.setRoundHeight(10);
+        rect.setRoundWidth(10);
+        rect.setRounded(true);
+        rect.setInsets(new Insets(0,0,0,0));
+        rect.setStyle(RectanglePainter.Style.BOTH);
+        rect.setBorderWidth(1f);
+        addDemo("Plain round rect for sizing bugs","rect23",new MattePainter(Color.GREEN),rect);
     }
     
     private void textDemos(final MultipleGradientPaint gradient) {

@@ -17,6 +17,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JComponent;
 import org.apache.batik.ext.awt.LinearGradientPaint;
@@ -65,8 +66,8 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     }
     
     public RectanglePainter(int width, int height, int cornerRadius, Paint fillPaint) {
-        this(new Insets(0,0,0,0), width,height, 
-                cornerRadius, cornerRadius, true, 
+        this(new Insets(0,0,0,0), width,height,
+                cornerRadius, cornerRadius, true,
                 fillPaint, 1f, Color.BLACK);
     }
     
@@ -160,7 +161,7 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     
     
     /* ======== drawing code ============ */
-    private Shape calculateShape(T component, int width, int height) {
+    private RectangularShape calculateShape(T component, int width, int height) {
         Insets insets = getInsets();
         int x = insets.left;
         int y = insets.top;
@@ -170,7 +171,7 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
         if(this.width != -1 && !isFillHorizontal()) {
             width = this.width;
             x = bounds.x;
-        } 
+        }
         if(this.height != -1 && !isFillVertical()) {
             height = this.height;
             y = bounds.y;
@@ -184,7 +185,7 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
         }
         
         
-        Shape shape = new Rectangle2D.Double(x, y, width, height);
+        RectangularShape shape = new Rectangle2D.Double(x, y, width, height);
         if(rounded) {
             shape = new RoundRectangle2D.Double(x, y, width, height, roundWidth, roundHeight);
         }
@@ -194,20 +195,20 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     
     
     public void doPaint(Graphics2D g, T component, int width, int height) {
-        Shape shape = calculateShape(component, width, height);
+        RectangularShape shape = calculateShape(component, width, height);
         switch (getStyle()) {
-            case BOTH:
-                drawBackground(g,shape,width,height);
-                drawBorder(g,shape,width,height);
-                break;
-            case FILLED:
-                drawBackground(g,shape,width,height);
-                break;
-            case OUTLINE:
-                drawBorder(g,shape,width,height);
-                break;
-            case NONE:
-                break;
+        case BOTH:
+            drawBackground(g,shape,width,height);
+            drawBorder(g,shape,width,height);
+            break;
+        case FILLED:
+            drawBackground(g,shape,width,height);
+            break;
+        case OUTLINE:
+            drawBorder(g,shape,width,height);
+            break;
+        case NONE:
+            break;
         }
         
         // background
@@ -221,18 +222,29 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
         //g.setClip(shape);
     }
     
-    private void drawBorder(Graphics2D g, Shape shape, int width, int height) {
+    private void drawBorder(Graphics2D g, RectangularShape shape, int width, int height) {
         Paint p = getBorderPaint();
         if(isSnapPaint()) {
             p = calculateSnappedPaint(p, width, height);
-            System.out.println("snapped paint = " + JXGradientChooser.toString((LinearGradientPaint)p));
-            
         }
         
         g.setPaint(p);
         
         g.setStroke(new BasicStroke(getBorderWidth()));
-        g.draw(shape);
+        // shrink the border by 1 px
+        if(shape instanceof Rectangle2D) {
+            g.draw(new Rectangle2D.Double(shape.getX(), shape.getY(),
+                    shape.getWidth()-1, shape.getHeight()-1));
+        } else if(shape instanceof RoundRectangle2D) {
+            g.draw(new RoundRectangle2D.Double(shape.getX(), shape.getY(),
+                    shape.getWidth()-1, shape.getHeight()-1, 
+                    ((RoundRectangle2D)shape).getArcWidth(),
+                    ((RoundRectangle2D)shape).getArcHeight()));
+            
+        } else {
+            g.draw(shape);
+        }
+        
         
     }
     
@@ -255,6 +267,6 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     public Shape provideShape(Graphics2D g, T comp, int width, int height) {
         return calculateShape(comp,width,height);
     }
-
+    
 }
 
