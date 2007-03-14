@@ -78,7 +78,7 @@ public class MattePainter<T> extends AbstractAreaPainter<T> {
     public void doPaint(Graphics2D g, T component, int width, int height) {
         Paint p = getFillPaint();
         if (p != null) {
-            if(isSnapPaint()) {
+            if(isPaintStretched()) {
                 p = calculateSnappedPaint(p,width,height);
             }
             g.setPaint(p);

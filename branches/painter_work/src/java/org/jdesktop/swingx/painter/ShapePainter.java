@@ -193,8 +193,8 @@ public class ShapePainter<T> extends AbstractAreaPainter<T> {
                 p = ((JComponent)component).getForeground();
             }
         }
-        if(isSnapPaint()) {
-            p = AbstractAreaPainter.calculateSnappedPaint(p, width, height);
+        if(isPaintStretched()) {
+            p = calculateSnappedPaint(p, width, height);
         }
         return p;
     }
@@ -202,8 +202,8 @@ public class ShapePainter<T> extends AbstractAreaPainter<T> {
     private Paint calculateFillPaint(T component, int width, int height) {
         //set the fillPaint
         Paint p = getFillPaint();
-        if(isSnapPaint()) {
-            p = AbstractAreaPainter.calculateSnappedPaint(p, width, height);
+        if(isPaintStretched()) {
+            p = calculateSnappedPaint(p, width, height);
         } else {
             //u.p("not snapping");
         }

@@ -178,7 +178,7 @@ public class ImagePainter<T> extends AbstractAreaPainter<T> {
         Paint p = getFillPaint();
         
         if(p != null) {
-            if(isSnapPaint()) {
+            if(isPaintStretched()) {
                 p = calculateSnappedPaint(p, width, height);
             }
             g.setPaint(p);
