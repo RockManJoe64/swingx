@@ -697,7 +697,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         // text with snapped gradient
         text = new TextPainter("Neon",font,Color.BLACK);
         text.setFillPaint(gradient);
-        text.setSnapPaint(true);
+        text.setPaintStretched(true);
         addDemo(new JXPanel(), new CompoundPainter(gray,text),"Text with snapped gradient","text10");
         //$endcite
         
@@ -1487,7 +1487,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         paint = new GradientPaint(new Point(30,30),Color.RED,
                 new Point(80,30), Color.GREEN);
         matte = new MattePainter(paint);
-        matte.setSnapPaint(true);
+        matte.setPaintStretched(true);
         addDemo("single stop, horiz snapped","grad02",matte);
         //$endcite
         
@@ -1505,7 +1505,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         paint = new GradientPaint(new Point(30,30),Color.RED,
                 new Point(30,80), Color.GREEN);
         matte = new MattePainter(paint);
-        matte.setSnapPaint(true);
+        matte.setPaintStretched(true);
         addDemo("single stop, vert, snapped","grad12",matte);
         //$endcite
         
@@ -1522,7 +1522,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
         paint = new GradientPaint(new Point(30,30),Color.RED,
                 new Point(80,80), Color.GREEN);
         matte = new MattePainter(paint);
-        matte.setSnapPaint(true);
+        matte.setPaintStretched(true);
         addDemo("single stop, diag, snapped","grad14",matte);
         //$endcite
         
@@ -1543,7 +1543,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
                 new float[] {0f, 0.5f, 1f},
                 new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
         matte = new MattePainter(paint);
-        matte.setSnapPaint(true);
+        matte.setPaintStretched(true);
         addDemo("multi stop horiz, snapped","grad08",matte);
         //$endcite
         
@@ -1562,7 +1562,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
                 new float[] {0f, 0.5f, 1f},
                 new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
         matte = new MattePainter(paint);
-        matte.setSnapPaint(true);
+        matte.setPaintStretched(true);
         addDemo("multi stop vert, snapped","grad10",matte);
         //$endcite
         
@@ -1582,7 +1582,7 @@ public class PainterDemoSet extends javax.swing.JFrame {
                 new float[] {0f, 0.5f, 1f},
                 new Color[] {Color.RED, Color.GREEN, Color.BLUE} );
         matte = new MattePainter(paint);
-        matte.setSnapPaint(true);
+        matte.setPaintStretched(true);
         addDemo("multi stop diag, snapped","grad06",matte);
         //$endcite
         
