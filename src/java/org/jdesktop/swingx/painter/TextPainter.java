@@ -131,7 +131,7 @@ public class TextPainter<T> extends AbstractAreaPainter<T> {
         
         g.translate(res.x, res.y);
         
-        if(isSnapPaint()) {
+        if(isPaintStretched()) {
             paint = calculateSnappedPaint(paint, res.width, res.height);
         }
         

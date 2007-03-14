@@ -224,7 +224,7 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     
     private void drawBorder(Graphics2D g, RectangularShape shape, int width, int height) {
         Paint p = getBorderPaint();
-        if(isSnapPaint()) {
+        if(isPaintStretched()) {
             p = calculateSnappedPaint(p, width, height);
         }
         
@@ -250,7 +250,7 @@ public class RectanglePainter<T> extends AbstractAreaPainter<T> {
     
     private void drawBackground(Graphics2D g, Shape shape, int width, int height) {
         Paint p = getFillPaint();
-        if(isSnapPaint()) {
+        if(isPaintStretched()) {
             p = calculateSnappedPaint(p, width, height);
         }
         

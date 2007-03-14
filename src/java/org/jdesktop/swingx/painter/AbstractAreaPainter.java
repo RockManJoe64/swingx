@@ -26,13 +26,13 @@ import org.jdesktop.swingx.painter.effects.AreaEffect;
 
 
 /**
- * The abstract base class for all painters that fill a vector path area.  This includes Shapes, Rectangles, Text, and the MattePainter 
+ * The abstract base class for all painters that fill a vector path area.  This includes Shapes, Rectangles, Text, and the MattePainter
  * which fills in the entire background of a component.  The defining feature of AbstractAreaPainter subclasses
  * is that they implement the provideShape() method which returns the outline shape of the area that this
  * painter will fill.   Subclasses must implement the provideShape() method.
- * 
+ *
  * The AbstractAreaPainter provides support for the following common painting properties
- * 
+ *
  * <ul>
  * <li>fillPaint</li>
  * <li>snapPaint</li>
@@ -40,9 +40,9 @@ import org.jdesktop.swingx.painter.effects.AreaEffect;
  * <li>borderWidth</li>
  * <li>style</li>
  * </ul>
- * 
+ *
  * The AbstractAreaPainter also provides support for path effects like dropshadows and glows.
- * 
+ *
  * @author joshy
  */
 public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
@@ -56,7 +56,9 @@ public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
      */
     public enum Style {BOTH, FILLED, OUTLINE, NONE}
     
-    private boolean snapPaint;
+    // controls if the paint should be stretched to fill the available area
+    private boolean stretchPaint;
+    
     private AreaEffect[] pathEffect;
     
     
@@ -85,8 +87,8 @@ public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
         fillPaint = Color.RED;
     }
     /**
-     * 
-     * @param paint 
+     *
+     * @param paint
      */
     public AbstractAreaPainter(Paint paint) {
         this.fillPaint = paint;
@@ -117,20 +119,22 @@ public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
      * resized. This setting is only used for gradient paints. It will have no effect on Color or Texture paints.
      * @return the current value of the snapPaint property
      */
-    public boolean isSnapPaint() {
-        return snapPaint;
+    public boolean isPaintStretched() {
+        return stretchPaint;
     }
     
+    
     /**
-     * Indicates that the paint should be snapped. This means that the paint will be scaled and aligned along the 4 axis of (horizontal, vertical,
-     * and both diagonals). Snapping allows the paint to be stretched across the component when it is drawn, even if the component is
-     * resized. This setting is only used for gradient paints. It will have no effect on Color or Texture paints.
-     * @param snapPaint new value for the snapPaint property
+     * Specifies whether this Painter should attempt to resize the Paint to fit the area being painted.
+     * For example, if true, then a gradient specified as (0, 0), (1, 0) would stretch horizontally such that
+     * the beginning of the gradient is on the left edge of the painted region, and the end of the gradient
+     * is at the right edge of the painted region.
+     * Specifically, if true, the resizePaint method will be called to perform the actual resizing of the Paint
      */
-    public void setSnapPaint(boolean snapPaint) {
-        boolean old = this.isSnapPaint();
-        this.snapPaint = snapPaint;
-        firePropertyChange("snapPaint",old,this.snapPaint);
+    public void setPaintStretched(boolean paintStretched) {
+        boolean old = this.isPaintStretched();
+        this.stretchPaint = paintStretched;
+        firePropertyChange("snapPaint",old,this.stretchPaint);
     }
     
     /**
@@ -200,20 +204,12 @@ public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
     
     
     /**
-     * 
-     * A utility method for snapping paints. Mainly for use by AbstractAreaPainter subclasses. It will
-     * produce a new paint which is the stretched and aligned version of the original paint. It
-     * will align the paint along the four axis (horizontal, vertical, and both diagonals) depending
-     * on which one is nearer. It will also stretch the paint across the area to be painted. This is
-     * mainly used to create paints which will cover a component when it is resized.  At this time only
-     * gradients can be snapped. Texture and Color paints will be returned unmodified.
-     * 
-     * @param p the paint to be snapped
-     * @param width the width of the area to snap over
-     * @param height the width of the area to snap over
-     * @return the new paint.
+     * Resizes the given Paint. By default, only Gradients, LinearGradients, and RadialGradients are resized
+     * in this method. If you have special resizing needs, override this method. This
+     * method is mainly used to make gradient paints resize with the component this
+     * painter is attached to.
      */
-    public static Paint calculateSnappedPaint(Paint p, int width, int height) {
+    Paint calculateSnappedPaint(Paint p, int width, int height) {
         if(p instanceof Color) {
             return p;
         }
@@ -240,65 +236,6 @@ public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
             pts[0] = mgp.getStartPoint();
             pts[1] = mgp.getEndPoint();
             pts = adjustPoints(pts, width, height);
-            /*
-            double angle = calcAngle(start,end);
-            double a2 = Math.toDegrees(angle);
-            double e = 10;
-            
-            // if it is near 0 degrees
-            if(Math.abs(angle) < Math.toRadians(e) ||
-                    Math.abs(angle) > Math.toRadians(360-e)) {
-                start = new Point2D.Float(0,0);
-                end = new Point2D.Float(width,0);
-            }
-            
-            // near 45
-            if(isNear(a2, 45, e)) {
-                start = new Point2D.Float(0,0);
-                end = new Point2D.Float(width,height);
-            }
-            
-            // near 90
-            if(isNear(a2,  90, e)) {
-                start = new Point2D.Float(0,0);
-                end = new Point2D.Float(0,height);
-            }
-            
-            // near 135
-            if(isNear(a2, 135, e)) {
-                start = new Point2D.Float(width,0);
-                end = new Point2D.Float(0,height);
-            }
-            
-            // near 180
-            if(isNear(a2, 180, e)) {
-                start = new Point2D.Float(width,0);
-                end = new Point2D.Float(0,0);
-            }
-            
-            // near 225
-            if(isNear(a2, 225, e)) {
-                start = new Point2D.Float(width,height);
-                end = new Point2D.Float(0,0);
-            }
-            
-            // near 270
-            if(isNear(a2, 270, e)) {
-                start = new Point2D.Float(0,height);
-                end = new Point2D.Float(0,0);
-            }
-            
-            // near 315
-            if(isNear(a2, 315, e)) {
-                start = new Point2D.Float(0,height);
-                end = new Point2D.Float(width,0);
-            }
-            LinearGradientPaint mgp2 = new LinearGradientPaint(
-                    start, end,
-                    mgp.getFractions(),
-                    mgp.getColors());
-             */
-            
             LinearGradientPaint mgp2 = new LinearGradientPaint(
                     pts[0], pts[1],
                     mgp.getFractions(),
@@ -362,7 +299,7 @@ public abstract class AbstractAreaPainter<T> extends AbstractLayoutPainter<T> {
         
         double angle = calcAngle(start,end);
         double a2 = Math.toDegrees(angle);
-        double e = 10;
+        double e = 1;
         
         // if it is near 0 degrees
         if(Math.abs(angle) < Math.toRadians(e) ||
