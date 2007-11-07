@@ -21,15 +21,12 @@
 package org.jdesktop.swingx.plaf;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.plaf.FontUIResource;
-import javax.swing.plaf.LabelUI;
 
 import org.jdesktop.swingx.JXHeader;
 
@@ -48,8 +45,9 @@ public class HeaderAddon extends AbstractComponentAddon {
         super.addBasicDefaults(addon, defaults);
         defaults.addAll(Arrays.asList(new Object[]{
             JXHeader.uiClassID, "org.jdesktop.swingx.plaf.basic.BasicHeaderUI",
+            //TODO image is missing
             "JXHeader.defaultIcon", LookAndFeel.makeIcon(HeaderAddon.class,
-                    "resources/header-default.png"),
+                    "basic/resources/header-default.png"),
                     "JXHeader.titleFont", UIManager.getFont("Label.font"),
                     "JXHeader.titleForeground", UIManager.getColor("Label.foreground"),
                     "JXHeader.descriptionFont", UIManager.getFont("Label.font"),

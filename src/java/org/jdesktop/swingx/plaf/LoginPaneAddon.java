@@ -24,8 +24,8 @@ package org.jdesktop.swingx.plaf;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.LookAndFeel;
@@ -55,23 +55,16 @@ public class LoginPaneAddon extends AbstractComponentAddon {
       "org.jdesktop.swingx.plaf.basic.BasicLoginPaneUI",
       //TODO this icon is unused; remove?
       "JXLoginPane.errorIcon",
-      LookAndFeel.makeIcon(LoginPaneAddon.class, "resources/error16.png"),
+      LookAndFeel.makeIcon(LoginPaneAddon.class, "basic/resources/error16.png"),
       "JXLoginPane.bannerFont",
       new FontUIResource("Arial Bold", Font.PLAIN, 36),
       "JXLoginPane.bannerForeground", new ColorUIResource(Color.WHITE),
       "JXLoginPane.bannerDarkBackground", new ColorUIResource(Color.GRAY),
       "JXLoginPane.bannerLightBackground", new ColorUIResource(Color.LIGHT_GRAY),
     }));
-    // Popuplate UIDefaults with the localizable Strings we will use
-    // in the Login panel.
-    String clsName = JXLoginPane.class.getCanonicalName();
-    ResourceBundle res = ResourceBundle.getBundle("org.jdesktop.swingx.auth.resources.resources", JXLoginPane.getDefaultLocale());
-    Enumeration<String> keys = res.getKeys();
-    while (keys.hasMoreElements()) {
-        String key = keys.nextElement();
-        UIManager.put(clsName + "." + key, res.getString(key));
-        //System.out.println("adding:" + clsName + "." + key +", val:" + res.getString(key));
-    }
+    
+    UIManager.getDefaults().addResourceBundle(
+        "org.jdesktop.swingx.plaf.basic.resources.LoginPane");
   }
   
   @Override
