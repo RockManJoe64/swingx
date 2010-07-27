@@ -23,9 +23,9 @@
       <url>https://swingx.dev.java.net/issues/</url>
     </issueManagement>
     <scm>
-        <connection>scm:svn:https://swingx.dev.java.net/svn/swingx/branches/swingx-1.6.1-mavenized</connection>
-        <developerConnection>scm:svn:https://swingx.dev.java.net/svn/swingx/branches/swingx-1.6.1-mavenized</developerConnection>
-        <url>https://swingx.dev.java.net/source/browse/swingx/branches/swingx-1.6.1-mavenized</url>
+        <connection>scm:svn:https://swingx.dev.java.net/svn/swingx/branches/swingx-r3734-mavenized</connection>
+        <developerConnection>scm:svn:https://swingx.dev.java.net/svn/swingx/branches/swingx-r3734-mavenized</developerConnection>
+        <url>https://swingx.dev.java.net/source/browse/swingx/branches/swingx-r3734-mavenized</url>
     </scm>
     <description>Contains extensions to the Swing GUI toolkit, including new and enhanced components that provide functionality commonly required by rich client applications.</description>
   <dependencyManagement>
