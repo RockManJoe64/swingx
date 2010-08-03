@@ -80,10 +80,10 @@
           <!--classesDirectory>${project.build.directory}/emma-classes</classesDirectory-->    
         </configuration>        
       </plugin>
-      <!--plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>emma-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0-alpha-2</version>
         <inherited>true</inherited>
         <executions>
           <execution>
@@ -92,7 +92,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin-->
+      </plugin>
       <!--plugin>
         <groupId>net.sf.jmd</groupId>
         <artifactId>maven-crap4j-plugin</artifactId>
