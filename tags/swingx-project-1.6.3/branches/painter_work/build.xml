@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="swingx" default="default" basedir=".">
+    <description>Builds, tests, and runs the project swingx.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="swingx-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+    <target name="pack">
+        <taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="c:/Program Files/Apache/Ant/lib/Pack200Task.jar" /> 
+        <pack200 src="dist/swingx.jar" destfile="dist/swingx.pack.gz" GZIPOutput="yes" verbose="0" />
+    </target>
+    
+    <target name="package-and-upload">
+        
+        <property name="app.name" value="PainterEditor"/>
+        <property name="user.overrides" location="${user.home}/.antoverrides/build.properties"/>
+        <echo message="loading user overrides: ${user.overrides}"/>
+        <property file="${user.overrides}"/>
+
+        <property name="jnlp.dist.dir" value="dist"/>
+        <property name="jnlp.lib.dir" value="${jnlp.dist.dir}/lib"/>
+        <echo message="jnlp dist lib dir = ${jnlp.lib.dir}"/>
+       
+        <copy todir="${jnlp.lib.dir}">
+            <fileset dir="lib">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        
+        
+        <echo message="signing all of the jars"/>
+        <property name="keystore" value="testkeystore"/>
+        <property name="alias" value="joshy"/>
+
+        <!-- the support jars
+        -->
+        <signjar alias="${alias}" storepass="password" keystore="${keystore}">
+            <fileset dir="${jnlp.lib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </signjar>
+        
+        <!-- the main jar -->
+        <signjar alias="${alias}" storepass="password" keystore="${keystore}">
+            <fileset dir="${jnlp.dist.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </signjar>
+
+
+        <!-- =========== uploads =============== -->
+        
+    
+        <property name="upload.username" value="joshy"/>
+        <property name="upload.hostname" value="207.234.130.36"/> <!-- joshy.org -->
+        <property name="upload.path" value="www/project/PainterEditor"/>
+        <echo message="uploading the jnlp"/>
+        <scp todir="${upload.username}:${upload.password}@${upload.hostname}:${upload.path}" verbose="true">
+            <fileset dir="src/beaninfo/org/jdesktop/swingx/painterset/deployment/">
+                <include name="*.jnlp"/>
+                <include name="*.png"/>
+            </fileset>
+        </scp>
+    
+
+    
+        <!-- the other jars        
+        <echo message="uploading support jars"/>
+        <scp todir="${upload.username}:${upload.password}@${upload.hostname}:${upload.path}/lib" verbose="true">
+            <fileset dir="${jnlp.lib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </scp>
+        -->
+        
+        <!-- the main jar 
+        -->
+        <echo message="uploading the main jar"/>
+        <scp todir="${upload.username}:${upload.password}@${upload.hostname}:${upload.path}/lib" verbose="true">
+            <fileset dir="${jnlp.dist.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </scp>
+    
+    </target>
+</project>
